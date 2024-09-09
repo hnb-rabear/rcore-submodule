@@ -1,6 +1,7 @@
 ﻿/***
  * Author RadBear - Nguyen Ba Hung - nbhung71711@gmail.com - 2019
  */
+
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -17,16 +18,8 @@ public class DevSettingEditor : UnityEditor.Editor
 	private DevSetting m_target;
 
 	//-- FIREBASE CONFIGURATION
-	private static string FirebaseDevConfigPath
-	{
-		get => EditorPrefs.GetString("firebaseDevConfigPath");
-		set => EditorPrefs.SetString("firebaseDevConfigPath", value);
-	}
-	private static string FirebaseLiveConfigPath
-	{
-		get => EditorPrefs.GetString("firebaseLiveConfigPath");
-		set => EditorPrefs.SetString("firebaseLiveConfigPath", value);
-	}
+	private static string FirebaseDevConfigPath { get => EditorPrefs.GetString("firebaseDevConfigPath"); set => EditorPrefs.SetString("firebaseDevConfigPath", value); }
+	private static string FirebaseLiveConfigPath { get => EditorPrefs.GetString("firebaseLiveConfigPath"); set => EditorPrefs.SetString("firebaseLiveConfigPath", value); }
 	public static string FirebaseConfigOutputFolder
 	{
 		get => EditorPrefs.GetString("FirebaseConfigOutputFolder", Application.dataPath);
@@ -37,11 +30,7 @@ public class DevSettingEditor : UnityEditor.Editor
 		get => EditorPrefs.GetString("firebase_config_" + Application.productName);
 		set => EditorPrefs.SetString("firebase_config_" + Application.productName, value);
 	}
-	private static string FirebaseProjectNumber
-	{
-		get => EditorPrefs.GetString("project_number");
-		set => EditorPrefs.SetString("project_number", value);
-	}
+	private static string FirebaseProjectNumber { get => EditorPrefs.GetString("project_number"); set => EditorPrefs.SetString("project_number", value); }
 
 	private string m_typedProfileName;
 	private string m_selectedProfile;
@@ -60,8 +49,8 @@ public class DevSettingEditor : UnityEditor.Editor
 		m_typedProfileName = m_target.profile.name;
 
 		m_removingProfile = false;
-        SwitchMode(false);
-        InitDirectives((m_target.profile.defines));
+		SwitchMode(false);
+		InitDirectives(m_target.profile);
 
 		CheckFirebaseConfigPaths();
 	}
@@ -123,17 +112,17 @@ public class DevSettingEditor : UnityEditor.Editor
 	{
 		m_target.EnableLog = EditorHelper.Toggle(m_target.EnableLog, "Show Log", 120, 280);
 		m_target.EnableDraw = EditorHelper.Toggle(m_target.EnableDraw, "Enable Draw", 120, 280);
-        
+
 		EditorHelper.BoxVertical("Project Settings" + (m_previewingProfiles ? " Preview" : ""), () =>
 		{
-            if (m_profileCollections != null && m_profileCollections.profiles.Count > 0 && m_profileCollections.profiles[0].name != "do_not_remove")
-            {
-                m_profileCollections.profiles.Insert(0, new DevSetting.Profile()
-                {
-                    name = "do_not_remove",
-                });
-            }
-            
+			if (m_profileCollections != null && m_profileCollections.profiles.Count > 0 && m_profileCollections.profiles[0].name != "do_not_remove")
+			{
+				m_profileCollections.profiles.Insert(0, new DevSetting.Profile()
+				{
+					name = "do_not_remove",
+				});
+			}
+
 			if (!m_previewingProfiles)
 			{
 				DrawSettingsProfile(m_target.profile);
@@ -145,53 +134,48 @@ public class DevSettingEditor : UnityEditor.Editor
 		}, Color.white, true);
 	}
 
-    private void InitDirectives(List<DevSetting.Directive> defines)
-    {
-        string[] currentDefines = EditorHelper.GetDirectives();
-        for (int i = 0; i < currentDefines.Length; i++)
-        {
-            if (!ContainDirective(defines, currentDefines[i]))
-                defines.Add(new DevSetting.Directive(currentDefines[i], true));
-        }
+	private void InitDirectives(DevSetting.Profile profile)
+	{
+		if (profile == null)
+			return;
+		string[] currentDefines = EditorHelper.GetDirectives();
+		for (int i = 0; i < currentDefines.Length; i++)
+			profile.AddDirective(currentDefines[i],true);
 
-        for (int i = 0; i < defines.Count; i++)
-        {
-            if (currentDefines.Length > 0)
-            {
-                bool exist = false;
-                for (int j = 0; j < currentDefines.Length; j++)
-                {
-                    if (currentDefines[j] == defines[i].name)
-                        exist = true;
-                }
-                defines[i].enabled = exist;
-            }
-            else
-                defines[i].enabled = false;
-        }
-    }
-    
+		for (int i = 0; i < profile.defines.Count; i++)
+		{
+			if (currentDefines.Length > 0)
+			{
+				bool exist = false;
+				for (int j = 0; j < currentDefines.Length; j++)
+				{
+					if (currentDefines[j] == profile.defines[i].name)
+						exist = true;
+				}
+				profile.defines[i].enabled = exist;
+			}
+			else
+				profile.defines[i].enabled = false;
+		}
+	}
+
 	private void DrawSettingsProfile(DevSetting.Profile pProfile)
 	{
 		if (!m_previewingProfiles)
 			EditorGUILayout.LabelField(pProfile.name, GUIStyleHelper.headerTitle);
 		else
 			pProfile.name = EditorHelper.TextField(pProfile.name, "Name", 120, 280);
-		
+
 		if (pProfile.defines != null)
 		{
-			if (!ContainDirective(pProfile.defines, "DEVELOPMENT"))
-				pProfile.defines.Add(new DevSetting.Directive("DEVELOPMENT", false));
-			if (!ContainDirective(pProfile.defines, "UNITY_IAP"))
-				pProfile.defines.Add(new DevSetting.Directive("UNITY_IAP", false));
-			if (!ContainDirective(pProfile.defines, "UNITY_MONETIZATION"))
-				pProfile.defines.Add(new DevSetting.Directive("UNITY_MONETIZATION", false));
+			string[] defaultDirectives = { "DEVELOPMENT", "UNITY_IAP", "ADDRESSABLES" };
+			foreach (string directive in defaultDirectives)
+				pProfile.AddDirective(directive,false);
 
 			if (!m_reorderDirectivesDict.ContainsKey(pProfile.name))
 			{
 				var reorderList = new ReorderableList(pProfile.defines, typeof(DevSetting.Directive), true, true, true, true);
-				if (!m_reorderDirectivesDict.ContainsKey(pProfile.name))
-					m_reorderDirectivesDict.Add(pProfile.name, reorderList);
+				m_reorderDirectivesDict.TryAdd(pProfile.name, reorderList);
 				reorderList.drawElementCallback = (rect, index, isActive, isFocused) =>
 				{
 					var define = pProfile.defines[index];
@@ -201,7 +185,7 @@ public class DevSettingEditor : UnityEditor.Editor
 					float widthName = rect.width - widthTog - widthColor - 10;
 					define.enabled = EditorGUI.Toggle(new Rect(rect.x, rect.y, widthTog, 20), define.enabled);
 
-					if (define.name == "DEVELOPMENT" || define.name == "UNITY_IAP" || define.name == "UNITY_MONETIZATION")
+					if (defaultDirectives.Contains(define.name))
 						EditorGUI.LabelField(new Rect(rect.x + widthTog + 5, rect.y, widthName, 20), define.name);
 					else
 						define.name = EditorGUI.TextField(new Rect(rect.x + widthTog + 5, rect.y, widthName, 20), define.name);
@@ -211,17 +195,17 @@ public class DevSettingEditor : UnityEditor.Editor
 				m_reorderDirectivesDict[pProfile.name].onCanRemoveCallback = (list) =>
 				{
 					var define = pProfile.defines[list.index];
-					return define.name != "DEVELOPMENT" && define.name != "UNITY_IAP" && define.name != "UNITY_MONETIZATION";
+					return !defaultDirectives.Contains(define.name);
 				};
 			}
 			m_reorderDirectivesDict[pProfile.name].DoLayoutList();
-            if (GUI.changed)
-                pProfile.defines = (List<DevSetting.Directive>)m_reorderDirectivesDict[pProfile.name].list;
+			if (GUI.changed)
+				pProfile.defines = (List<DevSetting.Directive>)m_reorderDirectivesDict[pProfile.name].list;
 
 			EditorGUILayout.BeginHorizontal();
 			if (EditorHelper.Button("Apply"))
-                ApplyDirectives(pProfile.defines);
-            if (EditorHelper.Button("Clone"))
+				ApplyDirectives(pProfile.defines);
+			if (EditorHelper.Button("Clone"))
 			{
 				var cloneProfile = CloneProfile(pProfile);
 				cloneProfile.name += "(clone)";
@@ -251,18 +235,18 @@ public class DevSettingEditor : UnityEditor.Editor
 				EditorHelper.Separator();
 		}
 		EditorHelper.Separator();
-        if (EditorHelper.ButtonColor("Back", Color.yellow))
-            SwitchMode(false);
-    }
+		if (EditorHelper.ButtonColor("Back", Color.yellow))
+			SwitchMode(false);
+	}
 
-    private void SwitchMode(bool pMode)
-    {
-        if (m_previewingProfiles == pMode)
-            return;
-        m_previewingProfiles = pMode;
-        m_reorderDirectivesDict.Clear();
-    }
-    
+	private void SwitchMode(bool pMode)
+	{
+		if (m_previewingProfiles == pMode)
+			return;
+		m_previewingProfiles = pMode;
+		m_reorderDirectivesDict.Clear();
+	}
+
 	private static void ApplyDirectives(List<DevSetting.Directive> defines)
 	{
 		string symbols = string.Join(";", defines
@@ -271,21 +255,6 @@ public class DevSettingEditor : UnityEditor.Editor
 			.ToArray());
 		var target = EditorUserBuildSettings.selectedBuildTargetGroup;
 		PlayerSettings.SetScriptingDefineSymbolsForGroup(target, symbols);
-	}
-
-	private static bool ContainDirective(List<DevSetting.Directive> defines, string pName)
-	{
-		if (string.IsNullOrEmpty(pName))
-			return true;
-
-		for (int i = 0; i < defines.Count; i++)
-		{
-			if (defines[i].name == pName)
-			{
-				return true;
-			}
-		}
-		return false;
 	}
 
 	private void DrawProfilesSelection()
@@ -350,9 +319,9 @@ public class DevSettingEditor : UnityEditor.Editor
 							m_removingProfile = false;
 					}
 					else
-                    {
-                        if (EditorHelper.ButtonColor("Preview", Color.yellow))
-                            SwitchMode(true);
+					{
+						if (EditorHelper.ButtonColor("Preview", Color.yellow))
+							SwitchMode(true);
 						if (EditorHelper.ButtonColor("Apply", Color.green))
 							ApplyProfile(m_selectedProfile);
 					}

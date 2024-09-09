@@ -15,6 +15,24 @@ public class DevSetting : ScriptableObject
 	{
 		public string name;
 		public List<Directive> defines;
+		public void AddDirective(string name, bool defaultActive)
+		{
+			if (string.IsNullOrEmpty(name))
+				return;
+			var find = GetDirective(name);
+			if (find == null)
+				defines.Add(new Directive(name, defaultActive));
+		}
+		public Directive GetDirective(string pName)
+		{
+			if (string.IsNullOrEmpty(pName))
+				return null;
+
+			for (int i = 0; i < defines.Count; i++)
+				if (defines[i].name == pName)
+					return defines[i];
+			return null;
+		}
 	}
 
 	[Serializable]
@@ -47,6 +65,13 @@ public class DevSetting : ScriptableObject
 			if (m_Instance == null)
 			{
 				m_Instance = Resources.Load<DevSetting>("DevSetting");
+#if UNITY_EDITOR
+				if (m_Instance == null)
+				{
+					EditorHelper.CreateScriptableAsset<DevSetting>("Assets/Resources/DevSetting.asset");
+					m_Instance = Resources.Load<DevSetting>("DevSetting");
+				}
+#endif
 				m_Instance.Init();
 			}
 			return m_Instance;

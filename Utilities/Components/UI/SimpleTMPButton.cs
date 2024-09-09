@@ -78,7 +78,7 @@ namespace RCore.Components
 					var labels = gameObject.FindComponentsInChildren<TextMeshProUGUI>();
 					foreach (var label in labels)
 					{
-						if (label.font == mLabelTMP.font)
+						if (label.font == mLabelTMP.font && label.fontSharedMaterial == mLabelTMP.fontSharedMaterial)
 							label.fontSharedMaterial = m_LabelMatActive;
 					}
 				}
@@ -92,7 +92,7 @@ namespace RCore.Components
 					var labels = gameObject.FindComponentsInChildren<TextMeshProUGUI>();
 					foreach (var label in labels)
 					{
-						if (label.font == mLabelTMP.font)
+						if (label.font == mLabelTMP.font && label.fontSharedMaterial == mLabelTMP.fontSharedMaterial)
 							label.fontSharedMaterial = m_LabelMatInactive;
 					}
 				}
