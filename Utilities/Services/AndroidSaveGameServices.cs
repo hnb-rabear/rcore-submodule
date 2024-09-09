@@ -2,9 +2,14 @@
 using GooglePlayGames;
 using GooglePlayGames.BasicApi;
 using GooglePlayGames.BasicApi.SavedGame;
-using UnityEngine.SocialPlatforms;
 #endif
+using UnityEngine.SocialPlatforms;
+using RCore.Common;
 using System;
+using System.Collections.Generic;
+using System.Text;
+using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 namespace RCore.Service
 {
@@ -47,9 +52,6 @@ namespace RCore.Service
 
 		public static void OpenWithAutomaticConflictResolution(string fileName, DataSource dataSource, ConflictResolutionStrategy conflictResolutionStrategy, Action<ISavedGameMetadata, SavedGameRequestStatus> callback)
 		{
-			RUtil.NullArgumentTest(fileName);
-			RUtil.NullArgumentTest(callback);
-
 			PlayGamesPlatform.Instance.SavedGame.OpenWithAutomaticConflictResolution(
 				fileName,
 				dataSource,
@@ -63,10 +65,6 @@ namespace RCore.Service
 
 		public static void OpenWithManualConflictResolution(string fileName, bool prefetchDataOnConflict, DataSource dataSource, SavedGameConflictResolver resolverFunction, Action<ISavedGameMetadata, SavedGameRequestStatus> completedCallback)
 		{
-			RUtil.NullArgumentTest(fileName);
-			RUtil.NullArgumentTest(resolverFunction);
-			RUtil.NullArgumentTest(completedCallback);
-
 			PlayGamesPlatform.Instance.SavedGame.OpenWithManualConflictResolution(fileName, dataSource, prefetchDataOnConflict,
 				// Internal conflict callback
 				(IConflictResolver resolver, ISavedGameMetadata original, byte[] originalData, ISavedGameMetadata unmerged, byte[] unmergedData) =>
@@ -100,9 +98,6 @@ namespace RCore.Service
 
 		public static void ReadSaveGameData(ISavedGameMetadata savedGame, Action<ISavedGameMetadata, byte[], SavedGameRequestStatus> callback)
 		{
-			RUtil.NullArgumentTest(savedGame);
-			RUtil.NullArgumentTest(callback);
-
 			PlayGamesPlatform.Instance.SavedGame.ReadBinaryData(
 				savedGame,
 				(SavedGameRequestStatus status, byte[] data) =>
@@ -115,16 +110,12 @@ namespace RCore.Service
 
 		public static void WriteSaveGameData(ISavedGameMetadata savedGame, byte[] data, TimeSpan totalPlaytime, Action<ISavedGameMetadata, SavedGameRequestStatus> callback)
 		{
-			RUtil.NullArgumentTest(savedGame);
-			RUtil.NullArgumentTest(data);
-			RUtil.NullArgumentTest(callback);
-
-			SavedGameMetadataUpdate.Builder builder = new SavedGameMetadataUpdate.Builder();
+			var builder = new SavedGameMetadataUpdate.Builder();
 			builder = builder
 				.WithUpdatedPlayedTime(totalPlaytime)
 				.WithUpdatedDescription("Updated Time " + DateTime.Now);
 
-			SavedGameMetadataUpdate updatedMetadata = builder.Build();
+			var updatedMetadata = builder.Build();
 
 			PlayGamesPlatform.Instance.SavedGame.CommitUpdate(
 				savedGame,
@@ -140,8 +131,6 @@ namespace RCore.Service
 
 		public static void FetchAllSavedGames(DataSource dataSource, Action<List<ISavedGameMetadata>, SavedGameRequestStatus> callback)
 		{
-			RUtil.NullArgumentTest(callback);
-
 			PlayGamesPlatform.Instance.SavedGame.FetchAllSavedGames(dataSource,
 				(SavedGameRequestStatus status, List<ISavedGameMetadata> games) =>
 				{
@@ -162,13 +151,11 @@ namespace RCore.Service
 
 		public static void DeleteSaveGame(ISavedGameMetadata savedGame)
 		{
-			RUtil.NullArgumentTest(savedGame);
 			PlayGamesPlatform.Instance.SavedGame.Delete(savedGame);
 		}
 
 		public static void DeleteSelectedSaveGame()
 		{
-			RUtil.NullArgumentTest(m_SavedGame);
 			PlayGamesPlatform.Instance.SavedGame.Delete(m_SavedGame);
 		}
 
@@ -210,7 +197,7 @@ namespace RCore.Service
 		{
 			// Create a 2D texture that is 1024x700 pixels from which the PNG will be
 			// extracted
-			Texture2D screenShot = new Texture2D(1024, 700);
+			var screenShot = new Texture2D(1024, 700);
 
 			// Takes the screenshot from top left hand corner of screen and maps to top
 			// left hand corner of screenShot texture

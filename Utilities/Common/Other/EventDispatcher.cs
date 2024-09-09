@@ -103,5 +103,5 @@ namespace RCore.Common
 		}
 	}
 
-	public class BaseEvent { }
+    public interface BaseEvent { }
 }
