@@ -11,17 +11,15 @@ namespace RCore.Common
 {
 	public class PoolsContainer<T> where T : Component
 	{
-		public Dictionary<int, CustomPool<T>> poolDict;
+		public Dictionary<int, CustomPool<T>> poolDict = new Dictionary<int, CustomPool<T>>();
 		public Transform container;
 		public int limitNumber;
-		private int m_InitialNumber;
-		private Dictionary<int, int> m_IdOfAllClones; //Keep tracking the clone instance id and its prefab instance id
+		private int m_initialNumber;
+		private readonly Dictionary<int, int> m_idOfAllClones = new Dictionary<int, int>(); //Keep tracking the clone instance id and its prefab instance id
 
 		public PoolsContainer(Transform pContainer)
 		{
 			container = pContainer;
-			poolDict = new Dictionary<int, CustomPool<T>>();
-			m_IdOfAllClones = new Dictionary<int, int>();
 		}
 
 		public PoolsContainer(int pInitialNumber = 1, Transform pParent = null)
@@ -31,22 +29,17 @@ namespace RCore.Common
 			container.transform.localPosition = Vector3.zero;
 			container.transform.rotation = Quaternion.identity;
 			this.container = container.transform;
-			poolDict = new Dictionary<int, CustomPool<T>>();
-			m_IdOfAllClones = new Dictionary<int, int>();
-			m_InitialNumber = pInitialNumber;
+			m_initialNumber = pInitialNumber;
 		}
 
 		public CustomPool<T> Get(T pPrefab)
 		{
 			if (poolDict.ContainsKey(pPrefab.GameObjectId()))
 				return poolDict[pPrefab.GameObjectId()];
-			else
-			{
-				var pool = new CustomPool<T>(pPrefab, m_InitialNumber, container.transform);
-				pool.limitNumber = limitNumber;
-				poolDict.Add(pPrefab.GameObjectId(), pool);
-				return pool;
-			}
+			var pool = new CustomPool<T>(pPrefab, m_initialNumber, container.transform);
+			pool.limitNumber = limitNumber;
+			poolDict.Add(pPrefab.GameObjectId(), pool);
+			return pool;
 		}
 
 		public void CreatePool(T pPrefab, List<T> pBuiltInObjs)
@@ -65,8 +58,8 @@ namespace RCore.Common
 			var pool = Get(prefab);
 			var clone = pool.Spawn(position, pIsWorldPosition);
 			//Keep the trace of clone
-			if (!m_IdOfAllClones.ContainsKey(clone.GameObjectId()))
-				m_IdOfAllClones.Add(clone.GameObjectId(), prefab.GameObjectId());
+			if (!m_idOfAllClones.ContainsKey(clone.GameObjectId()))
+				m_idOfAllClones.Add(clone.GameObjectId(), prefab.GameObjectId());
 			return clone;
 		}
 
@@ -75,8 +68,8 @@ namespace RCore.Common
 			var pool = Get(prefab);
 			var clone = pool.Spawn(transform);
 			//Keep the trace of clone
-			if (!m_IdOfAllClones.ContainsKey(clone.GameObjectId()))
-				m_IdOfAllClones.Add(clone.GameObjectId(), prefab.GameObjectId());
+			if (!m_idOfAllClones.ContainsKey(clone.GameObjectId()))
+				m_idOfAllClones.Add(clone.GameObjectId(), prefab.GameObjectId());
 			return clone;
 		}
 
@@ -84,7 +77,7 @@ namespace RCore.Common
 		{
 			if (!poolDict.ContainsKey(pPrefab.GameObjectId()))
 			{
-				var pool = new CustomPool<T>(pPrefab, m_InitialNumber, container.transform);
+				var pool = new CustomPool<T>(pPrefab, m_initialNumber, container.transform);
 				pool.limitNumber = limitNumber;
 				poolDict.Add(pPrefab.GameObjectId(), pool);
 			}
@@ -133,8 +126,8 @@ namespace RCore.Common
 
 		public void Release(T pObj)
 		{
-			if (m_IdOfAllClones.ContainsKey(pObj.GameObjectId()))
-				Release(m_IdOfAllClones[pObj.GameObjectId()], pObj);
+			if (m_idOfAllClones.ContainsKey(pObj.GameObjectId()))
+				Release(m_idOfAllClones[pObj.GameObjectId()], pObj);
 			else
 			{
 				foreach (var pool in poolDict)
@@ -210,7 +203,7 @@ namespace RCore.Common
 	[Serializable]
 	public class CustomPool<T> where T : Component
 	{
-		#region Members
+#region Members
 
 		public Action<T> onSpawn;
 
@@ -226,23 +219,19 @@ namespace RCore.Common
 		public T Prefab => m_Prefab;
 		public Transform Parent => m_Parent;
 		public string Name => m_Name;
-		public bool pushToLastSibling { get => m_PushToLastSibling;
-			set => m_PushToLastSibling = value;
-		}
-		public int limitNumber { get => m_LimitNumber;
-			set => m_LimitNumber = value;
-		}
+		public bool pushToLastSibling { get => m_PushToLastSibling; set => m_PushToLastSibling = value; }
+		public int limitNumber { get => m_LimitNumber; set => m_LimitNumber = value; }
 		protected bool m_Initialized;
 		protected int m_InitialCount;
 
 		public List<T> ActiveList() => m_ActiveList;
 		public List<T> InactiveList() => m_InactiveList;
 
-		#endregion
+#endregion
 
 		//====================================
 
-		#region Public
+#region Public
 
 		public CustomPool() { }
 
@@ -427,7 +416,7 @@ namespace RCore.Common
 			m_ActiveList ??= new List<T>();
 
 			if (m_InactiveList.Contains(pInSceneObj)
-				|| m_ActiveList.Contains(pInSceneObj))
+			    || m_ActiveList.Contains(pInSceneObj))
 				return;
 
 			if (pInSceneObj.gameObject.activeSelf)
@@ -454,7 +443,10 @@ namespace RCore.Common
 			CoroutineMediatorForScene.Instance.WaitForSecond(new WaitUtil.CountdownEvent()
 			{
 				id = pObj.GetInstanceID(),
-				doSomething = (s) => { if (pObj != null) Release(pObj); },
+				onTimeOut = (_) =>
+				{
+					if (pObj != null) Release(pObj);
+				},
 				waitTime = pDelay
 			});
 		}
@@ -464,7 +456,10 @@ namespace RCore.Common
 			CoroutineMediatorForScene.Instance.WaitForCondition(new WaitUtil.ConditionEvent()
 			{
 				id = pObj.GetInstanceID(),
-				onTrigger = () => { if (pObj != null) Release(pObj); },
+				onTrigger = () =>
+				{
+					if (pObj != null) Release(pObj);
+				},
 				triggerCondition = pCondition
 			});
 		}
@@ -486,7 +481,10 @@ namespace RCore.Common
 			CoroutineMediatorForScene.Instance.WaitForSecond(new WaitUtil.CountdownEvent()
 			{
 				id = pObj.GetInstanceID(),
-				doSomething = (s) => { if (pObj != null) Release(pObj); },
+				onTimeOut = (_) =>
+				{
+					if (pObj != null) Release(pObj);
+				},
 				waitTime = pDelay
 			});
 		}
@@ -496,7 +494,10 @@ namespace RCore.Common
 			CoroutineMediatorForScene.Instance.WaitForCondition(new WaitUtil.ConditionEvent()
 			{
 				id = pObj.GetInstanceID(),
-				onTrigger = () => { if (pObj != null) Release(pObj); },
+				onTrigger = () =>
+				{
+					if (pObj != null) Release(pObj);
+				},
 				triggerCondition = pCondition,
 			});
 		}
@@ -611,11 +612,11 @@ namespace RCore.Common
 			m_Name = pName;
 		}
 
-		#endregion
+#endregion
 
 		//========================================
 
-		#region Private
+#region Private
 
 		private void Active(T pItem, bool pValue, int index = -1)
 		{
@@ -638,7 +639,7 @@ namespace RCore.Common
 			pItem.SetActive(pValue);
 		}
 
-		#endregion
+#endregion
 
 		//=========================================
 

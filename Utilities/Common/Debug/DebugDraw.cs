@@ -1,4 +1,4 @@
-﻿/***
+﻿/**
 * Author RadBear - nbhung71711 @gmail.com - 2018
 **/
 
@@ -26,18 +26,9 @@ namespace RCore.Common
 		{
 			if (!enabled || points.Length < 2) return;
 			for (int i = 0; i < points.Length; i++)
+			{
 				UnityEngine.Debug.DrawLine(points[i], i < points.Length - 1 ? points[i + 1] : points[0], color, duration);
-		}
-
-		[Conditional("UNITY_EDITOR")]
-		public static void DrawLinesGizmos(Vector3[] points, Color color)
-		{
-			if (!enabled || points.Length < 2) return;
-			var colorTemp = Gizmos.color;
-			Gizmos.color = color;
-			for (int i = 0; i < points.Length; i++)
-				Gizmos.DrawLine(points[i], i < points.Length - 1 ? points[i + 1] : points[0]);
-			Gizmos.color = colorTemp;
+			}
 		}
 
 		[Conditional("UNITY_EDITOR")]
@@ -54,13 +45,64 @@ namespace RCore.Common
 		}
 
 		[Conditional("UNITY_EDITOR")]
+		public static void DrawLinesGizmos(Vector3[] points, Color color, bool close = true)
+		{
+			if (!enabled || points.Length < 2) return;
+			var colorTemp = Gizmos.color;
+			Gizmos.color = color;
+			Gizmos.color = color;
+			for (int i = 0; i < points.Length; i++)
+			{
+				if (close)
+					Gizmos.DrawLine(points[i], i < points.Length - 1 ? points[i + 1] : points[0]);
+				else
+				{
+					if (i < points.Length - 1)
+						Gizmos.DrawLine(points[i], points[i + 1]);
+				}
+			}
+			Gizmos.color = colorTemp;
+		}
+
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawLinesGizmos(List<Vector3> points, Color color)
 		{
 			if (!enabled || points.Count < 2) return;
 			var colorTemp = Gizmos.color;
 			Gizmos.color = color;
+			Gizmos.color = color;
 			for (int i = 0; i < points.Count; i++)
+			{
 				Gizmos.DrawLine(points[i], i < points.Count - 1 ? points[i + 1] : points[0]);
+			}
+			Gizmos.color = colorTemp;
+		}
+
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawLinesGizmos(Color color, params Vector3[] points)
+		{
+			if (!enabled || points.Length < 2) return;
+			var colorTemp = Gizmos.color;
+			Gizmos.color = color;
+			Gizmos.color = color;
+			for (int i = 0; i < points.Length; i++)
+			{
+				Gizmos.DrawLine(points[i], i < points.Length - 1 ? points[i + 1] : points[0]);
+			}
+			Gizmos.color = colorTemp;
+		}
+
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawLinesGizmos(Color color, params Vector2[] points)
+		{
+			if (!enabled || points.Length < 2) return;
+			var colorTemp = Gizmos.color;
+			Gizmos.color = color;
+			Gizmos.color = color;
+			for (int i = 0; i < points.Length; i++)
+			{
+				Gizmos.DrawLine(points[i], i < points.Length - 1 ? points[i + 1] : points[0]);
+			}
 			Gizmos.color = colorTemp;
 		}
 
@@ -91,6 +133,26 @@ namespace RCore.Common
 		}
 
 		[Conditional("UNITY_EDITOR")]
+		public static void DrawRectangleGizmos(Rect pRect, Color color = default)
+		{
+			if (!enabled) return;
+			float xMin = pRect.xMin;
+			float xMax = pRect.xMax;
+			float yMin = pRect.yMin;
+			float yMax = pRect.yMax;
+			var topLeft = new Vector3(xMin, yMax);
+			var topRight = new Vector3(xMax, yMax);
+			var bottomLeft = new Vector3(xMin, yMin);
+			var bottomRight = new Vector3(xMax, yMin);
+			if (color != default)
+				Gizmos.color = color;
+			Gizmos.DrawLine(topLeft, topRight);
+			Gizmos.DrawLine(topRight, bottomRight);
+			Gizmos.DrawLine(bottomRight, bottomLeft);
+			Gizmos.DrawLine(bottomLeft, topLeft);
+		}
+
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawRectangle(Vector2 pCenter, Vector2 pSize, Color color, float duration = 1f)
 		{
 			if (!enabled) return;
@@ -106,6 +168,26 @@ namespace RCore.Common
 			DrawLine(topRight, bottomRight, color, duration);
 			DrawLine(bottomRight, bottomLeft, color, duration);
 			DrawLine(bottomLeft, topLeft, color, duration);
+		}
+
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawRectangleGizmos(Vector2 pCenter, Vector2 pSize, Color color = default)
+		{
+			if (!enabled) return;
+			float xMin = pCenter.x - pSize.x / 2;
+			float xMax = pCenter.x + pSize.x / 2;
+			float yMin = pCenter.y - pSize.y / 2;
+			float yMax = pCenter.y + pSize.y / 2;
+			var topLeft = new Vector3(xMin, yMax);
+			var topRight = new Vector3(xMax, yMax);
+			var bottomLeft = new Vector3(xMin, yMin);
+			var bottomRight = new Vector3(xMax, yMin);
+			if (color != default)
+				Gizmos.color = color;
+			Gizmos.DrawLine(topLeft, topRight);
+			Gizmos.DrawLine(topRight, bottomRight);
+			Gizmos.DrawLine(bottomRight, bottomLeft);
+			Gizmos.DrawLine(bottomLeft, topLeft);
 		}
 
 		[Conditional("UNITY_EDITOR")]
@@ -165,7 +247,7 @@ namespace RCore.Common
 		public static void DrawEllipse(Vector3 center, float width, float height, Color color, float duration = 0.5f)
 		{
 			if (!enabled) return;
-			int steps = 100;
+			const int steps = 100;
 			float interval = 2 * width / steps;
 			var currentPoint = Vector3.zero;
 			for (int i = 0; i <= steps; i++)
@@ -181,51 +263,56 @@ namespace RCore.Common
 			}
 		}
 
-		public static List<Vector3> DrawGridLinesGizmos(Vector3 rootPos, int width, int length, float pTileSize = 1, float pHeight = 0)
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawEllipseGizmos(Vector3 center, float width, float height, Color color, float duration = 0.5f)
 		{
-			var points = new List<Vector3>();
-			Vector3 from;
-			Vector3 to;
-			for (int i = 0; i <= width; i++)
+			if (!enabled) return;
+			const int steps = 100;
+			float interval = 2 * width / steps;
+			var currentPoint = Vector3.zero;
+			for (int i = 0; i <= steps; i++)
+			{
+				var previousPoint = currentPoint;
+				float x = -width + interval * i;
+				float y = Mathf.Sqrt(1 - x * x / (width * width)) * height;
+				currentPoint = new Vector2(x, y);
+				if (i > 0)
+					DrawLinesGizmos(new[] { center + previousPoint, center + currentPoint }, color);
+				if (i > 0)
+					DrawLinesGizmos(new[] { center + new Vector3(previousPoint.x, -previousPoint.y), center + new Vector3(currentPoint.x, -currentPoint.y) }, color);
+			}
+		}
+
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawGridLinesGizmos(Vector3 rootPos, int width, int length, float pTileSize)
+		{
+			for (int i = 0; i < width; i++)
 			{
 				//Draw vertical line
-				from = rootPos;
+				var from = rootPos;
 				from.x += i * pTileSize;
-				to = rootPos;
+				var to = rootPos;
 				to.z += length * pTileSize;
 				to.x += i * pTileSize;
 				Gizmos.DrawLine(from, to);
 			}
-			for (int i = 0; i <= length; i++)
+			for (int i = 0; i < length; i++)
 			{
 				//Draw horizontal line
-				from = rootPos;
+				var from = rootPos;
 				from.z += i * pTileSize;
-				to = rootPos;
+				var to = rootPos;
 				to.x += width * pTileSize;
 				to.z += i * pTileSize;
 				Gizmos.DrawLine(from, to);
 			}
-			if (pHeight != 0)
-				for (int i = 0; i < width; i++)
-				{
-					for (int j = 0; j < length; j++)
-					{
-						var pos = rootPos;
-						pos.x += i + 1 / 2f;
-						pos.z += j + 1 / 2f;
-						points.Add(pos);
-						Gizmos.DrawLine(pos, pos.AddY(pHeight));
-					}
-				}
-			return points;
 		}
 
 		[Conditional("UNITY_EDITOR")]
 		public static void DrawGridLinesGizmos(Vector2 rootPos, float width, float length, Vector2 cellSize, float rootCellSize = 0, float centerCellSize = 0)
 		{
-			Vector2 from;
-			Vector2 to;
+			var from = new Vector2();
+			var to = new Vector2();
 			for (int i = 0; i <= width; i++)
 			{
 				//Draw vertical line
@@ -323,6 +410,36 @@ namespace RCore.Common
 		}
 
 		[Conditional("UNITY_EDITOR")]
+		public static void DrawCellIsometricGizmos(Vector2 rootPos, Color color = default, int cellOffset = 0)
+		{
+			if (color == default)
+				color = Color.white;
+
+			Gizmos.color = color;
+			for (int y = 0; y <= 1; y++)
+			{
+				int yy = y + cellOffset;
+				var pos1 = rootPos + new Vector2(cellOffset - yy, yy * 0.5f + cellOffset * 0.5f);
+				var pos2 = rootPos + new Vector2((1 + cellOffset) - yy, yy * 0.5f + (1 + cellOffset) * 0.5f);
+				Gizmos.DrawLine(pos1, pos2);
+			}
+
+			for (int x = 0; x <= 1; x++)
+			{
+				int xx = x + cellOffset;
+				var pos1 = rootPos + new Vector2(xx - cellOffset, cellOffset * 0.5f + xx * 0.5f);
+				var pos2 = rootPos + new Vector2(xx - (1 + cellOffset), (1 + cellOffset) * 0.5f + xx * 0.5f);
+				Gizmos.DrawLine(pos1, pos2);
+			}
+		}
+
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawIsometricAreaGizmos(Vector2 rootPos, int areaWidth, int areaLength, Color color = default, int cellOffset = 0)
+		{
+			DrawGridIsometricGizmos(rootPos, 1, 1, new Vector2(areaWidth * 2, areaLength), false, color, cellOffset);
+		}
+
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawGridLines(Vector3 rootPos, int width, int length, float pTileSize, Color pColor = default, float pDuration = 0.1f)
 		{
 			for (int i = 0; i < width; i++)
@@ -351,8 +468,8 @@ namespace RCore.Common
 		public static void DrawGridNodesGizmos(Vector3 rootPos, int width, int length, float tileSize, float pNodeSize)
 		{
 			var nodes = BuildGridNodes(rootPos, width, length, tileSize);
-			foreach (var node in nodes)
-				Gizmos.DrawCube(node, Vector3.one * pNodeSize);
+			for (int i = 0; i < nodes.Count; i++)
+				Gizmos.DrawCube(nodes[i], Vector3.one * pNodeSize);
 		}
 
 		public static void DrawPathGizmos(List<Vector3> pPath, Color? colour = null, bool pLoop = false)
@@ -368,8 +485,8 @@ namespace RCore.Common
 				}
 				if (pLoop && pPath.Count > 2)
 				{
-					Gizmos.DrawCube(pPath[^1], Vector3.one * 0.1f);
-					Gizmos.DrawLine(pPath[0], pPath[^1]);
+					Gizmos.DrawCube(pPath[pPath.Count - 1], Vector3.one * 0.1f);
+					Gizmos.DrawLine(pPath[0], pPath[pPath.Count - 1]);
 				}
 			}
 		}
@@ -387,8 +504,8 @@ namespace RCore.Common
 				}
 				if (pLoop && pPath.Length > 2)
 				{
-					Gizmos.DrawCube(pPath[^1], Vector3.one * 0.1f);
-					Gizmos.DrawLine(pPath[0], pPath[^1]);
+					Gizmos.DrawCube(pPath[pPath.Length - 1], Vector3.one * 0.1f);
+					Gizmos.DrawLine(pPath[0], pPath[pPath.Length - 1]);
 				}
 			}
 		}
@@ -448,7 +565,7 @@ namespace RCore.Common
 					UnityEngine.Debug.DrawLine(rootPosition, point, pFovInfo.color, pFovInfo.duration);
 			}
 		}
-
+		
 		//======================================================
 
 		private static List<Vector3> BuildGridNodes(Vector3 rootPos, int width, int length, float tileSize)
@@ -839,7 +956,7 @@ namespace RCore.Common
 			var farPlane = new Plane(-direction, position + _forward);
 			var distRay = new Ray(position, slerpVector);
 
-			farPlane.Raycast(distRay, out var dist);
+			farPlane.Raycast(distRay, out float dist);
 
 			UnityEngine.Debug.DrawRay(position, slerpVector.normalized * dist, color);
 			UnityEngine.Debug.DrawRay(position, Vector3.Slerp(_forward, -_up, angle / 90.0f).normalized * dist, color, duration, depthTest);
@@ -991,12 +1108,11 @@ namespace RCore.Common
 		}
 
 		/// <summary>Draws an axis-aligned bounding box.</summary>
-		/// <param name="root"></param>
 		/// <param name='bounds'>The bounds to draw.</param>
 		/// <param name='color'>The color of the bounds.</param>
-		public static void DrawGizmosBounds(Vector3 root, Bounds bounds, Color color)
+		public static void DrawGizmosBounds(Vector3 pRoot, Bounds bounds, Color color)
 		{
-			var center = bounds.center + root;
+			var center = bounds.center + pRoot;
 
 			float x = bounds.extents.x;
 			float y = bounds.extents.y;
@@ -1034,11 +1150,10 @@ namespace RCore.Common
 		}
 
 		/// <summary>Draws an axis-aligned bounding box.</summary>
-		/// <param name="root"></param>
 		/// <param name='bounds'>The bounds to draw.</param>
-		public static void DrawGizmosBounds(Vector3 root, Bounds bounds)
+		public static void DrawGizmosBounds(Vector3 pRoot, Bounds bounds)
 		{
-			DrawGizmosBounds(root, bounds, Color.white);
+			DrawGizmosBounds(pRoot, bounds, Color.white);
 		}
 
 		/// <summary>Draws a local cube.</summary>
@@ -1278,7 +1393,7 @@ namespace RCore.Common
 			var farPlane = new Plane(-direction, position + _forward);
 			var distRay = new Ray(position, slerpVector);
 
-			farPlane.Raycast(distRay, out var dist);
+			farPlane.Raycast(distRay, out float dist);
 
 			var oldColor = Gizmos.color;
 			Gizmos.color = color;
@@ -1414,15 +1529,16 @@ namespace RCore.Common
 		{
 			string methods = "";
 			var methodInfos = obj.GetType().GetMethods();
-			foreach (var t in methodInfos)
+			for (int i = 0; i < methodInfos.Length; i++)
 			{
 				if (includeInfo)
 				{
-					methods += t + "\n";
+					methods += methodInfos[i] + "\n";
 				}
+
 				else
 				{
-					methods += t.Name + "\n";
+					methods += methodInfos[i].Name + "\n";
 				}
 			}
 
@@ -1437,15 +1553,16 @@ namespace RCore.Common
 		{
 			string methods = "";
 			var methodInfos = type.GetMethods();
-			foreach (var t in methodInfos)
+			for (var i = 0; i < methodInfos.Length; i++)
 			{
 				if (includeInfo)
 				{
-					methods += t + "\n";
+					methods += methodInfos[i] + "\n";
 				}
+
 				else
 				{
-					methods += t.Name + "\n";
+					methods += methodInfos[i].Name + "\n";
 				}
 			}
 

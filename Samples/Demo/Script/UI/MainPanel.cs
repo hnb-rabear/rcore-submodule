@@ -92,7 +92,7 @@ namespace RCore.Demo
             }
         }
 
-        internal override void Init()
+        public override void Init()
         {
             var panels = gameObject.FindComponentsInChildren<PanelController>();
             foreach (var panel in panels)

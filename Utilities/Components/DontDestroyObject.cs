@@ -2,6 +2,7 @@
  * Author RadBear - nbhung71711@gmail.com - 2017
  **/
 
+using System.Collections;
 using UnityEngine;
 
 namespace RCore.Components
@@ -10,14 +11,16 @@ namespace RCore.Components
     {
         private static DontDestroyObject m_Instance;
 
-        private void Start()
+        private IEnumerator Start()
         {
             if (m_Instance == null)
-            {
                 m_Instance = this;
-                DontDestroyOnLoad(gameObject);
-            }
             else if (m_Instance != this)
+                Destroy(gameObject);
+            yield return null;
+            if (transform.childCount > 0)
+                DontDestroyOnLoad(gameObject);
+            else
                 Destroy(gameObject);
         }
     }

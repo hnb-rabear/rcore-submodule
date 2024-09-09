@@ -17,14 +17,14 @@ namespace RCore.Inspector
             if (separatorAttribute.title == "")
             {
                 _position.height = 1;
-                _position.y += 19;
+                _position.y += 9;
                 GUI.Box(_position, "");
             }
             else
             {
                 Vector2 textSize = GUI.skin.label.CalcSize(new GUIContent(separatorAttribute.title));
                 float separatorWidth = (_position.width - textSize.x) / 2.0f - 5.0f;
-                _position.y += 19;
+                _position.y += 9;
 
                 GUI.Box(new Rect(_position.xMin, _position.yMin, separatorWidth, 1), "");
                 GUI.Label(new Rect(_position.xMin + separatorWidth + 5.0f, _position.yMin - 8.0f, textSize.x, 20), separatorAttribute.title);
@@ -34,7 +34,7 @@ namespace RCore.Inspector
 
         public override float GetHeight()
         {
-            return 40.0f;
+            return 20;
         }
     }
 }

@@ -159,10 +159,7 @@ namespace RCore.Demo
 				{
 					id = pObj.GetInstanceID(),
 					waitTime = pCountdown,
-					doSomething = (s) =>
-					{
-						mPoolsContainerTransform.Release(pObj);
-					}
+					onTimeOut = (s) => mPoolsContainerTransform.Release(pObj)
 				});
 			}
 		}
@@ -183,10 +180,7 @@ namespace RCore.Demo
 				{
 					id = pObj.GetInstanceID(),
 					waitTime = pCountdown,
-					doSomething = (s) =>
-					{
-						mPoolsContainerTransform.Release(pObj);
-					}
+					onTimeOut = (s) => mPoolsContainerTransform.Release(pObj)
 				});
 			}
 		}

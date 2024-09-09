@@ -16,10 +16,10 @@ namespace RCore.Common
         public int id { get; set; }
         public bool updated { get; set; }
 
-        public void Update(float pUnscaledDeltaTime)
+        public void Update(float pDeltaTime)
         {
             updated = false;
-            mTimeEslap += pUnscaledDeltaTime;
+            mTimeEslap += pDeltaTime;
             mCountFrame++;
 
             if (mTimeEslap >= 1)

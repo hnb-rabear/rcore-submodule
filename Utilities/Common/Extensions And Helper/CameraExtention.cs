@@ -93,5 +93,17 @@ namespace RCore.Common
 
             return anchoredPosition;
         }
+
+        public static bool PointerOnRects(this Camera camera, params RectTransform[] rects)
+        {
+            foreach (var b in rects)
+            {
+                var screenPoint = camera.ScreenToWorldPoint(Input.mousePosition);
+                var inRect = RectTransformUtility.RectangleContainsScreenPoint(b, screenPoint);
+                if (inRect)
+                    return true;
+            }
+            return false;
+        }
     }
 }

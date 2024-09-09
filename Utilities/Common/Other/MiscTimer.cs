@@ -7,34 +7,34 @@ namespace RCore.Common
     {
         public Action onFinished;
         public float timeTarget;
-        private bool mActive;
-        private bool mFinished;
-        private float mElapsedTime;
+        private bool m_active;
+        private bool m_finished;
+        private float m_elapsedTime;
 
-        public bool IsRunning => mActive && !mFinished;
-        public float RemainTime => timeTarget - mElapsedTime;
+        public bool IsRunning => m_active && !m_finished;
+        public float RemainTime => timeTarget - m_elapsedTime;
 
         public MiscTimer()
         {
-            mFinished = true;
+            m_finished = true;
         }
 
         public void UpdateWithTimeScale(float pElapsedTime)
         {
-            if (mActive)
+            if (m_active)
             {
-                mElapsedTime += pElapsedTime * Time.timeScale;
-                if (mElapsedTime > timeTarget)
+                m_elapsedTime += pElapsedTime * Time.timeScale;
+                if (m_elapsedTime > timeTarget)
                     Finish();
             }
         }
 
         public void Update(float pElapsedTime)
         {
-            if (mActive)
+            if (m_active)
             {
-                mElapsedTime += pElapsedTime;
-                if (mElapsedTime > timeTarget)
+                m_elapsedTime += pElapsedTime;
+                if (m_elapsedTime > timeTarget)
                     Finish();
             }
         }
@@ -43,39 +43,39 @@ namespace RCore.Common
         {
             if (pTagetTime <= 0)
             {
-                mFinished = true;
-                mActive = false;
+                m_finished = true;
+                m_active = false;
             }
             else
             {
-                mElapsedTime = 0;
+                m_elapsedTime = 0;
                 timeTarget = pTagetTime;
-                mFinished = false;
-                mActive = true;
+                m_finished = false;
+                m_active = true;
             }
         }
 
         public void Finish()
         {
-            mElapsedTime = timeTarget;
-            mActive = false;
-            mFinished = true;
+            m_elapsedTime = timeTarget;
+            m_active = false;
+            m_finished = true;
 
             onFinished?.Invoke();
         }
 
         internal void SetElapsedTime(float pValue)
         {
-            mElapsedTime = pValue;
+            m_elapsedTime = pValue;
         }
 
-        public float GetElapsedTime() => mElapsedTime;
+        public float GetElapsedTime() => m_elapsedTime;
 
         public void Stop()
         {
-            mElapsedTime = 0;
-            mFinished = false;
-            mActive = false;
+            m_elapsedTime = 0;
+            m_finished = false;
+            m_active = false;
         }
     }
 }

@@ -30,6 +30,8 @@ namespace RCore.Components
         [ContextMenu("Validate")]
         protected override void OnValidate()
         {
+            base.OnValidate();
+
             if (mLabel == null)
                 mLabel = GetComponentInChildren<Text>();
         }

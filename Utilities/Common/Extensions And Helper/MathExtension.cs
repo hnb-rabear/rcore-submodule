@@ -850,38 +850,17 @@ namespace RCore.Common
 				DebugDraw.DrawLine(tR, bR, resultColor, 0);
 				DebugDraw.DrawLine(bR, bL, resultColor, 0);
 				DebugDraw.DrawLine(bL, tL, resultColor, 0);
-				//*
+				
 				float x = c.x + rx * CosDeg(a1);
 				float y = c.y + ry * SinDeg(a1);
 				DebugDraw.DrawLine(c, new Vector3(x, y), Color.red, 0);
 				x = c.x + rx * CosDeg(a2);
 				y = c.y + ry * SinDeg(a2);
 				DebugDraw.DrawLine(c, new Vector3(x, y), Color.blue, 0);
-				DrawEllipse(c, rx, ry, Color.red, 0);
-				//*/
+				DebugDraw.DrawEllipse(c, rx, ry, Color.red, 0);
 			}
 #endif
 			return result;
-		}
-
-		[System.Diagnostics.Conditional("UNITY_EDITOR")]
-		public static void DrawEllipse(Vector3 center, float width, float height, Color color, float duration = 0.5f)
-		{
-			int steps = 100;
-			float interval = 2 * width / steps;
-			var previousPoint = Vector3.zero;
-			var currentPoint = Vector3.zero;
-			for (int i = 0; i <= steps; i++)
-			{
-				previousPoint = currentPoint;
-				float x = -width + interval * i;
-				float y = Mathf.Sqrt(1 - x * x / (width * width)) * height;
-				currentPoint = new Vector2(x, y);
-				if (i > 0)
-					DebugDraw.DrawLine(center + previousPoint, center + currentPoint, color, duration);
-				if (i > 0)
-					DebugDraw.DrawLine(center + new Vector3(previousPoint.x, -previousPoint.y), center + new Vector3(currentPoint.x, -currentPoint.y), color, duration);
-			}
 		}
 
 		public static int Factorial(int pVal)
@@ -952,18 +931,65 @@ namespace RCore.Common
 			return cells;
 		}
 
-		public static Vector3Int WorldToIsometricCell(Vector2 worldPosition, float cellWidth, float cellHeight)
+		public static Vector3Int WorldToIsometricCell(Vector3 worldPosition, float cellWidth = 2, float cellHeight = 1)
 		{
-			float isoX = worldPosition.x / cellWidth + worldPosition.y / cellHeight;
-			float isoY = (worldPosition.x / cellWidth - worldPosition.y / cellHeight) * -1f;
+			return WorldToIsometricCell(worldPosition.x, worldPosition.y, cellWidth, cellHeight);
+		}
+
+		public static Vector3Int WorldToIsometricCell(float worldPosX, float worldPosY, float cellWidth = 2, float cellHeight = 1)
+		{
+			float isoX = worldPosX / cellWidth + worldPosY / cellHeight;
+			float isoY = (worldPosX / cellWidth - worldPosY / cellHeight) * -1f;
 			return new Vector3Int(Mathf.FloorToInt(isoX), Mathf.FloorToInt(isoY), 0);
 		}
 
-		public static Vector3 IsometricCellToWorld(Vector3Int cellPosition, float cellWidth, float cellHeight)
+		public static Vector3 IsometricCellToWorld(Vector3Int cellPosition, float cellWidth = 2, float cellHeight = 1)
 		{
-			float worldX = (cellPosition.x - cellPosition.y) * cellWidth / 2;
-			float worldY = (cellPosition.x + cellPosition.y) * cellHeight / 2;
+			return IsometricCellToWorld(cellPosition.x, cellPosition.y, cellWidth, cellHeight);
+		}
+
+		public static Vector3 IsometricCellToWorld(int cellX, int cellY, float cellWidth = 2, float cellHeight = 1)
+		{
+			float worldX = (cellX - cellY) * cellWidth / 2;
+			float worldY = (cellX + cellY) * cellHeight / 2;
 			return new Vector3(worldX, worldY, 0);
+		}
+
+		public static Vector3 GetIsometricWorldPosition(Vector3 worldPosition, float cellWidth = 2, float cellHeight = 1)
+		{
+			var cell = WorldToIsometricCell(worldPosition, cellWidth, cellHeight);
+			var pos = IsometricCellToWorld(cell);
+			return pos;
+		}
+
+		public static Vector3 GetCenterVector(Vector3[] vectors)
+		{
+			var sum = Vector3.zero;
+			if (vectors == null || vectors.Length == 0)
+				return sum;
+			foreach (var vec in vectors)
+				sum += vec;
+			return sum / vectors.Length;
+		}
+		
+		public static Vector3 GetCenterVector(List<Vector3> vectors)
+		{
+			var sum = Vector3.zero;
+			if (vectors == null || vectors.Count == 0)
+				return sum;
+			foreach (var vec in vectors)
+				sum += vec;
+			return sum / vectors.Count;
+		}
+
+		public static Vector3 GetCenterVector(List<Vector3Int> vectors)
+		{
+			var sum = Vector3.zero;
+			if (vectors == null || vectors.Count == 0)
+				return sum;
+			foreach (Vector3 vec in vectors)
+				sum += vec;
+			return sum / vectors.Count;
 		}
 	}
 
@@ -1067,6 +1093,14 @@ namespace RCore.Common
 		public static Vector3 Sign(this Vector3 pVal)
 		{
 			return new Vector3(Mathf.Sign(pVal.x), Mathf.Sign(pVal.y), Mathf.Sign(pVal.z));
+		}
+
+		public static Vector3Int SetValue(this Vector3Int pVector, int pX, int pY, int pZ)
+		{
+			pVector.x = pX;
+			pVector.y = pY;
+			pVector.z = pZ;
+			return pVector;
 		}
 	}
 }

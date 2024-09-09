@@ -149,19 +149,4 @@ namespace RCore.Common
             enabled = true;
         }
     }
-    
-    public class DelayableEvent
-    {
-	    public readonly string key;
-	    public float delay;
-	    public BaseEvent @event;
-	    public DelayableEvent(BaseEvent pEvent, float pDelay, int pSubKey)
-	    {
-		    @event = pEvent;
-		    key = pEvent.GetType().ToString();
-		    delay = pDelay;
-		    if (pSubKey > 0)
-			    key += pSubKey;
-	    }
-    }
 }

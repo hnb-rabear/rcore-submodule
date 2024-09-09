@@ -66,17 +66,17 @@ namespace RCore.Components
             get => img.material;
             set => img.material = value;
         }
-        public RectTransform rectTransform => image != null ? image.rectTransform : null;
+        public RectTransform rectTransform => targetGraphic.rectTransform;
 
-        private PivotForScale mPrePivot;
-        private Action mInactionStateAction;
-        private bool mActive = true;
+        private PivotForScale m_prePivot;
+        private Action m_inactionStateAction;
+        private bool m_active = true;
         private int m_PerfectSpriteId;
 
         public virtual void SetEnable(bool pValue)
         {
-            mActive = pValue;
-            enabled = pValue || mInactionStateAction != null;
+            m_active = pValue;
+            enabled = pValue || m_inactionStateAction != null;
             if (pValue)
             {
                 if (mImgSwapEnabled)
@@ -103,15 +103,15 @@ namespace RCore.Components
 
         public virtual void SetInactiveStateAction(Action pAction)
         {
-            mInactionStateAction = pAction;
-            enabled = mActive || mInactionStateAction != null;
+            m_inactionStateAction = pAction;
+            enabled = m_active || m_inactionStateAction != null;
         }
 
         protected override void Start()
         {
             base.Start();
 
-            mPrePivot = mPivotForFX;
+            m_prePivot = mPivotForFX;
         }
 
         protected override void OnDisable()
@@ -147,9 +147,13 @@ namespace RCore.Components
                 GetComponent<Animator>().updateMode = AnimatorUpdateMode.UnscaledTime;
                 mEnabledFX = false;
             }
+            
+            if (mEnabledFX)
+                mInitialScale = transform.localScale;
 
             RefreshPivot();
 
+            m_PerfectSpriteId = 0;
             CheckPerfectRatio();
         }
 #endif
@@ -159,17 +163,25 @@ namespace RCore.Components
             base.OnEnable();
 
             if (mEnabledFX)
-            {
                 transform.localScale = mInitialScale;
-            }
+            
+            if (mImg.sprite != null && m_PerfectSpriteId != mImg.sprite.GetInstanceID())
+                CheckPerfectRatio();
         }
 
         public override void OnPointerDown(PointerEventData eventData)
         {
-            if (!mActive && mInactionStateAction != null)
-                mInactionStateAction();
+            if (!m_active)
+            {
+                if (m_inactionStateAction != null)
+                {
+                    m_inactionStateAction();
+                    if (TryGetComponent(out Animator component))
+                        component.SetTrigger("Pressed");
+                }
+            }
 
-            if (mActive)
+            if (m_active)
             {
                 base.OnPointerDown(eventData);
                 if (!string.IsNullOrEmpty(m_SfxClip) && AudioManager.Instance)
@@ -178,9 +190,9 @@ namespace RCore.Components
 
             if (mEnabledFX)
             {
-                if (mPivotForFX != mPrePivot)
+                if (mPivotForFX != m_prePivot)
                 {
-                    mPrePivot = mPivotForFX;
+                    m_prePivot = mPivotForFX;
                     RefreshPivot(rectTransform);
                 }
 
@@ -190,7 +202,7 @@ namespace RCore.Components
 
         public override void OnPointerUp(PointerEventData eventData)
         {
-            if (mActive)
+            if (m_active)
                 base.OnPointerUp(eventData);
 
             if (mEnabledFX)
@@ -201,13 +213,13 @@ namespace RCore.Components
 
         public override void OnPointerClick(PointerEventData eventData)
         {
-            if (mActive)
+            if (m_active)
                 base.OnPointerClick(eventData);
         }
 
         public override void OnSelect(BaseEventData eventData)
         {
-            if (mActive)
+            if (m_active)
                 base.OnSelect(eventData);
         }
 
@@ -268,7 +280,7 @@ namespace RCore.Components
             mGreyMatEnabled = pValue;
         }
 
-        public bool Enabled() { return enabled && mActive; }
+        public bool Enabled() { return enabled && m_active; }
 
         protected void CheckPerfectRatio()
         {

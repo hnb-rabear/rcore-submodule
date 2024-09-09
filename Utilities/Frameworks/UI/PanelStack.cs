@@ -1,6 +1,7 @@
-﻿/***
-* Author RadBear - nbhung71711@gmail.com - 2017
-**/
+﻿/**
+ * Author RadBear - nbhung71711@gmail.com - 2017
+ **/
+
 #if USE_DOTWEEN
 using DG.Tweening;
 #endif
@@ -31,9 +32,9 @@ namespace RCore.Framework.UI
 			var moveTo = mDefaultAnchoredPosition.x;
 			panelRect.SetX(moveFrom);
 #if USE_DOTWEEN
-            panelRect.DOLocalMoveX(moveTo, pTime);
+			panelRect.DOLocalMoveX(moveTo, pTime);
 #else
-			panelRect.SetX(moveTo);
+            panelRect.SetX(moveTo);
 #endif
 		}
 
@@ -46,19 +47,19 @@ namespace RCore.Framework.UI
 			var moveTo = screenWidth / 2f + panelRect.rect.width * (1 - panelRect.pivot.x);
 			panelRect.SetX(moveFrom);
 #if USE_DOTWEEN
-            panelRect.DOLocalMoveX(moveTo, pTime);
+			panelRect.DOLocalMoveX(moveTo, pTime);
 #else
-			panelRect.SetX(moveTo);
+            panelRect.SetX(moveTo);
 #endif
 		}
 
 		public void Fade(float pFrom, float pTo, float pTime)
 		{
 #if USE_DOTWEEN
-            panel.CanvasGroup.alpha = pFrom;
-            panel.CanvasGroup.DOFade(pTo, pTime);
+			panel.CanvasGroup.alpha = pFrom;
+			panel.CanvasGroup.DOFade(pTo, pTime);
 #else
-			panel.CanvasGroup.alpha = 1;
+            panel.CanvasGroup.alpha = 1;
 #endif
 		}
 	}
@@ -66,23 +67,13 @@ namespace RCore.Framework.UI
 	public class PanelStack : MonoBehaviour
 	{
 		protected Stack<PanelController> panelStack = new Stack<PanelController>();
-		protected Dictionary<int, PanelController> m_cachedOnceUsePanels = new Dictionary<int, PanelController>();
+		private Dictionary<int, PanelController> m_cachedOnceUsePanels = new Dictionary<int, PanelController>();
 
-		protected PanelStack mParentPanel;
-		internal PanelStack ParentPanel => mParentPanel;
-
+		internal PanelStack parentPanel;
 		/// <summary>
 		/// Top child
 		/// </summary>
-		public PanelController TopPanel
-		{
-			get
-			{
-				if (panelStack.Count > 0)
-					return panelStack.Peek();
-				return null;
-			}
-		}
+		public PanelController TopPanel => panelStack != null && panelStack.Count > 0 ? panelStack.Peek() : null;
 		/// <summary>
 		/// Index in stack
 		/// </summary>
@@ -90,16 +81,16 @@ namespace RCore.Framework.UI
 		{
 			get
 			{
-				if (mParentPanel == null)
+				if (parentPanel == null)
 					return 0;
 				int i = 0;
-				foreach (var p in mParentPanel.panelStack)
+				foreach (var p in parentPanel.panelStack)
 				{
 					if (p == this)
 						return i;
 					i++;
 				}
-				return mParentPanel.panelStack.Count;
+				return parentPanel.panelStack.Count;
 			}
 		}
 		/// <summary>
@@ -109,22 +100,22 @@ namespace RCore.Framework.UI
 		{
 			get
 			{
-				if (mParentPanel == null)
+				if (parentPanel == null)
 					return 1;
-				return mParentPanel.panelStack.Count - Index;
+				return parentPanel.panelStack.Count - Index;
 			}
 		}
 		/// <summary>
 		/// Total children panels
 		/// </summary>
-		public int StackCount => panelStack.Count;
+		public int StackCount => panelStack?.Count ?? 0;
 
 		protected virtual void Awake()
 		{
-			if (mParentPanel == null)
-				mParentPanel = GetComponentInParent<PanelController>();
-			if (mParentPanel == this)
-				mParentPanel = null;
+			if (parentPanel == null)
+				parentPanel = GetComponentInParent<PanelController>();
+			if (parentPanel == this)
+				parentPanel = null;
 		}
 
 		//=============================================================
@@ -135,10 +126,13 @@ namespace RCore.Framework.UI
 		/// Create and init panel
 		/// </summary>
 		/// <typeparam name="T">Panels inherit PanelController</typeparam>
-		/// <param name="pPanel">Can be prefab or built-in prefab</param>
+		/// <param name="pPanel">Can be prefab or buildin prefab</param>
 		/// <returns></returns>
-		protected T CreatePanel<T>(ref T pPanel) where T : PanelController
+		public T CreatePanel<T>(ref T pPanel) where T : PanelController
 		{
+			if (pPanel == null)
+				return null;
+
 			if (!pPanel.useOnce)
 			{
 				if (pPanel.gameObject.IsPrefab())
@@ -149,36 +143,35 @@ namespace RCore.Framework.UI
 					pPanel.Init();
 					pPanel.name = name;
 				}
-				return pPanel as T;
+				return pPanel;
 			}
-			{
-				if (!pPanel.gameObject.IsPrefab())
-					Debug.LogWarning("Once used panel must be prefab!");
+			if (!pPanel.gameObject.IsPrefab())
+				Debug.LogWarning("Once used panel must be prefab!");
 
-				string name = pPanel.name;
-				var panel = Instantiate(pPanel, transform);
-				panel.useOnce = true;
-				panel.SetActive(false);
-				panel.Init();
-				panel.name = name;
+			string name2 = pPanel.name;
+			var panel = Instantiate(pPanel, transform);
+			panel.useOnce = true;
+			panel.SetActive(false);
+			panel.Init();
+			panel.name = name2;
 
-				if (!m_cachedOnceUsePanels.ContainsKey(pPanel.GetInstanceID()))
-					m_cachedOnceUsePanels.Add(pPanel.GetInstanceID(), panel);
-				else
-					m_cachedOnceUsePanels[pPanel.GetInstanceID()] = panel;
+			if (!m_cachedOnceUsePanels.ContainsKey(pPanel.GetInstanceID()))
+				m_cachedOnceUsePanels.Add(pPanel.GetInstanceID(), panel);
+			else
+				m_cachedOnceUsePanels[pPanel.GetInstanceID()] = panel;
 
-				return panel;
-			}
+			return panel;
 		}
 
 		/// <summary>
 		/// Find child panel of this Panel
 		/// </summary>
 		/// <typeparam name="T">Panels inherit PanelController</typeparam>
-		/// <param name="pOriginal">Can be prefab or built-in prefab</param>
+		/// <param name="pOriginal">Can be prefab or buildin prefab</param>
 		/// <returns></returns>
 		protected T GetCachedPanel<T>(T pOriginal) where T : PanelController
 		{
+			if (pOriginal == null) return null;
 			if (pOriginal.useOnce)
 			{
 				if (m_cachedOnceUsePanels.ContainsKey(pOriginal.GetInstanceID()))
@@ -190,7 +183,7 @@ namespace RCore.Framework.UI
 
 		public PanelStack GetRootPanel()
 		{
-			return mParentPanel != null ? mParentPanel.GetRootPanel() : this;
+			return parentPanel != null ? parentPanel.GetRootPanel() : this;
 		}
 
 		public PanelStack GetHighestPanel()
@@ -207,10 +200,10 @@ namespace RCore.Framework.UI
 		/// <summary>
 		/// Check if panel is prefab or build-in prefab then create and init
 		/// </summary>
-		internal virtual T PushPanel<T>(ref T pPanel, bool keepCurrentInStack, bool onlyInactivePanel = true, bool sameTimePopAndPush = true) where T : PanelController
+		public T PushPanel<T>(ref T pPanel, bool keepCurrentInStack, bool onlyInactivePanel = true, bool instantPopAndPush = true) where T : PanelController
 		{
 			var panel = CreatePanel(ref pPanel);
-			PushPanel(panel, keepCurrentInStack, onlyInactivePanel, sameTimePopAndPush);
+			PushPanel(panel, keepCurrentInStack, onlyInactivePanel, instantPopAndPush);
 			return panel;
 		}
 
@@ -218,9 +211,9 @@ namespace RCore.Framework.UI
 		/// Push new panel will hide the current top panel
 		/// </summary>
 		/// <param name="panel">New Top Panel</param>
-		/// <param name="onlyInactivePanel">Do nothing if panel is currently active</param>
-		/// <param name="sameTimePopAndPush">Allow pop current panel and push new </param>
-		internal virtual void PushPanel(PanelController panel, bool keepCurrentInStack, bool onlyInactivePanel = true, bool sameTimePopAndPush = true)
+		/// <param name="onlyDisablePanel">Do nothing if panel is currently active</param>
+		/// <param name="instantPopAndPush">Allow pop current panel and push new </param>
+		public void PushPanel(PanelController panel, bool keepCurrentInStack, bool onlyInactivePanel = true, bool instantPopAndPush = true)
 		{
 			if (panel == null)
 			{
@@ -246,14 +239,15 @@ namespace RCore.Framework.UI
 				return;
 			}
 
-			if (TopPanel != null && !TopPanel.CanPop())
+			if (TopPanel != null && !TopPanel.CanPop(out PanelController blockingPanel))
 			{
 				//If top panel is locked we must keep it
+				Log($"{blockingPanel.name} can't hide now!");
 				PushPanelToTop(panel);
 				return;
 			}
 
-			panel.mParentPanel = this;
+			panel.parentPanel = this;
 			if (TopPanel != null)
 			{
 				var currentTopPanel = TopPanel;
@@ -261,31 +255,27 @@ namespace RCore.Framework.UI
 				{
 					currentTopPanel.Hide(() =>
 					{
-						if (!sameTimePopAndPush)
-						{
-							if (!keepCurrentInStack)
-								panelStack.Pop();
-							panelStack.Push(panel);
-							panel.Show();
-							OnAnyChildShow(panel);
-						}
+						if (!instantPopAndPush)
+							HideThenShow();
 
 						OnAnyChildHide(currentTopPanel);
 					});
 
-					if (sameTimePopAndPush)
-					{
-						if (!keepCurrentInStack)
-							panelStack.Pop();
-						panelStack.Push(panel);
-						panel.Show();
-						OnAnyChildShow(panel);
-					}
+					if (instantPopAndPush)
+						HideThenShow();
 				}
 				else
+					HideThenShow();
+
+				void HideThenShow()
 				{
 					if (!keepCurrentInStack)
 						panelStack.Pop();
+
+					// Hide all current panels
+					foreach (var panelController in panelStack)
+						panelController.Hide();
+
 					panelStack.Push(panel);
 					panel.Show();
 					OnAnyChildShow(panel);
@@ -302,7 +292,7 @@ namespace RCore.Framework.UI
 		/// <summary>
 		/// Pop the top panel off the stack and show the one beneath it
 		/// </summary>
-		internal virtual void PopPanel(bool actionSameTime = true)
+		public void PopPanel(bool instant = true)
 		{
 			if (TopPanel == null)
 			{
@@ -310,9 +300,9 @@ namespace RCore.Framework.UI
 				return;
 			}
 
-			if (TopPanel != null && !TopPanel.CanPop())
+			if (TopPanel != null && !TopPanel.CanPop(out PanelController blockingPanel))
 			{
-				Log($"Current Parent panel {TopPanel.name} is locked");
+				Log($"{blockingPanel.name} can't hide now!");
 				return;
 			}
 
@@ -321,12 +311,13 @@ namespace RCore.Framework.UI
 			{
 				topStack.Hide(() =>
 				{
-					if (!actionSameTime)
+					if (!instant)
 					{
 						var newPanel = TopPanel;
 						if (newPanel != null && !newPanel.Displayed)
 						{
 							newPanel.Show();
+							newPanel.OnReshow();
 							OnAnyChildShow(newPanel);
 						}
 					}
@@ -334,22 +325,24 @@ namespace RCore.Framework.UI
 					OnAnyChildHide(topStack);
 				});
 
-				if (actionSameTime)
+				if (instant)
 				{
 					var newPanel = TopPanel;
 					if (newPanel != null && !newPanel.Displayed)
 					{
 						newPanel.Show();
+						newPanel.OnReshow();
 						OnAnyChildShow(newPanel);
 					}
 				}
 			}
 			else
 			{
-				var newPanel = TopPanel;
+				var newPanel = this.TopPanel;
 				if (newPanel != null && !newPanel.Displayed)
 				{
 					newPanel.Show();
+					newPanel.OnReshow();
 					OnAnyChildShow(newPanel);
 				}
 			}
@@ -358,7 +351,7 @@ namespace RCore.Framework.UI
 		/// <summary>
 		/// Check if panel is prefab or build-in prefab then create and init
 		/// </summary>
-		internal virtual T PushPanelToTop<T>(ref T pPanel) where T : PanelController
+		public virtual T PushPanelToTop<T>(ref T pPanel) where T : PanelController
 		{
 			var panel = CreatePanel(ref pPanel);
 			PushPanelToTop(panel);
@@ -368,13 +361,13 @@ namespace RCore.Framework.UI
 		/// <summary>
 		/// Push panel without hiding panel is under it
 		/// </summary>
-		internal virtual void PushPanelToTop(PanelController panel)
+		public virtual void PushPanelToTop(PanelController panel)
 		{
-			if (TopPanel == panel)
+			if (TopPanel == panel && TopPanel.Displayed)
 				return;
 
 			panelStack.Push(panel);
-			panel.mParentPanel = this;
+			panel.parentPanel = this;
 			panel.Show();
 			OnAnyChildShow(panel);
 		}
@@ -388,7 +381,7 @@ namespace RCore.Framework.UI
 		/// <summary>
 		/// Keep only one panel in stack
 		/// </summary>
-		internal virtual void PopAllThenPush(PanelController panel)
+		public void PopAllThenPush(PanelController panel)
 		{
 			PopAllPanels();
 			PushPanel(panel, false);
@@ -397,21 +390,20 @@ namespace RCore.Framework.UI
 		/// <summary>
 		/// Pop all panels till there is only one panel left in the stack
 		/// </summary>
-		internal virtual void PopTillOneLeft()
+		public void PopTillOneLeft()
 		{
 			var lockedPanels = new List<PanelController>();
-			PanelController oldTopPanel = null;
+			PanelController lastTopPanel = null;
 			while (panelStack.Count > 1)
 			{
-				oldTopPanel = panelStack.Pop();
-				if (!oldTopPanel.CanPop())
-					//Locked panel should not be hide
-					lockedPanels.Add(oldTopPanel);
+				lastTopPanel = panelStack.Pop();
+				if (lastTopPanel.IsLocked())
+					lockedPanels.Add(lastTopPanel); //Locked panel should not be hide
 				else
-					oldTopPanel.Hide();
+					lastTopPanel.Hide();
 			}
 
-			//Resign every locked panels, because we removed them temporary above
+			//Resign every locked panels, because we removed them temporarily above
 			if (lockedPanels.Count > 0)
 			{
 				for (int i = lockedPanels.Count - 1; i >= 0; i--)
@@ -424,14 +416,14 @@ namespace RCore.Framework.UI
 				OnAnyChildShow(TopPanel);
 			}
 
-			if (oldTopPanel != null)
-				OnAnyChildHide(oldTopPanel);
+			if (lastTopPanel != null)
+				OnAnyChildHide(lastTopPanel);
 		}
 
 		/// <summary>
 		/// Pop till we remove specific panel
 		/// </summary>
-		internal virtual void PopTillNoPanel(PanelController panel)
+		public void PopTillNoPanel(PanelController panel)
 		{
 			if (!panelStack.Contains(panel))
 			{
@@ -440,20 +432,20 @@ namespace RCore.Framework.UI
 			}
 
 			var lockedPanels = new List<PanelController>();
-			PanelController oldTopPanel;
+			PanelController lastTopPanel;
 
 			//Pop panels until we find the right one we're trying to pop
 			do
 			{
-				oldTopPanel = panelStack.Pop();
-				if (!oldTopPanel.CanPop())
-					//Locked panel should not be hide
-					lockedPanels.Add(oldTopPanel);
+				lastTopPanel = panelStack.Pop();
+				if (lastTopPanel.IsLocked())
+					lockedPanels.Add(lastTopPanel); //Locked panel should not be hide
 				else
-					oldTopPanel.Hide();
-			} while (oldTopPanel.GetInstanceID() != panel.GetInstanceID() && panelStack.Count > 0);
+					lastTopPanel.Hide();
 
-			//Resign every locked panels, because we removed them temporary above
+			} while (lastTopPanel.GetInstanceID() != panel.GetInstanceID() && panelStack.Count > 0);
+
+			//Resign every locked panels, because we removed them temporarily above
 			if (lockedPanels.Count > 0)
 			{
 				for (int i = lockedPanels.Count - 1; i >= 0; i--)
@@ -464,14 +456,15 @@ namespace RCore.Framework.UI
 			if (newPanel != null && !newPanel.Displayed)
 			{
 				newPanel.Show();
+				newPanel.OnReshow();
 				OnAnyChildShow(newPanel);
 			}
 
-			if (oldTopPanel != null)
-				OnAnyChildHide(oldTopPanel);
+			if (lastTopPanel != null)
+				OnAnyChildHide(lastTopPanel);
 		}
 
-		internal virtual void PopTillPanel(PanelController panel)
+		public void PopTillPanel(PanelController panel)
 		{
 			if (!panelStack.Contains(panel))
 			{
@@ -489,14 +482,13 @@ namespace RCore.Framework.UI
 					break;
 
 				panelStack.Pop();
-				if (!curTopPanel.CanPop())
-					//Locked panel should not be hide
-					lockedPanels.Add(curTopPanel);
+				if (curTopPanel.IsLocked())
+					lockedPanels.Add(curTopPanel); //Locked panel should not be hide
 				else
 					curTopPanel.Hide();
 			}
 
-			//Resign every locked panels, because we removed them temporary above
+			//Resign every locked panels, because we removed them temporarily above
 			if (lockedPanels.Count > 0)
 			{
 				for (int i = lockedPanels.Count - 1; i >= 0; i--)
@@ -507,6 +499,7 @@ namespace RCore.Framework.UI
 			if (newPanel != null && !newPanel.Displayed)
 			{
 				newPanel.Show();
+				newPanel.OnReshow();
 				OnAnyChildShow(newPanel);
 			}
 
@@ -517,35 +510,34 @@ namespace RCore.Framework.UI
 		/// <summary>
 		/// Pop and hide all panels in stack, at the same time
 		/// </summary>
-		internal virtual void PopAllPanels()
+		public void PopAllPanels()
 		{
 			var lockedPanels = new List<PanelController>();
-			PanelController oldTopPanel = null;
+			PanelController lastTopPanel = null;
 			while (panelStack.Count > 0)
 			{
-				oldTopPanel = panelStack.Pop();
-				if (!oldTopPanel.CanPop())
-					//Locked panel should not be hide
-					lockedPanels.Add(oldTopPanel);
+				lastTopPanel = panelStack.Pop();
+				if (lastTopPanel.IsLocked())
+					lockedPanels.Add(lastTopPanel); //Locked panel should not be hide
 				else
-					oldTopPanel.Hide();
+					lastTopPanel.Hide();
 			}
 
-			//Resign every locked panel, because we removed them temporary above
+			//Resign every locked panel, because we removed them temporarily above
 			if (lockedPanels.Count > 0)
 			{
 				for (int i = lockedPanels.Count - 1; i >= 0; i--)
 					panelStack.Push(lockedPanels[i]);
 			}
 
-			if (oldTopPanel != null)
-				OnAnyChildHide(oldTopPanel);
+			if (lastTopPanel != null)
+				OnAnyChildHide(lastTopPanel);
 		}
 
 		/// <summary>
-		/// Pop one by one, chilren then parent
+		/// Pop one by one, children then parent
 		/// </summary>
-		internal virtual void PopChildrenThenParent()
+		public void PopChildrenThenParent()
 		{
 			if (TopPanel == null)
 				return;
@@ -563,25 +555,25 @@ namespace RCore.Framework.UI
 		protected virtual void OnAnyChildHide(PanelController pPanel)
 		{
 			//Parent notifies to grandparent of hidden panel
-			if (mParentPanel != null)
-				mParentPanel.OnAnyChildHide(pPanel);
+			if (parentPanel != null)
+				parentPanel.OnAnyChildHide(pPanel);
 		}
 		protected virtual void OnAnyChildShow(PanelController pPanel)
 		{
-			if (mParentPanel != null)
-				mParentPanel.OnAnyChildShow(pPanel);
+			if (parentPanel != null)
+				parentPanel.OnAnyChildShow(pPanel);
 		}
 
 		[System.Diagnostics.Conditional("UNITY_EDITOR")]
 		protected void Log(string pMessage)
 		{
-			Debug.Log(string.Format("<color=yellow><b>[{1}]:</b></color>{1}", gameObject.name, pMessage));
+			Debug.Log($"<color=yellow><b>[{gameObject.name}]:</b></color>{pMessage}");
 		}
 
 		[System.Diagnostics.Conditional("UNITY_EDITOR")]
 		protected void LogError(string pMessage)
 		{
-			Debug.LogError(string.Format("<color=red><b>[{1}]:</b></color>{1}", gameObject.name, pMessage));
+			Debug.LogError($"<color=red><b>[{gameObject.name}]:</b></color>{pMessage}");
 		}
 	}
 }

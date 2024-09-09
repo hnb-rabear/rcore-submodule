@@ -49,7 +49,7 @@ namespace RCore.Components
 			if (!m_Gizmos)
 				return;
 			Gizmos.color = Color.white.SetAlpha(0.15f);
-			Gizmos.DrawSphere(mMain.transform.position, radius);
+			Gizmos.DrawWireSphere(mMain.transform.position, radius);
 		}
 #endif
 

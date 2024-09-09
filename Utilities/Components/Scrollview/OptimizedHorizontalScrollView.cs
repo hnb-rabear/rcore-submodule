@@ -1,4 +1,4 @@
-﻿/***
+﻿/**
  * Author RadBear - nbhung71711 @gmail.com - 2017
  **/
 
@@ -28,18 +28,18 @@ namespace RCore.Components
 		public RectTransform borderRight;
 		public RectTransform content => scrollView.content;
 
-		private int m_TotalBuffer = 2;
-		private int m_TotalVisible;
-		private float m_HalfSizeContainer;
-		private float m_CellSizeX;
-		private float m_RightBarOffset;
-		private float m_LeftBarOffset;
+		private int m_totalBuffer = 2;
+		private int m_totalVisible;
+		private float m_halfSizeContainer;
+		private float m_cellSizeX;
+		private float m_rightBarOffset;
+		private float m_leftBarOffset;
 
-		private List<RectTransform> m_ItemsRect = new List<RectTransform>();
-		private List<OptimizedScrollItem> m_ItemsScrolled = new List<OptimizedScrollItem>();
-		private int m_OptimizedTotal;
-		private Vector3 m_StartPos;
-		private Vector3 m_OffsetVec;
+		private List<RectTransform> m_itemsRect = new List<RectTransform>();
+		private List<OptimizedScrollItem> m_itemsScrolled = new List<OptimizedScrollItem>();
+		private int m_optimizedTotal;
+		private Vector3 m_startPos;
+		private Vector3 m_offsetVec;
 
 		private void Start()
 		{
@@ -55,8 +55,8 @@ namespace RCore.Components
 
 		private void LateUpdate()
 		{
-			for (int i = 0; i < m_ItemsScrolled.Count; i++)
-				m_ItemsScrolled[i].ManualUpdate();
+			for (int i = 0; i < m_itemsScrolled.Count; i++)
+				m_itemsScrolled[i].ManualUpdate();
 		}
 
 		public void Init(int pTotalItems, bool pForce)
@@ -64,25 +64,25 @@ namespace RCore.Components
 			if (total == pTotalItems && !pForce)
 				return;
 
-			m_ItemsRect = new List<RectTransform>();
+			m_itemsRect = new List<RectTransform>();
 
-			if (m_ItemsScrolled == null || m_ItemsScrolled.Count == 0)
+			if (m_itemsScrolled == null || m_itemsScrolled.Count == 0)
 			{
-				m_ItemsScrolled = new List<OptimizedScrollItem>();
-				m_ItemsScrolled.Prepare(prefab, container.parent, 5);
+				m_itemsScrolled = new List<OptimizedScrollItem>();
+				m_itemsScrolled.Prepare(prefab, container.parent, 5);
 			}
 			else
-				m_ItemsScrolled.Free(container);
+				m_itemsScrolled.Free(container);
 
 			total = pTotalItems;
 
 			container.anchoredPosition3D = new Vector3(0, 0, 0);
 
-			var rectZero = m_ItemsScrolled[0].GetComponent<RectTransform>();
+			var rectZero = m_itemsScrolled[0].GetComponent<RectTransform>();
 			var prefabSize = rectZero.rect.size;
-			m_CellSizeX = prefabSize.x + spacing;
+			m_cellSizeX = prefabSize.x + spacing;
 
-			container.sizeDelta = new Vector2(m_CellSizeX * total, prefabSize.y);
+			container.sizeDelta = new Vector2(m_cellSizeX * total, prefabSize.y);
 
 			if (borderLeft != null && borderLeft.gameObject.activeSelf)
 				container.sizeDelta = container.sizeDelta.AddX(borderLeft.rect.size.x);
@@ -90,44 +90,44 @@ namespace RCore.Components
 				container.sizeDelta = container.sizeDelta.AddX(borderRight.rect.size.x);
 
 			if (borderLeft != null && borderLeft.gameObject.activeSelf)
-				m_LeftBarOffset = borderLeft.rect.size.x / container.sizeDelta.x;
+				m_leftBarOffset = borderLeft.rect.size.x / container.sizeDelta.x;
 			if (borderRight != null && borderRight.gameObject.activeSelf)
-				m_RightBarOffset = borderRight.rect.size.x / container.sizeDelta.x;
+				m_rightBarOffset = borderRight.rect.size.x / container.sizeDelta.x;
 
-			m_HalfSizeContainer = container.rect.size.x * 0.5f;
+			m_halfSizeContainer = container.rect.size.x * 0.5f;
 
-			m_TotalVisible = Mathf.CeilToInt(viewRect.rect.size.x / m_CellSizeX);
+			m_totalVisible = Mathf.CeilToInt(viewRect.rect.size.x / m_cellSizeX);
 
-			m_OffsetVec = Vector3.right;
-			m_StartPos = container.anchoredPosition3D - (m_OffsetVec * m_HalfSizeContainer) + (m_OffsetVec * (prefabSize.x * 0.5f));
-			m_OptimizedTotal = Mathf.Min(total, m_TotalVisible + m_TotalBuffer);
+			m_offsetVec = Vector3.right;
+			m_startPos = container.anchoredPosition3D - m_offsetVec * m_halfSizeContainer + m_offsetVec * (prefabSize.x * 0.5f);
+			m_optimizedTotal = Mathf.Min(total, m_totalVisible + m_totalBuffer);
 
 			if (borderLeft != null && borderLeft.gameObject.activeSelf)
-				m_StartPos.x += borderLeft.rect.size.x;
+				m_startPos.x += borderLeft.rect.size.x;
 
-			for (int i = 0; i < m_OptimizedTotal; i++)
+			for (int i = 0; i < m_optimizedTotal; i++)
 			{
-				var item = m_ItemsScrolled.Obtain(container);
+				var item = m_itemsScrolled.Obtain(container);
 				var rt = item.transform as RectTransform;
-				rt.anchoredPosition3D = m_StartPos + m_OffsetVec * (i * m_CellSizeX);
-				m_ItemsRect.Add(rt);
+				rt.anchoredPosition3D = m_startPos + m_offsetVec * (i * m_cellSizeX);
+				m_itemsRect.Add(rt);
 
 				item.SetActive(true);
 				item.UpdateContent(i, true);
 			}
 
 			prefab.gameObject.SetActive(false);
-			container.anchoredPosition3D += m_OffsetVec * (m_HalfSizeContainer - (viewRect.rect.size.x * 0.5f));
+			container.anchoredPosition3D += m_offsetVec * (m_halfSizeContainer - viewRect.rect.size.x * 0.5f);
 		}
 
-		public void MoveToTop()
+		public void ScrollToTop()
 		{
 			scrollView.StopMovement();
 			ScrollBarChanged(0);
 			scrollView.horizontalScrollbar.value = 0;
 		}
 
-		public void MoveToBot()
+		public void ScrollToBot()
 		{
 			scrollView.StopMovement();
 			ScrollBarChanged(1);
@@ -141,30 +141,30 @@ namespace RCore.Components
 
 		public void ScrollBarChanged(float pNormPos)
 		{
-			if (m_OptimizedTotal == 0)
+			if (m_optimizedTotal == 0)
 			{
 				Debug.LogError("m_OptimizedTotal should not be Zero");
 				return;
 			}
 			float normPos = pNormPos;
-			normPos += m_RightBarOffset * pNormPos;
-			normPos -= m_LeftBarOffset * (1 - pNormPos);
+			normPos += m_rightBarOffset * pNormPos;
+			normPos -= m_leftBarOffset * (1 - pNormPos);
 			normPos = Mathf.Clamp(normPos, 0, 1);
-			int numOutOfView = Mathf.CeilToInt(normPos * (total - m_TotalVisible));   //number of elements beyond the left boundary (or top)
-			int firstIndex = Mathf.Max(0, numOutOfView - m_TotalBuffer);   //index of first element beyond the left boundary (or top)
-			int originalIndex = firstIndex % m_OptimizedTotal;
+			int numOutOfView = Mathf.CeilToInt(normPos * (total - m_totalVisible)); //number of elements beyond the left boundary (or top)
+			int firstIndex = Mathf.Max(0, numOutOfView - m_totalBuffer); //index of first element beyond the left boundary (or top)
+			int originalIndex = firstIndex % m_optimizedTotal;
 
 			int newIndex = firstIndex;
-			for (int i = originalIndex; i < m_OptimizedTotal; i++)
+			for (int i = originalIndex; i < m_optimizedTotal; i++)
 			{
-				MoveItemByIndex(m_ItemsRect[i], newIndex);
-				m_ItemsScrolled[i].UpdateContent(newIndex, false);
+				MoveItemByIndex(m_itemsRect[i], newIndex);
+				m_itemsScrolled[i].UpdateContent(newIndex, false);
 				newIndex++;
 			}
 			for (int i = 0; i < originalIndex; i++)
 			{
-				MoveItemByIndex(m_ItemsRect[i], newIndex);
-				m_ItemsScrolled[i].UpdateContent(newIndex, false);
+				MoveItemByIndex(m_itemsRect[i], newIndex);
+				m_itemsScrolled[i].UpdateContent(newIndex, false);
 				newIndex++;
 			}
 		}
@@ -172,38 +172,38 @@ namespace RCore.Components
 		public void Expand(int pTotalSlot)
 		{
 			total += pTotalSlot;
-			container.sizeDelta = container.sizeDelta.AddX(pTotalSlot * m_CellSizeX);
-			m_HalfSizeContainer = container.sizeDelta.x * 0.5f;
+			container.sizeDelta = container.sizeDelta.AddX(pTotalSlot * m_cellSizeX);
+			m_halfSizeContainer = container.sizeDelta.x * 0.5f;
 
-			var rectZero = m_ItemsScrolled[0].GetComponent<RectTransform>();
+			var rectZero = m_itemsScrolled[0].GetComponent<RectTransform>();
 			var prefabSize = rectZero.rect.size;
 
-			m_OffsetVec = Vector3.right;
-			m_StartPos = Vector3.zero - (m_OffsetVec * m_HalfSizeContainer) + (m_OffsetVec * (prefabSize.x * 0.5f));
-			m_OptimizedTotal = Mathf.Min(total, m_TotalVisible + m_TotalBuffer);
+			m_offsetVec = Vector3.right;
+			m_startPos = Vector3.zero - m_offsetVec * m_halfSizeContainer + m_offsetVec * (prefabSize.x * 0.5f);
+			m_optimizedTotal = Mathf.Min(total, m_totalVisible + m_totalBuffer);
 
 			if (borderLeft != null && borderLeft.gameObject.activeSelf)
 			{
-				m_StartPos.x += borderLeft.rect.size.x;
-				m_LeftBarOffset = borderLeft.rect.size.x / container.sizeDelta.x;
+				m_startPos.x += borderLeft.rect.size.x;
+				m_leftBarOffset = borderLeft.rect.size.x / container.sizeDelta.x;
 			}
 			if (borderRight != null && borderRight.gameObject.activeSelf)
-				m_RightBarOffset = borderRight.rect.size.x / container.sizeDelta.x;
+				m_rightBarOffset = borderRight.rect.size.x / container.sizeDelta.x;
 
 			ScrollBarChanged(scrollView.horizontalScrollbar.value);
 		}
 
 		private void MoveItemByIndex(RectTransform item, int index)
 		{
-			item.anchoredPosition3D = m_StartPos + m_OffsetVec * (index * m_CellSizeX);
+			item.anchoredPosition3D = m_startPos + m_offsetVec * (index * m_cellSizeX);
 		}
 
 		public List<OptimizedScrollItem> GetListItem()
 		{
-			return m_ItemsScrolled;
+			return m_itemsScrolled;
 		}
 
-		public void MoveToTarget(int pIndex)
+		public void ScrollToTarget(int pIndex)
 		{
 			pIndex = Mathf.Clamp(pIndex, 0, total - 1);
 
@@ -213,11 +213,11 @@ namespace RCore.Components
 			float contentPivotX = container.pivot.x;
 
 			//NOTE: Anchor of container must be center to the calculation is corrected
-			float contentAnchoredXMin = contentWidth * (1 - contentPivotX) * -1 + (viewRect.rect.width * 0.5f);
-			float contentAnchoredXMax = contentWidth * contentPivotX - (viewRect.rect.width * 0.5f);
+			float contentAnchoredXMin = contentWidth * (1 - contentPivotX) * -1 + viewRect.rect.width * 0.5f;
+			float contentAnchoredXMax = contentWidth * contentPivotX - viewRect.rect.width * 0.5f;
 
-			var prefabRect = (prefab.transform as RectTransform);
-			float x = contentAnchoredXMax - (m_CellSizeX * pIndex) + (prefabRect.pivot.x - 0.5f) * prefabRect.rect.width;
+			var prefabRect = prefab.transform as RectTransform;
+			float x = contentAnchoredXMax - m_cellSizeX * pIndex + (prefabRect.pivot.x - 0.5f) * prefabRect.rect.width;
 			if (x > contentAnchoredXMax)
 				x = contentAnchoredXMax;
 			if (x < contentAnchoredXMin)
@@ -236,9 +236,9 @@ namespace RCore.Components
 			float contentPivotX = container.pivot.x;
 
 			//NOTE: Anchor of container must be center to the calculation is corrected
-			float contentAnchoredXMin = contentWidth * (1 - contentPivotX) * -1 + (viewRect.rect.width * 0.5f);
-			float contentAnchoredXMax = contentWidth * contentPivotX - (viewRect.rect.width * 0.5f);
-			var x = -(m_StartPos + m_OffsetVec * (pIndex * m_CellSizeX)).x;
+			float contentAnchoredXMin = contentWidth * (1 - contentPivotX) * -1 + viewRect.rect.width * 0.5f;
+			float contentAnchoredXMax = contentWidth * contentPivotX - viewRect.rect.width * 0.5f;
+			var x = -(m_startPos + m_offsetVec * (pIndex * m_cellSizeX)).x;
 			if (x > contentAnchoredXMax)
 				x = contentAnchoredXMax;
 			if (x < contentAnchoredXMin)
@@ -255,13 +255,13 @@ namespace RCore.Components
 
 #if UNITY_EDITOR
 		[CustomEditor(typeof(OptimizedHorizontalScrollView))]
-		public class OptimizedHorizontalScrollViewEditor : UnityEditor.Editor
+		public class OptimizedHorizontalScrollViewEditor : Editor
 		{
-			private OptimizedHorizontalScrollView mScript;
+			private OptimizedHorizontalScrollView m_script;
 
 			private void OnEnable()
 			{
-				mScript = (OptimizedHorizontalScrollView)target;
+				m_script = (OptimizedHorizontalScrollView)target;
 			}
 
 			public override void OnInspectorGUI()
@@ -269,11 +269,11 @@ namespace RCore.Components
 				base.OnInspectorGUI();
 
 				if (EditorHelper.Button("Move To Top"))
-					mScript.MoveToTop();
+					m_script.ScrollToTop();
 				if (EditorHelper.Button("Move To Top 2"))
-					mScript.MoveToTarget(0);
+					m_script.ScrollToTarget(0);
 				if (EditorHelper.Button("Move To Top 3"))
-					mScript.MoveToTarget(0);
+					m_script.ScrollToTarget(0);
 			}
 		}
 #endif

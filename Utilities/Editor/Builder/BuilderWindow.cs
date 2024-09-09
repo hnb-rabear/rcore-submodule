@@ -1,12 +1,14 @@
-﻿/***
+﻿/**
  * Author RadBear - Nguyen Ba Hung - nbhung71711@gmail.com - 2019
  **/
 
 using System;
+using System.Diagnostics;
+using RCore.Common;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
-using RCore.Common;
+using UnityEngine.SceneManagement;
 using Debug = UnityEngine.Debug;
 
 namespace RCore.Editor
@@ -91,7 +93,7 @@ namespace RCore.Editor
                                         profile.outputFolder = path;
                                 }
                                 if (EditorHelper.Button("Open Explorer"))
-                                    System.Diagnostics.Process.Start(profile.outputFolder);
+                                    Process.Start(profile.outputFolder);
                             });
                             profile.suffix = EditorHelper.TextField(profile.suffix, "Suffix", 120, 230);
                             profile.note = EditorHelper.TextField(profile.note, "Note", 120, 230);
@@ -172,7 +174,7 @@ namespace RCore.Editor
                             btnAddActiveScene.label = "+ Opening Scene";
                             btnAddActiveScene.onPressed = () =>
                             {
-                                var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+                                var scene = SceneManager.GetActiveScene();
                                 profile.AddScene(scene.path, true);
                             };
                             btnAddActiveScene.color = Color.green;
@@ -180,7 +182,7 @@ namespace RCore.Editor
                             if (EditorHelper.HeaderFoldout("Scenes", "Scenes" + i2, false, btnAddNewScene, btnAddCurrentScenes, btnAddActiveScene))
                             {
                                 GUILayout.BeginVertical("box");
-                                EditorHelper.DragDropBox<SceneAsset>("Drag Drop Scene", (objs) =>
+                                EditorHelper.DragDropBox<SceneAsset>("Drag Drop Scene", objs =>
                                 {
                                     for (int k = 0; k < objs.Length; k++)
                                     {
@@ -197,7 +199,7 @@ namespace RCore.Editor
                                         scene.active = EditorGUI.Toggle(new Rect(rect.x, rect.y, 20, 20), scene.active);
                                         scene.asset = (SceneAsset)EditorGUI.ObjectField(new Rect(rect.x + 20, rect.y, rect.width - 20, 20), scene.asset, typeof(SceneAsset), true);
                                     };
-                                    profile.reorderBuildScenes.onAddCallback = (list) =>
+                                    profile.reorderBuildScenes.onAddCallback = list =>
                                     {
                                         profile.buildScenes.Add(new SceneAssetReference(null, false));
                                     };
@@ -258,7 +260,7 @@ namespace RCore.Editor
                             profile.customDirectives = EditorHelper.Toggle(profile.customDirectives, "Use Custom Directives", 150);
                             if (profile.customDirectives)
                             {
-                                var btn1 = new EditorButton()
+                                var btn1 = new EditorButton
                                 {
                                     label = "+ Current Build Settings",
                                     width = 150,
@@ -268,7 +270,7 @@ namespace RCore.Editor
                                     },
                                     color = Color.green,
                                 };
-                                var btn2 = new EditorButton()
+                                var btn2 = new EditorButton
                                 {
                                     label = "Apply",
                                     width = 80,
@@ -304,14 +306,10 @@ namespace RCore.Editor
                                     BuilderUtil.OverwritePlayerBuildSettings(profile);
                                 if (EditorHelper.ButtonColor("Build Profile", Color.cyan))
                                     EditorApplication.delayCall += () => { Build(profile); };
-                                if (EditorHelper.ButtonColor("Copy CLI", Color.cyan, 100))
-                                {
-                                    string cli = mCommandLine.Replace("[index]", i2.ToString()).Replace("[path]", profile.outputFolder);
-                                    UniClipboard.SetText(cli);
-                                    Debug.Log(cli);
-                                }
+                                if (EditorHelper.ButtonColor("CLI", Color.cyan, 50))
+                                    Debug.Log(mCommandLine.Replace("[index]", i2.ToString()).Replace("[path]", profile.outputFolder));
                             });
-                        }, default, true);
+                        }, default(Color), true);
                     }
                 }
                 EditorHelper.SeparatorBox();
@@ -333,7 +331,7 @@ namespace RCore.Editor
                     else if (EditorHelper.ButtonColor("Build Selected Profiles", Color.grey)) { }
                     if (EditorHelper.ButtonColor("Player Settings", Color.white))
                         SettingsService.OpenProjectSettings("Project/Player");
-                }, default, true);
+                }, default(Color), true);
                 EditorHelper.SeparatorBox();
                 EditorGUILayout.LabelField("Build By Command Line", EditorStyles.boldLabel);
                 EditorGUILayout.TextField(mCommandLine);
@@ -365,7 +363,7 @@ namespace RCore.Editor
             unityExePath = string.Join("\\", splits);
 
             mCommandLine = $"{unityExePath} -quit -batchmode -projectPath {projectPath} " +
-                $"-executeMethod RCore.Editor.BuilderUtil.BuildByCommandLine -profileIndex [index] -outputFolder [path]";
+                "-executeMethod Utilities.Editor.BuilderUtil.BuildByCommandLine -profileIndex [index] -outputFolder [path]";
         }
 
         private void BuildSelectedProfiles()
@@ -408,7 +406,7 @@ namespace RCore.Editor
             else
                 EditorApplication.delayCall += () =>
                 {
-                    System.Diagnostics.Process.Start(pProfile.outputFolder);
+                    Process.Start(pProfile.outputFolder);
                 };
 
             // Building can change the active target, can cause warnings or odd behaviour

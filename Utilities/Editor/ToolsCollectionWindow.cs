@@ -137,7 +137,7 @@ namespace RCore.Editor
 				}
 			}
 		}
-		
+
 #endregion
 
 		//===================================================================================================
@@ -156,6 +156,7 @@ namespace RCore.Editor
 				DisplayMeshInfos();
 				CombineMeshes();
 				AlignCenterMeshRendererObj();
+				FixSpriteRendererSortingOrder();
 			});
 		}
 
@@ -204,7 +205,7 @@ namespace RCore.Editor
 							return;
 						}
 
-						var objs = g.FindComponentsInChildren<SkinnedMeshRenderer>();
+						var objs = g.GetComponentsInChildren<SkinnedMeshRenderer>(true);
 						if (objs != null)
 						{
 							int a = 0, b = 0, c = 0;
@@ -267,7 +268,7 @@ namespace RCore.Editor
 					var meshFilters = new List<MeshFilter>();
 					foreach (var g in Selection.gameObjects)
 					{
-						var filters = g.FindComponentsInChildren<MeshFilter>();
+						var filters = g.GetComponentsInChildren<MeshFilter>(true);
 						meshFilters.AddRange(filters);
 					}
 
@@ -303,6 +304,46 @@ namespace RCore.Editor
 					var center = renderer.bounds.extents;
 					g.transform.localPosition = new Vector3(-center.x, g.transform.localPosition.y, -center.z);
 				}
+			}
+		}
+
+		private static void FixSpriteRendererSortingOrder()
+		{
+			if (EditorHelper.HeaderFoldout("Fix Sprite Renderer Sorting Order"))
+			{
+				if (!SelectedGameObject())
+					return;
+				
+				if (EditorHelper.Button("Fix Sprite Renderer Sorting Order"))
+				{
+					foreach (var target in Selection.gameObjects)
+					{
+						SortSortingOrderNumber(target.GetComponentsInChildren<SpriteRenderer>(true));
+						EditorUtility.SetDirty(target);
+					}
+					AssetDatabase.SaveAssets();
+				}
+			}
+		}
+
+		public static void SortSortingOrderNumber(SpriteRenderer[] pItems)
+		{
+			var dict = new Dictionary<SpriteRenderer, int>();
+			foreach (var item in pItems)
+				dict.Add(item, item.sortingOrder);
+
+			var sortedDict = dict.OrderBy(x => x.Value);
+
+			int order = -1;
+			int lastSortingOrder = -1;
+			foreach (var item in sortedDict)
+			{
+				if (lastSortingOrder < item.Key.sortingOrder)
+				{
+					order++;
+					lastSortingOrder = item.Key.sortingOrder;
+				}
+				item.Key.sortingOrder = order;
 			}
 		}
 
@@ -357,19 +398,19 @@ namespace RCore.Editor
 					var allTextPros = new List<TextMeshProUGUI>();
 					foreach (var g in Selection.gameObjects)
 					{
-						var texts = g.FindComponentsInChildren<Text>();
-						var textPros = g.FindComponentsInChildren<TextMeshProUGUI>();
-						if (texts.Count > 0)
+						var texts = g.GetComponentsInChildren<Text>(true);
+						var textPros = g.GetComponentsInChildren<TextMeshProUGUI>(true);
+						if (texts.Length > 0)
 						{
-							m_TextCount += texts.Count;
+							m_TextCount += texts.Length;
 							allTexts.AddRange(texts);
 							foreach (var t in allTexts)
 								EditorGUILayout.LabelField("Text: ", t.name);
 						}
 
-						if (textPros.Count > 0)
+						if (textPros.Length > 0)
 						{
-							m_TextCount += textPros.Count;
+							m_TextCount += textPros.Length;
 							allTextPros.AddRange(textPros);
 							foreach (var t in allTextPros)
 								EditorGUILayout.LabelField("Text Mesh Pro: ", t.name);
@@ -511,7 +552,7 @@ namespace RCore.Editor
 						m_Graphics = new List<Graphic>();
 						foreach (var g in Selection.gameObjects)
 						{
-							var graphics = g.FindComponentsInChildren<Graphic>();
+							var graphics = g.GetComponentsInChildren<Graphic>(true);
 							foreach (var graphic in graphics)
 							{
 								if (!m_Graphics.Contains(graphic))
@@ -615,7 +656,7 @@ namespace RCore.Editor
 
 				if (EditorHelper.Button("Scan"))
 				{
-					m_Buttons = FindComponents<Button>((button) => button.image != null && button.image.color != Color.clear);
+					m_Buttons = EditorHelper.FindComponents<Button>((button) => button.image != null && button.image.color != Color.clear);
 				}
 
 				if (m_Buttons != null && m_Buttons.Count > 0)
@@ -697,7 +738,7 @@ namespace RCore.Editor
 
 				if (EditorHelper.Button("Scan"))
 				{
-					m_Buttons = FindComponents<Button>((button) => button.image != null && button.image.sprite != null && button.image.color != Color.clear);
+					m_Buttons = EditorHelper.FindComponents<Button>((button) => button.image != null && button.image.sprite != null && button.image.color != Color.clear);
 				}
 
 				if (m_Buttons != null && m_Buttons.Count > 0)
@@ -756,7 +797,7 @@ namespace RCore.Editor
 				}
 
 				if (EditorHelper.Button("Scan Texts"))
-					m_Texts = FindComponents<Text>(null);
+					m_Texts = EditorHelper.FindComponents<Text>(null);
 
 				if (m_Texts != null && m_Texts.Count > 0)
 				{
@@ -807,7 +848,7 @@ namespace RCore.Editor
 				}
 
 				if (EditorHelper.Button("Scan Texts"))
-					m_TMPTexts = FindComponents<TextMeshProUGUI>(null);
+					m_TMPTexts = EditorHelper.FindComponents<TextMeshProUGUI>(null);
 
 				if (m_TMPTexts != null && m_TMPTexts.Count > 0)
 				{
@@ -850,62 +891,7 @@ namespace RCore.Editor
 					return;
 
 				if (EditorHelper.Button("Replace Texts"))
-				{
-					var textsDict = FindComponents<Text>(null);
-					if (textsDict != null)
-						foreach (var item in textsDict)
-						{
-							for (int i = item.Value.Count - 1; i >= 0; i--)
-							{
-								var gameObj = item.Value[i].gameObject;
-								var content = item.Value[i].text;
-								var fontSize = item.Value[i].fontSize;
-								var alignment = item.Value[i].alignment;
-								var bestFit = item.Value[i].resizeTextForBestFit;
-								var color = item.Value[i].color;
-								DestroyImmediate(item.Value[i]);
-								var textTMP = gameObj.AddComponent<TextMeshProUGUI>();
-								textTMP.text = content;
-								textTMP.fontSize = fontSize;
-								textTMP.enableAutoSizing = bestFit;
-								textTMP.color = color;
-								switch (alignment)
-								{
-									case TextAnchor.MiddleLeft:
-										textTMP.alignment = TextAlignmentOptions.Left;
-										break;
-									case TextAnchor.MiddleCenter:
-										textTMP.alignment = TextAlignmentOptions.Center;
-										break;
-									case TextAnchor.MiddleRight:
-										textTMP.alignment = TextAlignmentOptions.Right;
-										break;
-
-									case TextAnchor.LowerLeft:
-										textTMP.alignment = TextAlignmentOptions.BottomLeft;
-										break;
-									case TextAnchor.LowerCenter:
-										textTMP.alignment = TextAlignmentOptions.Bottom;
-										break;
-									case TextAnchor.LowerRight:
-										textTMP.alignment = TextAlignmentOptions.BottomRight;
-										break;
-
-									case TextAnchor.UpperLeft:
-										textTMP.alignment = TextAlignmentOptions.TopLeft;
-										break;
-									case TextAnchor.UpperCenter:
-										textTMP.alignment = TextAlignmentOptions.Top;
-										break;
-									case TextAnchor.UpperRight:
-										textTMP.alignment = TextAlignmentOptions.TopRight;
-										break;
-								}
-
-								Debug.Log($"Replace Text in GameObject {gameObj.name}");
-							}
-						}
-				}
+					EditorHelper.ReplaceTextsByTextTMP();
 			}
 		}
 
@@ -939,8 +925,8 @@ namespace RCore.Editor
 				{
 					foreach (var g in Selection.gameObjects)
 					{
-						var children = g.FindComponentsInChildren<Component>();
-						for (int i = children.Count - 1; i >= 0; i--)
+						var children = g.GetComponentsInChildren<Component>(true);
+						for (int i = children.Length - 1; i >= 0; i--)
 						{
 							var child = children[i];
 							//if (!child.TryGetComponent(out RectTransform rt))
@@ -1130,6 +1116,7 @@ namespace RCore.Editor
 				}
 			}
 		}
+
 #endregion
 
 		//===================================================================================================
@@ -1196,7 +1183,7 @@ namespace RCore.Editor
 
 			return true;
 		}
-		
+
 		private static bool SelectedObject()
 		{
 			if (Selection.objects == null || Selection.objects.Length == 0)
@@ -1208,30 +1195,6 @@ namespace RCore.Editor
 			return true;
 		}
 
-		private static Dictionary<GameObject, List<T>> FindComponents<T>(ConditionalDelegate<T> pValidCondition) where T : Component
-		{
-			var allComponents = new Dictionary<GameObject, List<T>>();
-			var objs = Selection.gameObjects;
-			for (int i = 0; i < objs.Length; i++)
-			{
-				var components = objs[i].gameObject.FindComponentsInChildren<T>();
-				if (components.Count > 0)
-				{
-					allComponents.Add(objs[i], new List<T>());
-					foreach (var component in components)
-					{
-						if (pValidCondition != null && !pValidCondition(component))
-							continue;
-
-						if (!allComponents[objs[i]].Contains(component))
-							allComponents[objs[i]].Add(component);
-					}
-				}
-			}
-
-			return allComponents;
-		}
-
 		[MenuItem("RCore/Tools/Tools Collection")]
 		private static void OpenEditorWindow()
 		{
@@ -1239,6 +1202,4 @@ namespace RCore.Editor
 			window.Show();
 		}
 	}
-
-	public delegate bool ConditionalDelegate<in T>(T pComponent) where T : Component;
 }

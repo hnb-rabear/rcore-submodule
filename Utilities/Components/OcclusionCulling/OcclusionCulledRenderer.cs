@@ -7,6 +7,7 @@ using RCore.Common;
 
 namespace RCore.Components
 {
+    [System.Obsolete]
     public class OcclusionCulledRenderer : MonoBehaviour
     {
         #region Members

@@ -1,4 +1,4 @@
-﻿/***
+﻿/**
  * Author RadBear - nbhung71711@gmail.com - 2018
  **/
 
@@ -9,25 +9,22 @@ using UnityEngine;
 
 namespace RCore.Common
 {
-    public class WaitUtil
+    public abstract class WaitUtil
     {
         [Serializable]
         public class CountdownEvent
         {
             public int id;
-            public Action<float> doSomething;
+            public Action<float> onTimeOut;
             public ConditionalDelegate breakCondition;
             public float waitTime;
             public bool unscaledTime;
             public bool autoRestart;
 
-            private float mElapsed;
-            private float mElapsedOffset;
-
-            public float Elapsed => mElapsed;
-            public float ElapsedOffset => mElapsedOffset;
-            public bool IsTimeOut => mElapsed >= waitTime;
-            public float Remain => waitTime - mElapsed > 0 ? waitTime - mElapsed : 0;
+            public float Elapsed { get; private set; }
+            public float ElapsedOffset { get; private set; }
+            public bool IsTimeOut => Elapsed >= waitTime;
+            public float RemainSeconds() => waitTime - Elapsed > 0 ? waitTime - Elapsed : 0;
 
             public CountdownEvent(int pid = 0)
             {
@@ -37,28 +34,28 @@ namespace RCore.Common
             public void Set(CountdownEvent other)
             {
                 id = other.id;
-                doSomething = other.doSomething;
+                onTimeOut = other.onTimeOut;
                 breakCondition = other.breakCondition;
                 waitTime = other.waitTime;
                 unscaledTime = other.unscaledTime;
-                mElapsed = other.mElapsed;
-                mElapsedOffset = other.mElapsedOffset;
+                Elapsed = other.Elapsed;
+                ElapsedOffset = other.ElapsedOffset;
             }
 
-            public void AddElapsedTime(float pValue)
+            public virtual void AddElapsedTime(float pValue)
             {
-                mElapsed += pValue;
+                Elapsed += pValue;
             }
 
             public void Restart()
             {
-                mElapsed = 0;
-                mElapsedOffset = 0;
+                Elapsed = 0;
+                ElapsedOffset = 0;
             }
 
             public void SetElapsedOffset(float pValue)
             {
-                mElapsedOffset = pValue;
+                ElapsedOffset = pValue;
             }
 
             public void Run()
@@ -70,6 +67,33 @@ namespace RCore.Common
             public void SetId(int pId)
             {
                 id = pId;
+            }
+
+            public void Stop()
+            {
+                waitTime = Elapsed;
+            }
+        }
+
+        public class CountdownIntervalEvent : CountdownEvent
+        {
+            public Action<float> onUpdate;
+            public float updateInterval;
+            private float m_updateInterval;
+            public override void AddElapsedTime(float pValue)
+            {
+                base.AddElapsedTime(pValue);
+
+                float remainSeconds = RemainSeconds();
+                if (updateInterval <= 0 || remainSeconds <= 0)
+                    return;
+
+                m_updateInterval += pValue;
+                if (m_updateInterval > updateInterval)
+                {
+                    m_updateInterval -= updateInterval;
+                    onUpdate(remainSeconds);
+                }
             }
         }
 
@@ -104,30 +128,44 @@ namespace RCore.Common
 
         //=======================================================
 
-        private static CoroutineMediator mMediator => CoroutineMediator.Instance;
+        private static CoroutineMediator m_Mediator => CoroutineMediator.Instance;
 
         /// <summary>
         /// This Wait uses Update to calcualate time
         /// </summary>
         public static CountdownEvent Start(CountdownEvent pScheduleEvent)
         {
-            return mMediator.WaitForSecond(pScheduleEvent);
+            return m_Mediator.WaitForSecond(pScheduleEvent);
+        }
+        public static CountdownEvent Start(float pTime, Action pDoSomething)
+        {
+            return m_Mediator.WaitForSecond(new CountdownEvent()
+            {
+                waitTime = pTime, onTimeOut = (s) =>
+                {
+                    pDoSomething();
+                }
+            });
         }
         public static CountdownEvent Start(float pTime, Action<float> pDoSomething)
         {
-            return mMediator.WaitForSecond(new CountdownEvent() { waitTime = pTime, doSomething = pDoSomething });
+            return m_Mediator.WaitForSecond(new CountdownEvent() { waitTime = pTime, onTimeOut = pDoSomething });
         }
         public static CountdownEvent Start(float pTime, bool pUnscaledTime, Action<float> pDoSomething)
         {
-            return mMediator.WaitForSecond(new CountdownEvent() { waitTime = pTime, doSomething = pDoSomething, unscaledTime = pUnscaledTime });
+            return m_Mediator.WaitForSecond(new CountdownEvent() { waitTime = pTime, onTimeOut = pDoSomething, unscaledTime = pUnscaledTime });
         }
         public static void RemoveCountdownEvent(int pId)
         {
-            mMediator.RemoveTimeAction(pId);
+            m_Mediator.RemoveTimeAction(pId);
         }
         public static void RemoveCountdownEvent(CountdownEvent pEvent)
         {
-            mMediator.RemoveTimeAction(pEvent);
+            m_Mediator.RemoveTimeAction(pEvent);
+        }
+        public static void RaiseDelayableEvent(BaseEvent pEvent, float pDelay = 0)
+        {
+            m_Mediator.AddDelayableEvent(new DelayableEvent(pEvent, pDelay));
         }
 
         /// <summary>
@@ -135,19 +173,19 @@ namespace RCore.Common
         /// </summary>
         public static ConditionEvent Start(ConditionEvent pScheduleEvent)
         {
-            return mMediator.WaitForCondition(pScheduleEvent);
+            return m_Mediator.WaitForCondition(pScheduleEvent);
         }
         public static ConditionEvent Start(ConditionalDelegate pTriggerCondition, Action pDoSomething)
         {
-            return mMediator.WaitForCondition(new ConditionEvent() { onTrigger = pDoSomething, triggerCondition = pTriggerCondition });
+            return m_Mediator.WaitForCondition(new ConditionEvent() { onTrigger = pDoSomething, triggerCondition = pTriggerCondition });
         }
         public static void RemoveConditionEvent(int pId)
         {
-            mMediator.RemoveTriggerAction(pId);
+            m_Mediator.RemoveTriggerAction(pId);
         }
         public static void RemoveConditionEvent(ConditionEvent pEvent)
         {
-            mMediator.RemoveTriggerAction(pEvent);
+            m_Mediator.RemoveTriggerAction(pEvent);
         }
 
         /// <summary>
@@ -155,11 +193,11 @@ namespace RCore.Common
         /// </summary>
         public static IUpdate AddUpdate(IUpdate pUpdate)
         {
-            return mMediator.AddUpdate(pUpdate);
+            return m_Mediator.AddUpdate(pUpdate);
         }
         public static void RemoveUpdate(IUpdate pUpdate)
         {
-            mMediator.RemoveUpdate(pUpdate);
+            m_Mediator.RemoveUpdate(pUpdate);
         }
 
         /// <summary>
@@ -167,7 +205,7 @@ namespace RCore.Common
         /// </summary>
         public static void Enqueue(Action pDoSomething)
         {
-            mMediator.Enqueue(pDoSomething);
+            m_Mediator.Enqueue(pDoSomething);
         }
 
         public static Task WaitTask(Task pTask, Action pOnTaskFinished)
@@ -179,93 +217,101 @@ namespace RCore.Common
             });
             return pTask;
         }
+
+        public static ResourceRequest WaitTask(ResourceRequest pTask, Action pOnTaskFinished)
+        {
+            Start(new ConditionEvent()
+            {
+                triggerCondition = () => pTask.isDone,
+                onTrigger = pOnTaskFinished
+            });
+            return pTask;
+        }
     }
 
     //====================== COUNT DOWN EVENTS SYSTEM =========================
 
     public class CountdownEventsManager
     {
-        private List<WaitUtil.CountdownEvent> mCountdownEvents = new List<WaitUtil.CountdownEvent>();
-        private float mTimeBeforePause;
+        private readonly List<WaitUtil.CountdownEvent> m_countdownEvents = new List<WaitUtil.CountdownEvent>();
+        private float m_timeBeforePause;
+        private float m_pauseSeconds;
 
-        public bool IsEmpty => mCountdownEvents.Count == 0;
+        public bool IsEmpty => m_countdownEvents.Count == 0;
 
         public void LateUpdate()
         {
-            float pausedTime = 0;
-            if (mTimeBeforePause > 0)
+            lock (m_countdownEvents)
             {
-                pausedTime = Time.unscaledTime - mTimeBeforePause;
-                mTimeBeforePause = 0;
-            }
-
-            lock (mCountdownEvents)
-            {
-                for (int i = mCountdownEvents.Count - 1; i >= 0; i--)
+                for (int i = m_countdownEvents.Count - 1; i >= 0; i--)
                 {
-                    var d = mCountdownEvents[i];
+                    var d = m_countdownEvents[i];
 
                     if (d.unscaledTime)
-                        d.AddElapsedTime(Time.unscaledDeltaTime + pausedTime);
+                        d.AddElapsedTime(Time.unscaledDeltaTime + m_pauseSeconds);
                     else
                         d.AddElapsedTime(Time.deltaTime);
                     if (d.breakCondition != null && d.breakCondition())
                     {
                         if (!d.autoRestart)
-                            mCountdownEvents.Remove(d);
+                            m_countdownEvents.Remove(d);
                         else
                             d.Restart();
                     }
                     else if (d.IsTimeOut)
                     {
-                        d.doSomething(d.Elapsed - d.waitTime);
+                        d.onTimeOut(d.Elapsed - d.waitTime);
                         if (!d.autoRestart)
-                            mCountdownEvents.Remove(d);
+                            m_countdownEvents.Remove(d);
                         else
                             d.Restart();
                     }
                 }
             }
+            m_pauseSeconds = 0;
         }
 
         public void OnApplicationPause(bool pause)
         {
-            if (!pause)
-                mTimeBeforePause = Time.unscaledTime;
+            if (pause)
+                m_timeBeforePause = Time.realtimeSinceStartup;
+            else if (m_timeBeforePause > 0)
+                m_pauseSeconds = Time.realtimeSinceStartup - m_timeBeforePause;
         }
 
         public void Register(WaitUtil.CountdownEvent pEvent)
         {
             if (pEvent.id == 0)
             {
-                mCountdownEvents.Add(pEvent);
+                if (!m_countdownEvents.Contains(pEvent))
+                    m_countdownEvents.Add(pEvent);
             }
             else
             {
                 bool exist = false;
-                for (int i = 0; i < mCountdownEvents.Count; i++)
+                for (int i = 0; i < m_countdownEvents.Count; i++)
                 {
-                    if (pEvent.id == mCountdownEvents[i].id)
+                    if (pEvent.id == m_countdownEvents[i].id)
                     {
                         exist = true;
-                        mCountdownEvents[i] = pEvent;
+                        m_countdownEvents[i] = pEvent;
                         break;
                     }
                 }
 
                 if (!exist)
-                    mCountdownEvents.Add(pEvent);
+                    m_countdownEvents.Add(pEvent);
             }
         }
 
         public void UnRegister(int pId)
         {
-            for (int i = 0; i < mCountdownEvents.Count; i++)
+            for (int i = 0; i < m_countdownEvents.Count; i++)
             {
-                var d = mCountdownEvents[i];
+                var d = m_countdownEvents[i];
                 if (d.id == pId)
                 {
-                    mCountdownEvents.Remove(d);
+                    m_countdownEvents.Remove(d);
                     return;
                 }
             }
@@ -273,7 +319,7 @@ namespace RCore.Common
 
         public void UnRegister(WaitUtil.CountdownEvent pEvent)
         {
-            mCountdownEvents.Remove(pEvent);
+            m_countdownEvents.Remove(pEvent);
         }
     }
 
@@ -281,21 +327,21 @@ namespace RCore.Common
 
     public class ConditionEventsManager
     {
-        private List<WaitUtil.ConditionEvent> mConditionEvents = new List<WaitUtil.ConditionEvent>();
+        private readonly List<WaitUtil.ConditionEvent> m_ConditionEvents = new List<WaitUtil.ConditionEvent>();
 
-        public bool IsEmpty => mConditionEvents.Count == 0;
+        public bool IsEmpty => m_ConditionEvents.Count == 0;
 
         public void LateUpdate()
         {
-            lock (mConditionEvents)
+            lock (m_ConditionEvents)
             {
-                for (int i = mConditionEvents.Count - 1; i >= 0; i--)
+                for (int i = m_ConditionEvents.Count - 1; i >= 0; i--)
                 {
-                    var d = mConditionEvents[i];
+                    var d = m_ConditionEvents[i];
                     if (d.triggerCondition())
                     {
                         d.onTrigger();
-                        mConditionEvents.Remove(d);
+                        m_ConditionEvents.Remove(d);
                     }
                     else
                     {
@@ -309,34 +355,34 @@ namespace RCore.Common
         {
             if (pEvent.id == 0)
             {
-                mConditionEvents.Add(pEvent);
+                m_ConditionEvents.Add(pEvent);
             }
             else
             {
                 bool exist = false;
-                for (int i = 0; i < mConditionEvents.Count; i++)
+                for (int i = 0; i < m_ConditionEvents.Count; i++)
                 {
-                    if (pEvent.id == mConditionEvents[i].id)
+                    if (pEvent.id == m_ConditionEvents[i].id)
                     {
                         exist = true;
-                        mConditionEvents[i] = pEvent;
+                        m_ConditionEvents[i] = pEvent;
                         break;
                     }
                 }
 
                 if (!exist)
-                    mConditionEvents.Add(pEvent);
+                    m_ConditionEvents.Add(pEvent);
             }
         }
 
         public void UnRegister(int pId)
         {
-            for (int i = 0; i < mConditionEvents.Count; i++)
+            for (int i = 0; i < m_ConditionEvents.Count; i++)
             {
-                var d = mConditionEvents[i];
+                var d = m_ConditionEvents[i];
                 if (d.id == pId)
                 {
-                    mConditionEvents.Remove(d);
+                    m_ConditionEvents.Remove(d);
                     return;
                 }
             }
@@ -344,7 +390,20 @@ namespace RCore.Common
 
         public void UnRegister(WaitUtil.ConditionEvent pEvent)
         {
-            mConditionEvents.Remove(pEvent);
+            m_ConditionEvents.Remove(pEvent);
+        }
+    }
+
+    public class DelayableEvent
+    {
+        public string key;
+        public float delay;
+        public BaseEvent @event;
+        public DelayableEvent(BaseEvent @event, float pDelay)
+        {
+            @event = @event;
+            key = @event.GetType().ToString();
+            delay = pDelay;
         }
     }
 }

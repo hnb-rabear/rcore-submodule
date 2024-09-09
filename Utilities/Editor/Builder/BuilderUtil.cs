@@ -1,4 +1,4 @@
-﻿/***
+﻿/**
  * Author RadBear - Nguyen Ba Hung - nbhung71711@gmail.com 
  **/
 
@@ -8,18 +8,14 @@ using System.IO;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
 
-/// <summary>
-/// Used to build by command line
-/// </summary>
 public class Builder
 {
     static void BuildCurrent()
     {
-        var profile = new RCore.Editor.BuildProfile();
+        var profile = new BuildProfile();
         profile.Reset();
-        RCore.Editor.BuilderUtil.Build(profile);
+        BuilderUtil.Build(profile);
     }
 }
 
@@ -99,7 +95,7 @@ namespace RCore.Editor
             string[] directives = PlayerSettings.GetScriptingDefineSymbolsForGroup(targetGroup).Split(';');
             mBackupTargetProfile.directives = new List<Directive>();
             foreach (var d in directives)
-                mBackupTargetProfile.directives.Add(new Directive()
+                mBackupTargetProfile.directives.Add(new Directive
                 {
                     enable = true,
                     directive = d
@@ -122,8 +118,6 @@ namespace RCore.Editor
             mBackupProfile.bundleVersion = PlayerSettings.bundleVersion;
 #if UNITY_ANDROID
             mBackupProfile.bundleVersionCode = PlayerSettings.Android.bundleVersionCode;
-#elif UNITY_IOS
-            mBackupProfile.bundleVersionCode = PlayerSettings.iOS.buildNumber;
 #endif
             mBackupProfile.arm64 = PlayerSettings.Android.targetArchitectures == (AndroidArchitecture.ARM64 | AndroidArchitecture.ARMv7);
             mBackupProfile.developmentBuild = EditorUserBuildSettings.development;
@@ -141,8 +135,6 @@ namespace RCore.Editor
             PlayerSettings.bundleVersion = mBackupProfile.bundleVersion;
 #if UNITY_ANDROID
             PlayerSettings.Android.bundleVersionCode = mBackupProfile.bundleVersionCode;
-#elif UNITY_IOS
-            PlayerSettings.iOS.buildNumber = mBackupProfile.bundleVersionCode;
 #endif
             if (mBackupProfile.arm64)
                 PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64 | AndroidArchitecture.ARMv7;
@@ -260,7 +252,7 @@ namespace RCore.Editor
 #if UNITY_ANDROID
                 PlayerSettings.Android.bundleVersionCode = pProfile.bundleVersionCode;
 #elif UNITY_IOS
-                PlayerSettings.iOS.buildNumber = pProfile.bundleVersionCode;
+                
 #endif
             }
             if (pProfile.arm64)
@@ -299,7 +291,7 @@ namespace RCore.Editor
         {
             if (!profile.HasDirective(directive))
             {
-                profile.directives.Add(new Directive()
+                profile.directives.Add(new Directive
                 {
                     directive = directive,
                     enable = true
@@ -313,7 +305,7 @@ namespace RCore.Editor
             foreach (var directive in directives)
                 if (!profile.HasDirective(directive))
                 {
-                    profile.directives.Add(new Directive()
+                    profile.directives.Add(new Directive
                     {
                         directive = directive,
                         enable = true

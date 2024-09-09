@@ -1,4 +1,4 @@
-﻿/***
+﻿/**
  * Author RadBear - Nguyen Ba Hung - nbhung71711@gmail.com 
  **/
 
@@ -125,6 +125,26 @@ namespace RCore.Common
             for (int i = 0; i < chances.Count; i++)
                 totalRatios += chances[i];
 
+            int random = UnityEngine.Random.Range(0, totalRatios + 1);
+            int temp2 = 0;
+            for (int i = 0; i < chances.Count; i++)
+            {
+                if (chances[i] <= 0)
+                    continue;
+
+                temp2 += chances[i];
+                if (temp2 > random)
+                {
+                    index = i;
+                    break;
+                }
+            }
+            return index;
+        }
+
+        public static int GetRandomIndexOfChances(List<int> chances, int totalRatios)
+        {
+            int index = 0;
             int random = UnityEngine.Random.Range(0, totalRatios);
             int temp2 = 0;
             for (int i = 0; i < chances.Count; i++)

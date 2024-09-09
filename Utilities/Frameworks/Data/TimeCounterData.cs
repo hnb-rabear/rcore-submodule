@@ -100,10 +100,7 @@ namespace RCore.Framework.Data
             {
                 waitTime = (float)GetRemainSeconds(),
                 unscaledTime = true,
-                doSomething = (pass) =>
-                {
-                    m_OnFinished?.Invoke(GetRemainSeconds());
-                }
+                onTimeOut = pass => m_OnFinished?.Invoke(GetRemainSeconds())
             });
         }
 

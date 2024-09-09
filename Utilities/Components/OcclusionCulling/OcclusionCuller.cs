@@ -8,6 +8,7 @@ using UnityEngine;
 
 namespace RCore.Components
 {
+    [System.Obsolete]
     public class OcclusionCuller : MonoBehaviour
     {
         #region Members

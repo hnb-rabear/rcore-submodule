@@ -1,4 +1,4 @@
-﻿/***
+﻿/**
  * Author RadBear - nbhung71711@gmail.com - 2017
  **/
 
@@ -32,49 +32,49 @@ namespace RCore.Framework.UI
 
 		public Button btnBack;
 
-		internal Action onWillShow;
-		internal Action onWillHide;
-		internal Action onDidShow;
-		internal Action onDidHide;
+		public Action onWillShow;
+		public Action onWillHide;
+		public Action onDidShow;
+		public Action onDidHide;
 
-		protected bool mShowed;
-		private bool mIsShowing;
-		private bool mIsHiding;
+		protected bool m_showed;
+		protected bool m_isShowing;
+		protected bool m_isHiding;
 
 		/// <summary>
 		/// When panel is lock, any action pop from itself or its parent will be restricted
 		/// Note: in one moment, there should be no-more one locked child
 		/// </summary>
-		private bool mIsLock;
+		private bool m_locked;
 
-		private CanvasGroup mCanvasGroup;
-		private Canvas mCanvas;
+		private CanvasGroup m_canvasGroup;
+		private Canvas m_canvas;
 
-		internal CanvasGroup CanvasGroup
+		public CanvasGroup CanvasGroup
 		{
 			get
 			{
-				if (mCanvasGroup == null)
+				if (m_canvasGroup == null)
 				{
 #if UNITY_2019_2_OR_NEWER
-					TryGetComponent(out mCanvasGroup);
+					TryGetComponent(out m_canvasGroup);
 #else
                     mCanvasGroup = GetComponent<CanvasGroup>();
 #endif
-					if (mCanvasGroup == null)
-						mCanvasGroup = gameObject.AddComponent<CanvasGroup>();
+					if (m_canvasGroup == null)
+						m_canvasGroup = gameObject.AddComponent<CanvasGroup>();
 				}
-				return mCanvasGroup;
+				return m_canvasGroup;
 			}
 		}
 		/// <summary>
 		/// Optional, in case we need to control sorting order
 		/// </summary>
-		internal Canvas Canvas
+		public Canvas Canvas
 		{
 			get
 			{
-				if (mCanvas == null)
+				if (m_canvas == null)
 				{
 #if UNITY_2019_2_OR_NEWER
 					TryGetComponent(out GraphicRaycaster rayCaster);
@@ -85,22 +85,21 @@ namespace RCore.Framework.UI
 						rayCaster = gameObject.AddComponent<GraphicRaycaster>();
 
 #if UNITY_2019_2_OR_NEWER
-					TryGetComponent(out mCanvas);
+					TryGetComponent(out m_canvas);
 #else
                     mCanvas = gameObject.GetComponent<Canvas>();
 #endif
-					if (mCanvas == null)
-						mCanvas = gameObject.AddComponent<Canvas>();
+					if (m_canvas == null)
+						m_canvas = gameObject.AddComponent<Canvas>();
 
 					//WaitUtil.Enqueue(() => { mCanvas.overrideSorting = true; }); //Quick-fix
 				}
-				return mCanvas;
+				return m_canvas;
 			}
 		}
 
-		internal bool Displayed => mShowed || mIsShowing;
-		internal bool Transiting => mIsShowing || mIsHiding;
-		internal bool IsLock => mIsLock;
+		public bool Displayed => m_showed || m_isShowing;
+		public bool Transiting => m_isShowing || m_isHiding;
 
 #endregion
 
@@ -108,21 +107,18 @@ namespace RCore.Framework.UI
 
 #region Hide
 
-		internal virtual void Hide(UnityAction OnDidHide = null)
+		public void Hide(UnityAction pOnDidHide = null)
 		{
-			if (!mShowed || mIsHiding)
-			{
-				Log(name + " Panel is hidden");
+			if (!m_showed || m_isHiding)
 				return;
-			}
-
-			CoroutineUtil.StartCoroutine(IE_Hide(OnDidHide));
+			
+			CoroutineUtil.StartCoroutine(IE_Hide(pOnDidHide));
 		}
 
 		protected IEnumerator IE_Hide(UnityAction pOnDidHide)
 		{
-			mIsHiding = true;
-
+			m_isHiding = true;
+			
 			onWillHide?.Invoke();
 
 			BeforeHiding();
@@ -132,23 +128,18 @@ namespace RCore.Framework.UI
 			while (panelStack.Count > 0)
 			{
 				var subPanel = panelStack.Pop();
-				subPanel.Hide();
-
-				if (panelStack.Count == 0)
-					yield return new WaitUntil(() => !subPanel.mShowed);
-				else if (!subPanel.enableFXTransition)
-					yield return null;
+				yield return subPanel.IE_Hide(null);
 			}
 
 			PopAllPanels();
 
 			if (enableFXTransition)
-				yield return CoroutineUtil.StartCoroutine(IE_HideFX());
+				yield return IE_HideFX();
 			else
 				yield return null;
 
-			mIsHiding = false;
-			mShowed = false;
+			m_isHiding = false;
+			m_showed = false;
 			SetActivePanel(false);
 
 			LockWhileTransiting(false);
@@ -172,23 +163,20 @@ namespace RCore.Framework.UI
 
 #region Show
 
-		internal virtual void Show(UnityAction pOnDidShow = null)
+		public void Show(UnityAction pOnDidShow = null)
 		{
-			if (mShowed || mIsShowing)
-			{
-				Log(name + " Panel showed");
+			if (m_showed || m_isShowing)
 				return;
-			}
 
-			if (transform.parent != mParentPanel.transform)
-				transform.SetParent(mParentPanel.transform);
+			if (transform.parent != parentPanel.transform)
+				transform.SetParent(parentPanel.transform);
 
 			CoroutineUtil.StartCoroutine(IE_Show(pOnDidShow));
 		}
 
 		protected IEnumerator IE_Show(UnityAction pOnDidShow)
 		{
-			mIsShowing = true;
+			m_isShowing = true;
 
 			onWillShow?.Invoke();
 
@@ -200,12 +188,12 @@ namespace RCore.Framework.UI
 
 			SetActivePanel(true);
 			if (enableFXTransition)
-				yield return CoroutineUtil.StartCoroutine(IE_ShowFX());
+				yield return IE_ShowFX();
 			else
 				yield return null;
 
-			mIsShowing = false;
-			mShowed = true;
+			m_isShowing = false;
+			m_showed = true;
 
 			LockWhileTransiting(false);
 			AfterShowing();
@@ -225,6 +213,11 @@ namespace RCore.Framework.UI
 			gameObject.SetActive(pValue);
 		}
 
+		/// <summary>
+		/// When the panel above it is hidden, the panel that is hidden in the stack is called to reappear
+		/// </summary>
+		public virtual void OnReshow() { }
+		
 #endregion
 
 		//===================================
@@ -268,12 +261,15 @@ namespace RCore.Framework.UI
 		private void LockWhileTransiting(bool value)
 		{
 			if (enableFXTransition)
-				CanvasGroup.interactable = !Transiting;
+			{
+				if (CanvasGroup != null)
+					CanvasGroup.interactable = !Transiting;
+			}
 		}
 
 		public virtual void Back()
 		{
-			if (mParentPanel == null)
+			if (parentPanel == null)
 			{
 				if (TopPanel != null)
 					TopPanel.Back();
@@ -282,7 +278,7 @@ namespace RCore.Framework.UI
 			}
 			else
 				//parentPanel.PopPanel();
-				mParentPanel.PopChildrenThenParent();
+				parentPanel.PopChildrenThenParent();
 		}
 
 		protected virtual void BtnBack_Pressed()
@@ -290,23 +286,30 @@ namespace RCore.Framework.UI
 			Back();
 		}
 
-		internal bool CanPop()
+		public bool CanPop(out PanelController blockingPanel)
 		{
+			blockingPanel = null;
 			foreach (var p in panelStack)
 			{
-				if (p.mIsLock || p.Transiting)
+				if (p.m_locked || p.Transiting)
+				{
+					blockingPanel = p;
 					return false;
+				}
 			}
-			if (mIsLock || Transiting)
+			if (m_locked || Transiting)
+			{
+				blockingPanel = this;
 				return false;
+			}
 			return true;
 		}
 
-		internal virtual void Init() { }
+		public virtual void Init() { }
 
-		internal void Lock(bool pLock)
+		public void Lock(bool pLock)
 		{
-			mIsLock = pLock;
+			m_locked = pLock;
 		}
 
 		public bool IsActiveAndEnabled()
@@ -314,6 +317,23 @@ namespace RCore.Framework.UI
 			return !gameObject.IsPrefab() && isActiveAndEnabled;
 		}
 
+		public bool IsLocked()
+		{
+			if (TopPanel == null)
+				return m_locked;
+			foreach (var panelController in panelStack)
+				if (panelController.IsLocked())
+					return true;
+			return false;
+		}
+
+		public bool IsSubsidiary() => parentPanel.parentPanel != null;
+
+		public bool Contains<T>(T popupConvertCoin) where T : PanelController
+		{
+			return panelStack.Contains(popupConvertCoin);
+		}
+		
 #endregion
 
 		//======================================================
@@ -322,11 +342,11 @@ namespace RCore.Framework.UI
 		[CustomEditor(typeof(PanelController), true)]
 		public class PanelControllerEditor : UnityEditor.Editor
 		{
-			private PanelController mScript;
+			private PanelController m_script;
 
 			protected virtual void OnEnable()
 			{
-				mScript = target as PanelController;
+				m_script = target as PanelController;
 			}
 
 			public override void OnInspectorGUI()
@@ -335,24 +355,26 @@ namespace RCore.Framework.UI
 
 				EditorGUILayout.Space();
 				EditorGUILayout.BeginVertical("box");
-				EditorGUILayout.LabelField("Children Count: " + mScript.StackCount, EditorStyles.boldLabel);
-				EditorGUILayout.LabelField("Index: " + mScript.Index, EditorStyles.boldLabel);
-				EditorGUILayout.LabelField("Display Order: " + mScript.PanelOrder, EditorStyles.boldLabel);
-				if (mScript.GetComponent<Canvas>() != null)
+				EditorGUILayout.LabelField("Children Count: " + m_script.StackCount, EditorStyles.boldLabel);
+				EditorGUILayout.LabelField("Index: " + m_script.Index, EditorStyles.boldLabel);
+				EditorGUILayout.LabelField("Display Order: " + m_script.PanelOrder, EditorStyles.boldLabel);
+				if (m_script.GetComponent<Canvas>() != null)
 					GUILayout.Label("NOTE: sub-panel should not have Canvas component!\nIt should be inherited from parent panel");
 
 				EditorGUILayout.BeginVertical("box");
-				EditorGUILayout.LabelField(mScript.TopPanel == null ? $"TopPanel: Null" : $"TopPanel: {mScript.TopPanel.name}");
-				ShowChildrenList(mScript, 0);
+				EditorGUILayout.LabelField(m_script.TopPanel == null ? $"TopPanel: Null" : $"TopPanel: {m_script.TopPanel.name}");
+				ShowChildrenList(m_script, 0);
 				EditorGUILayout.EndVertical();
 
 				EditorGUILayout.EndVertical();
 			}
 
-			private void ShowChildrenList(PanelController panel, int p_LevelIndent)
+			private void ShowChildrenList(PanelController panel, int pLevelIndent)
 			{
+                if (panel.panelStack == null)
+                    return;
 				int levelIndent = EditorGUI.indentLevel;
-				EditorGUI.indentLevel = p_LevelIndent;
+				EditorGUI.indentLevel = pLevelIndent;
 				foreach (var p in panel.panelStack)
 				{
 					if (EditorHelper.ButtonColor($"{p.Index}: {p.name}", ColorHelper.LightAzure))
