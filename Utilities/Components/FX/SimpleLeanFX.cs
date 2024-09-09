@@ -101,11 +101,10 @@ namespace RCore.Components
 
         public void Shake(Transform pTarget, float pTime, float pIntensity, Action pOnFinished = null)
         {
+#if USE_DOTWEEN
             var defaultPos = pTarget.position;
             var defaultScale = pTarget.localScale;
             var defaultRotaion = pTarget.rotation;
-
-#if USE_DOTWEEN
             float val = 0;
             DOTween.Kill(pTarget.GetInstanceID() + GetInstanceID());
             //var tween = DOTween.To(() => val, x => val = x, 1f, time)

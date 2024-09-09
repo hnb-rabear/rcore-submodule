@@ -15,13 +15,13 @@ public class DevSetting : ScriptableObject
 	{
 		public string name;
 		public List<Directive> defines;
-		public void AddDirective(string name, bool defaultActive)
+		public void AddDirective(string pName, bool defaultActive)
 		{
-			if (string.IsNullOrEmpty(name))
+			if (string.IsNullOrEmpty(pName))
 				return;
-			var find = GetDirective(name);
+			var find = GetDirective(pName);
 			if (find == null)
-				defines.Add(new Directive(name, defaultActive));
+				defines.Add(new Directive(pName, defaultActive));
 		}
 		public Directive GetDirective(string pName)
 		{

@@ -56,8 +56,8 @@ namespace RCore.Components
 
         public Action onClickOnLock;
 
-        private CustomToggleGroup m_CustomToggleGroup;
-		private bool m_IsOn2;
+        private CustomToggleGroup m_customToggleGroup;
+		private bool m_isOn2;
 		
 		public bool IsOn
 		{
@@ -65,9 +65,9 @@ namespace RCore.Components
 			set
 			{
 				isOn = value;
-				if (m_IsOn2 != value)
+				if (m_isOn2 != value)
 				{
-					m_IsOn2 = value;
+					m_isOn2 = value;
 					onValueChanged?.Invoke(value);
 				}
 			}
@@ -77,8 +77,8 @@ namespace RCore.Components
         {
             base.Start();
 
-            m_CustomToggleGroup = group as CustomToggleGroup;
-			m_IsOn2 = isOn;
+            m_customToggleGroup = group as CustomToggleGroup;
+			m_isOn2 = isOn;
 		}
 
 #if UNITY_EDITOR
@@ -195,8 +195,8 @@ namespace RCore.Components
                         label.fontSize = isOn ? fontSizeActive : fontSizeInactive;
             }
 
-            if (m_CustomToggleGroup != null && isOn)
-                m_CustomToggleGroup.SetTarget(transform as RectTransform, tweenTime);
+            if (m_customToggleGroup != null && isOn)
+                m_customToggleGroup.SetTarget(transform as RectTransform, tweenTime);
         }
 
         private void RefreshByTween()

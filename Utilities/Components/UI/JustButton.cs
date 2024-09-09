@@ -281,6 +281,11 @@ namespace RCore.Components
         }
 
         public bool Enabled() { return enabled && m_active; }
+        
+        public void SetActiveSprite(Sprite pSprite)
+        {
+            mImgActive = pSprite;
+        }
 
         protected void CheckPerfectRatio()
         {
