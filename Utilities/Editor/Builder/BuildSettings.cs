@@ -55,7 +55,7 @@ namespace RCore.Editor
         public ScriptingImplementation scriptBackend;
         public bool arm64;
         public bool buildAppBundle;
-        public List<CustomBuldTarget> targets;
+        public List<CustomBuildTarget> targets;
         public string companyName;
         public string productName;
         public string bundleVersion;
@@ -110,8 +110,8 @@ namespace RCore.Editor
         {
             var currentTarget = EditorUserBuildSettings.activeBuildTarget;
             outputFolder = Directory.GetParent(Application.dataPath).FullName;
-            targets = new List<CustomBuldTarget>();
-            targets.Add((CustomBuldTarget)currentTarget);
+            targets = new List<CustomBuildTarget>();
+            targets.Add((CustomBuildTarget)currentTarget);
             developmentBuild = false;
             buildName = Application.productName;
             bundleIdentifier = Application.identifier;

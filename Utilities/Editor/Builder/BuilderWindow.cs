@@ -215,7 +215,7 @@ namespace RCore.Editor
                             btnBuilTarget.width = 60;
                             btnBuilTarget.onPressed = () =>
                             {
-                                profile.targets.Add(CustomBuldTarget.NoTarget);
+                                profile.targets.Add(CustomBuildTarget.NoTarget);
                             };
                             if (EditorHelper.HeaderFoldout("Build Targets", "Build Targets" + i2, false, btnBuilTarget))
                             {
@@ -225,7 +225,7 @@ namespace RCore.Editor
                                     int j1 = j;
                                     EditorHelper.BoxHorizontal(() =>
                                     {
-                                        if (profile.targets[j1] != CustomBuldTarget.NoTarget)
+                                        if (profile.targets[j1] != CustomBuildTarget.NoTarget)
                                         {
                                             var icon = BuilderUtil.FindIcon(BuilderUtil.GroupForTarget((BuildTarget)profile.targets[j1]));
                                             EditorHelper.DrawTextureIcon(icon, new Vector2(20, 20));

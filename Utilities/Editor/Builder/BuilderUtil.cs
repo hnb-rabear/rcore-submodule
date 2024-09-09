@@ -11,17 +11,18 @@ using UnityEngine;
 
 public class Builder
 {
+    //NOTE: used by cmd
     static void BuildCurrent()
     {
-        var profile = new BuildProfile();
+        var profile = new RCore.Editor.BuildProfile();
         profile.Reset();
-        BuilderUtil.Build(profile);
+        RCore.Editor.BuilderUtil.Build(profile);
     }
 }
 
 namespace RCore.Editor
 {
-    public enum CustomBuldTarget
+    public enum CustomBuildTarget
     {
         NoTarget = BuildTarget.NoTarget,
         StandaloneWindows64 = BuildTarget.StandaloneWindows64,
@@ -124,7 +125,7 @@ namespace RCore.Editor
             mBackupProfile.autoConnectProfiler = EditorUserBuildSettings.connectProfiler;
             mBackupProfile.buildAppBundle = EditorUserBuildSettings.buildAppBundle;
             mBackupProfile.allowDebugging = EditorUserBuildSettings.allowDebugging;
-            mBackupProfile.enableHeadlessMode = EditorUserBuildSettings.enableHeadlessMode;
+            mBackupProfile.enableHeadlessMode = EditorUserBuildSettings.standaloneBuildSubtarget == StandaloneBuildSubtarget.Server;
         }
 
         private static void RestoreSettings()
@@ -144,7 +145,7 @@ namespace RCore.Editor
             EditorUserBuildSettings.connectProfiler = mBackupProfile.autoConnectProfiler;
             EditorUserBuildSettings.buildAppBundle = mBackupProfile.buildAppBundle;
             EditorUserBuildSettings.allowDebugging = mBackupProfile.allowDebugging;
-            EditorUserBuildSettings.enableHeadlessMode = mBackupProfile.enableHeadlessMode;
+            EditorUserBuildSettings.standaloneBuildSubtarget = mBackupProfile.enableHeadlessMode ? StandaloneBuildSubtarget.Server : StandaloneBuildSubtarget.Player;
         }
 
         public static List<BuildPlayerOptions> GetPlayerBuildOptions(BuildProfile pProfile)
@@ -263,18 +264,18 @@ namespace RCore.Editor
             EditorUserBuildSettings.connectProfiler = pProfile.developmentBuild && pProfile.autoConnectProfiler;
             EditorUserBuildSettings.buildAppBundle = pProfile.buildAppBundle;
             EditorUserBuildSettings.allowDebugging = pProfile.developmentBuild && pProfile.allowDebugging;
-            EditorUserBuildSettings.enableHeadlessMode = pProfile.enableHeadlessMode;
+            EditorUserBuildSettings.standaloneBuildSubtarget = pProfile.enableHeadlessMode ? StandaloneBuildSubtarget.Server : StandaloneBuildSubtarget.Player;
         }
 
         public static Texture2D FindIcon(BuildTargetGroup target, bool small = false)
         {
-            var name = "";
+            string name;
             switch (target)
             {
                 case BuildTargetGroup.iOS: name = "iPhone"; break;
                 default: name = target.ToString(); break;
             }
-            var path = string.Format("BuildSettings.{0}{1}", name, small ? ".small" : "");
+            var path = $"BuildSettings.{name}{(small ? ".small" : "")}";
             return EditorGUIUtility.FindTexture(path);
         }
 
@@ -358,7 +359,6 @@ namespace RCore.Editor
             var profile = collection.profiles[profileIndex];
             if (!string.IsNullOrEmpty(outputFolder))
             {
-                var directoryPath = Path.GetDirectoryName(outputFolder);
                 if (!Directory.Exists(outputFolder))
                     Directory.CreateDirectory(outputFolder);
 
