@@ -1,11 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 using System;
-using Unity.Services.Core;
-using Unity.Services.Core.Environments;
 using UnityEngine.Serialization;
 
 #if UNITY_IAP
+using Unity.Services.Core;
+using Unity.Services.Core.Environments;
 using UnityEngine.Purchasing;
 using UnityEngine.Purchasing.Security;
 #endif

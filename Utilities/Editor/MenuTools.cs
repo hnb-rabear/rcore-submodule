@@ -25,36 +25,37 @@ namespace RCore.Editor
             AssetDatabase.SaveAssets();
         }
         
-        [MenuItem("RCore/Refresh Prefabs " + SHIFT + "_2", priority = 1)]
+        [MenuItem("RCore/Refresh Prefabs in folder", priority = 1)]
         private static void RefreshPrefabs()
         {
-	        string folderPath = EditorHelper.OpenFolderPanel();
-	        folderPath = EditorHelper.FormatPathToUnityPath(folderPath);
-	        var assetGUIDs = AssetDatabase.FindAssets("t:GameObject", new[] { folderPath });
-	        foreach (string guid in assetGUIDs)
-	        {
-		        var path = AssetDatabase.GUIDToAssetPath(guid);
-		        var asset = AssetDatabase.LoadAssetAtPath<Object>(path);
-		        if (asset != null)
-			        EditorUtility.SetDirty(asset);
-	        }
-	        AssetDatabase.SaveAssets();
+            RefreshAssets("t:GameObject");
         }
         
-        [MenuItem("RCore/Refresh ScriptableObjects " + SHIFT + "_3", priority = 1)]
+        [MenuItem("RCore/Refresh ScriptableObjects in folder", priority = 1)]
         private static void RefreshScriptableObjects()
         {
-	        string folderPath = EditorHelper.OpenFolderPanel();
-	        folderPath = EditorHelper.FormatPathToUnityPath(folderPath);
-	        var assetGUIDs = AssetDatabase.FindAssets("t:ScriptableObject", new[] { folderPath });
-	        foreach (string guid in assetGUIDs)
-	        {
-		        var path = AssetDatabase.GUIDToAssetPath(guid);
-		        var asset = AssetDatabase.LoadAssetAtPath<Object>(path);
-		        if (asset != null)
-			        EditorUtility.SetDirty(asset);
-	        }
-	        AssetDatabase.SaveAssets();
+            RefreshAssets("t:ScriptableObject");
+        }
+        
+        [MenuItem("RCore/Refresh Assets in folder", priority = 1)]
+        private static void RefreshAll()
+        {
+            RefreshAssets("t:GameObject t:ScriptableObject");
+        }
+
+        private static void RefreshAssets(string filter)
+        {
+            string folderPath = EditorHelper.OpenFolderPanel();
+            folderPath = EditorHelper.FormatPathToUnityPath(folderPath);
+            var assetGUIDs = AssetDatabase.FindAssets(filter, new[] { folderPath });
+            foreach (string guid in assetGUIDs)
+            {
+                var path = AssetDatabase.GUIDToAssetPath(guid);
+                var asset = AssetDatabase.LoadAssetAtPath<Object>(path);
+                if (asset != null)
+                    EditorUtility.SetDirty(asset);
+            }
+            AssetDatabase.SaveAssets();
         }
 
         //==========================================================
@@ -98,13 +99,6 @@ namespace RCore.Editor
         {
             EditorApplication.isPlaying = false;
         }
-
-        //[MenuItem("RCore/Just Crash", priority = 63)]
-        //private static void JustCrash()
-        //{
-        //    //It used to test game behaviour if crashing happen
-        //    throw new NotImplementedException();
-        //}
 
         //==========================================================
 
