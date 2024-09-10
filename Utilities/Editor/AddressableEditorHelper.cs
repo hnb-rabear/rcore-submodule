@@ -1,0 +1,192 @@
+using System.Collections.Generic;
+using UnityEditor;
+using UnityEditor.AddressableAssets;
+using UnityEditor.AddressableAssets.Settings;
+using UnityEngine;
+
+namespace RCore.Editor
+{
+	public static class AddressableEditorHelper
+	{
+		public static AddressableAssetEntry CreateAssetEntry<T>(T source, string groupName, string label) where T : Object
+		{
+			var entry = CreateAssetEntry(source, groupName, false);
+			if (source != null)
+			{
+				source.AddAddressableAssetLabel(label);
+			}
+
+			return entry;
+		}
+		public static AddressableAssetEntry CreateAssetEntry<T>(T source, string groupName, bool fileNameAsAddress, string prefix = null) where T : Object
+		{
+			if (source == null || string.IsNullOrEmpty(groupName) || !AssetDatabase.Contains(source))
+				return null;
+
+			var addressableSettings = AddressableAssetSettingsDefaultObject.Settings;
+			var sourcePath = AssetDatabase.GetAssetPath(source);
+			var sourceGuid = AssetDatabase.AssetPathToGUID(sourcePath);
+			var group = !GroupExists(groupName) ? CreateGroup(groupName) : GetGroup(groupName);
+			var entry = addressableSettings.CreateOrMoveEntry(sourceGuid, group);
+			if (fileNameAsAddress)
+			{
+				string[] split = sourcePath.Split("/");
+				entry.address = split[split.Length - 1];
+			}
+			else entry.address = sourcePath;
+			if (prefix != null)
+				entry.address = prefix + entry.address;
+
+			addressableSettings.SetDirty(AddressableAssetSettings.ModificationEvent.EntryMoved, entry, true);
+
+			return entry;
+		}
+
+		public static AddressableAssetEntry CreateAssetEntry<T>(T source, bool fileNameAsAddress, string prefix = null) where T : Object
+		{
+			if (source == null || !AssetDatabase.Contains(source))
+				return null;
+
+			var addressableSettings = AddressableAssetSettingsDefaultObject.Settings;
+			var sourcePath = AssetDatabase.GetAssetPath(source);
+			var sourceGuid = AssetDatabase.AssetPathToGUID(sourcePath);
+			var entry = addressableSettings.CreateOrMoveEntry(sourceGuid, addressableSettings.DefaultGroup);
+			if (fileNameAsAddress)
+			{
+				string[] split = sourcePath.Split("/");
+				entry.address = split[split.Length - 1];
+			}
+			else entry.address = sourcePath;
+			if (prefix != null)
+				entry.address = prefix + entry.address;
+
+			addressableSettings.SetDirty(AddressableAssetSettings.ModificationEvent.EntryMoved, entry, true);
+
+			return entry;
+		}
+		public static AddressableAssetGroup GetGroup(string groupName)
+		{
+			if (string.IsNullOrEmpty(groupName))
+				return null;
+
+			var addressableSettings = AddressableAssetSettingsDefaultObject.Settings;
+			return addressableSettings.FindGroup(groupName);
+		}
+		public static AddressableAssetGroup CreateGroup(string groupName)
+		{
+			if (string.IsNullOrEmpty(groupName))
+				return null;
+
+			var addressableSettings = AddressableAssetSettingsDefaultObject.Settings;
+			var group = addressableSettings.CreateGroup(groupName, false, false, false, addressableSettings.DefaultGroup.Schemas);
+
+			addressableSettings.SetDirty(AddressableAssetSettings.ModificationEvent.GroupAdded, group, true);
+
+			return group;
+		}
+		public static bool GroupExists(string groupName)
+		{
+			var addressableSettings = AddressableAssetSettingsDefaultObject.Settings;
+			return addressableSettings.FindGroup(groupName) != null;
+		}
+		public static void RemoveAddressableAssetLabel(this Object source, string label)
+		{
+			if (source == null || !AssetDatabase.Contains(source))
+				return;
+
+			var entry = source.GetAddressableAssetEntry();
+			if (entry != null && entry.labels.Contains(label))
+			{
+				entry.labels.Remove(label);
+
+				AddressableAssetSettingsDefaultObject.Settings.SetDirty(AddressableAssetSettings.ModificationEvent.LabelRemoved, entry, true);
+			}
+		}
+		public static void AddAddressableAssetLabel(this Object source, string label)
+		{
+			if (source == null || !AssetDatabase.Contains(source))
+				return;
+
+			var entry = source.GetAddressableAssetEntry();
+			if (entry != null && !entry.labels.Contains(label))
+			{
+				entry.labels.Add(label);
+
+				AddressableAssetSettingsDefaultObject.Settings.SetDirty(AddressableAssetSettings.ModificationEvent.LabelAdded, entry, true);
+			}
+		}
+		public static void SetAddressableAssetAddress(this Object source, string address)
+		{
+			if (source == null || !AssetDatabase.Contains(source))
+				return;
+
+			var entry = source.GetAddressableAssetEntry();
+			if (entry != null)
+			{
+				entry.address = address;
+			}
+		}
+		public static void SetAddressableAssetGroup(this Object source, string groupName)
+		{
+			if (source == null || !AssetDatabase.Contains(source))
+				return;
+
+			var group = !GroupExists(groupName) ? CreateGroup(groupName) : GetGroup(groupName);
+			source.SetAddressableAssetGroup(group);
+		}
+		public static void SetAddressableAssetGroup(this Object source, AddressableAssetGroup group)
+		{
+			if (source == null || !AssetDatabase.Contains(source))
+				return;
+
+			var entry = source.GetAddressableAssetEntry();
+			if (entry != null && !source.IsInAddressableAssetGroup(group.Name))
+			{
+				entry.parentGroup = group;
+			}
+		}
+		public static HashSet<string> GetAddressableAssetLabels(this Object source)
+		{
+			if (source == null || !AssetDatabase.Contains(source))
+				return null;
+
+			var entry = source.GetAddressableAssetEntry();
+			return entry?.labels;
+		}
+		public static string GetAddressableAssetPath(this Object source)
+		{
+			if (source == null || !AssetDatabase.Contains(source))
+				return string.Empty;
+
+			var entry = source.GetAddressableAssetEntry();
+			return entry != null ? entry.address : string.Empty;
+		}
+		public static bool IsInAddressableAssetGroup(this Object source, string groupName)
+		{
+			if (source == null || !AssetDatabase.Contains(source))
+				return false;
+
+			var group = source.GetCurrentAddressableAssetGroup();
+			return group != null && group.Name == groupName;
+		}
+		public static AddressableAssetGroup GetCurrentAddressableAssetGroup(this Object source)
+		{
+			if (source == null || !AssetDatabase.Contains(source))
+				return null;
+
+			var entry = source.GetAddressableAssetEntry();
+			return entry?.parentGroup;
+		}
+		public static AddressableAssetEntry GetAddressableAssetEntry(this Object source)
+		{
+			if (source == null || !AssetDatabase.Contains(source))
+				return null;
+
+			var addressableSettings = AddressableAssetSettingsDefaultObject.Settings;
+			var sourcePath = AssetDatabase.GetAssetPath(source);
+			var sourceGuid = AssetDatabase.AssetPathToGUID(sourcePath);
+
+			return addressableSettings.FindAssetEntry(sourceGuid);
+		}
+	}
+}
