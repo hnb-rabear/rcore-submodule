@@ -17,6 +17,7 @@ using UnityEditor;
 #endif
 using UnityEngine;
 using RCore.Common;
+using UnityEngine.Serialization;
 using Debug = UnityEngine.Debug;
 
 namespace RCore.Components
@@ -37,8 +38,9 @@ namespace RCore.Components
 		[SerializeField] private ParticleSystem mMain;
 		[SerializeField] private ParticleSystem[] mParticleSystems;
 		[SerializeField] private ParticleSystem mControllableParticle;
-		[SerializeField] private float radius;
+		[FormerlySerializedAs("radius")] [SerializeField] private float m_radius;
 		[SerializeField] private bool m_Gizmos;
+        [FormerlySerializedAs("gizmosColor")] public Color m_gizmosColor;
 
 		private ParticleSystem.Particle[] mParticles;
 		private Vector3[] mParticlesPos;
@@ -48,8 +50,8 @@ namespace RCore.Components
 		{
 			if (!m_Gizmos)
 				return;
-			Gizmos.color = Color.white.SetAlpha(0.15f);
-			Gizmos.DrawWireSphere(mMain.transform.position, radius);
+			Gizmos.color = m_gizmosColor.SetAlpha(0.15f);
+			Gizmos.DrawWireSphere(mMain.transform.position, m_radius);
 		}
 #endif
 
@@ -434,26 +436,26 @@ namespace RCore.Components
 
 		public void Scale(float pRadius)
 		{
-			transform.localScale = Vector3.one * pRadius / radius;
+			transform.localScale = Vector3.one * pRadius / m_radius;
 		}
 
 		public void Scale(SphereCollider pRadius)
 		{
-			transform.localScale = Vector3.one * pRadius.radius / radius;
+			transform.localScale = Vector3.one * pRadius.radius / m_radius;
 		}
 
 		public void Scale(CapsuleCollider pRadius)
 		{
-			transform.localScale = Vector3.one * pRadius.radius / radius;
+			transform.localScale = Vector3.one * pRadius.radius / m_radius;
 		}
 
 		public void Scale(Collider pRadius)
 		{
 			transform.localScale = pRadius switch
 			{
-				CapsuleCollider capsuleCollider => Vector3.one * capsuleCollider.radius / radius,
-				SphereCollider sphereCollider => Vector3.one * sphereCollider.radius / radius,
-				BoxCollider boxCollider => Vector3.one * (boxCollider.size.x + boxCollider.size.z) / 3 / radius,
+				CapsuleCollider capsuleCollider => Vector3.one * capsuleCollider.radius / m_radius,
+				SphereCollider sphereCollider => Vector3.one * sphereCollider.radius / m_radius,
+				BoxCollider boxCollider => Vector3.one * (boxCollider.size.x + boxCollider.size.z) / 3 / m_radius,
 				_ => transform.localScale
 			};
 		}

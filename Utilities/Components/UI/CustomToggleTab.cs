@@ -202,10 +202,10 @@ namespace RCore.Components
         private void RefreshByTween()
         {
 #if USE_DOTWEEN
-            if (m_IsOn2 == isOn)
+            if (m_isOn2 == isOn)
                 return;
 
-            m_IsOn2 = isOn;
+            m_isOn2 = isOn;
 
             if (contentsActive != null)
                 foreach (var item in contentsActive)
@@ -297,8 +297,8 @@ namespace RCore.Components
                         .SetId(GetInstanceID())
                         .SetEase(Ease.OutCubic);
 
-                    if (m_CustomToggleGroup != null)
-						m_CustomToggleGroup.SetTarget(rectTransform, tweenTime);
+                    if (m_customToggleGroup != null)
+                        m_customToggleGroup.SetTarget(rectTransform, tweenTime);
                 }
             }
 #endif
