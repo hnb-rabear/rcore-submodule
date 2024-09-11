@@ -645,7 +645,7 @@ namespace RCore.Editor.SRW
 			return pSource;
 		}
 
-		[MenuItem("RCore/Tools/Sprites Replacer (Obsoleted)")]
+		[MenuItem("RCore/Tools/[Obsoleted] Sprites Replacer")]
 		private static void OpenEditorWindow()
 		{
 			var window = GetWindow<SpritesReplacerWindow>("Textures Replacer", true);
