@@ -1,33 +1,40 @@
 #if UNITY_EDITOR && ADDRESSABLES
 using System.Collections.Generic;
-using System.IO;
 using UnityEditor;
 using UnityEditor.AddressableAssets;
 using UnityEditor.AddressableAssets.Settings;
 using UnityEngine;
+using RCore.Common;
 
-namespace RCore.Common
+namespace RCore.Editor
 {
 	[InitializeOnLoad]
-	public class AddressableAssetFilter
+	public class PlayAssetDeliveryFilter
 	{
 		private static Dictionary<string, Color> m_Colors;
 		private static Dictionary<string, Color> m_Directories;
-		private static List<string> m_ignoreGuids;
+		private static HashSet<string> m_ignoreGuids;
 		private static EditorPrefsBool m_Active;
+		private static Dictionary<string, string> m_PathCache = new Dictionary<string, string>();
 
-		public static bool Active
+		// Menu item to toggle Active state
+		[MenuItem("RCore/Tools/Play Asset Delivery Filter Toggle")]
+		private static void ToggleActive()
 		{
-			get => m_Active.Value;
-			set
-			{
-				if (m_Active.Value != value)
-					Init();
-				m_Active.Value = value;
-			}
+			m_Active.Value = !m_Active.Value;
+			Init(); // Reinitialize when toggled
 		}
 
-		static AddressableAssetFilter()
+		// Menu item with a checkbox to display the active state
+		[MenuItem("RCore/Tools/Play Asset Delivery Filter Toggle", true)]
+		private static bool ToggleActiveValidate()
+		{
+			// Return true to show the checkmark when m_Active is true
+			Menu.SetChecked("RCore/Tools/Play Asset Delivery Filter Toggle", m_Active.Value);
+			return true;
+		}
+
+		static PlayAssetDeliveryFilter()
 		{
 			Init();
 			EditorApplication.projectWindowItemOnGUI += OnProjectWindowItemGUI;
@@ -37,15 +44,21 @@ namespace RCore.Common
 
 		private static void Init()
 		{
-			m_Active = new EditorPrefsBool(nameof(AddressableAssetFilter), true);
-			m_ignoreGuids = new List<string>();
+			m_Active = new EditorPrefsBool(nameof(PlayAssetDeliveryFilter), true);
+			m_ignoreGuids = new HashSet<string>();
 			m_Colors = new Dictionary<string, Color>();
 			m_Directories = new Dictionary<string, Color>();
+			m_PathCache = new Dictionary<string, string>();
 		}
 
 		private static void OnSettingsModificationCustom(AddressableAssetSettings arg1, AddressableAssetSettings.ModificationEvent arg2, object arg3)
 		{
-			Init();
+			if (arg2 == AddressableAssetSettings.ModificationEvent.EntryAdded
+			    || arg2 == AddressableAssetSettings.ModificationEvent.EntryMoved
+			    || arg2 == AddressableAssetSettings.ModificationEvent.EntryCreated
+			    || arg2 == AddressableAssetSettings.ModificationEvent.EntryModified
+			    || arg2 == AddressableAssetSettings.ModificationEvent.EntryRemoved)
+				Init();
 		}
 
 		private static void OnProjectWindowItemGUI(string guid, Rect selectionRect)
@@ -56,11 +69,28 @@ namespace RCore.Common
 			DrawColorMark(guid, selectionRect);
 		}
 
+		private static bool IsOutOfView(Rect rect)
+		{
+			return rect.y < 0 || rect.y > Screen.height; // Simplified, you may need a more advanced check
+		}
+
+		private static string GetAssetPath(string guid)
+		{
+			if (!m_PathCache.TryGetValue(guid, out string path))
+			{
+				path = AssetDatabase.GUIDToAssetPath(guid);
+				m_PathCache[guid] = path;
+			}
+			return path;
+		}
+
 		private static void DrawColorMark(string guid, Rect selectionRect)
 		{
+			if (IsOutOfView(selectionRect))
+				return;
 			if (!m_Colors.TryGetValue(guid, out Color color))
 			{
-				var path = AssetDatabase.GUIDToAssetPath(guid);
+				var path = GetAssetPath(guid);
 				if (path.EndsWith(".cs"))
 				{
 					m_ignoreGuids.Add(guid);
@@ -81,7 +111,7 @@ namespace RCore.Common
 						color = Color.cyan;
 					else if (lbl.StartsWith("Ex")) //Excluded
 						color = Color.red;
-					else if (lbl.StartsWith("De")) //Default Local Group
+					else
 						color = Color.yellow;
 					m_Colors.Add(guid, color);
 

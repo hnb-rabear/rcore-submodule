@@ -1,3 +1,4 @@
+#if UNITY_EDITOR && ADDRESSABLES
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.AddressableAssets;
@@ -12,9 +13,7 @@ namespace RCore.Editor
 		{
 			var entry = CreateAssetEntry(source, groupName, false);
 			if (source != null)
-			{
-				source.AddAddressableAssetLabel(label);
-			}
+				source.AddAddressableAssetLabel(label,out _);
 
 			return entry;
 		}
@@ -89,12 +88,39 @@ namespace RCore.Editor
 			var addressableSettings = AddressableAssetSettingsDefaultObject.Settings;
 			return addressableSettings.FindGroup(groupName) != null;
 		}
-		public static void RemoveAddressableAssetLabel(this Object source, string label)
+		public static bool SetAddressableAssetAddress(string guid, string pAddress, params string[] pLabels)
 		{
+			var assetEntry = AddressableAssetSettingsDefaultObject.Settings.FindAssetEntry(guid);
+			if (assetEntry != null)
+			{
+				assetEntry.address = pAddress;
+				if (pLabels != null && pLabels.Length > 0)
+				{
+					assetEntry.labels.Clear();
+					foreach (var label in pLabels)
+					{
+						if (!string.IsNullOrEmpty(label))
+						{
+							AddressableAssetSettingsDefaultObject.Settings.AddLabel(label);
+							assetEntry.labels.Add(label);
+						}
+					}
+				}
+				return true;
+			}
+			return false;
+		}
+	}
+
+	public static class AddressableEditorExtension
+	{
+		public static void RemoveAddressableAssetLabel(this Object source, string label, out string guid)
+		{
+			guid = "";
 			if (source == null || !AssetDatabase.Contains(source))
 				return;
 
-			var entry = source.GetAddressableAssetEntry();
+			var entry = source.GetAddressableAssetEntry(out guid);
 			if (entry != null && entry.labels.Contains(label))
 			{
 				entry.labels.Remove(label);
@@ -102,91 +128,118 @@ namespace RCore.Editor
 				AddressableAssetSettingsDefaultObject.Settings.SetDirty(AddressableAssetSettings.ModificationEvent.LabelRemoved, entry, true);
 			}
 		}
-		public static void AddAddressableAssetLabel(this Object source, string label)
+		public static void AddAddressableAssetLabel(this Object source, string label, out string guid)
 		{
+			guid = "";
 			if (source == null || !AssetDatabase.Contains(source))
 				return;
 
-			var entry = source.GetAddressableAssetEntry();
-			if (entry != null && !entry.labels.Contains(label))
-			{
-				entry.labels.Add(label);
-
+			var entry = source.GetAddressableAssetEntry(out guid);
+			if (entry != null && entry.labels.Add(label))
 				AddressableAssetSettingsDefaultObject.Settings.SetDirty(AddressableAssetSettings.ModificationEvent.LabelAdded, entry, true);
-			}
 		}
-		public static void SetAddressableAssetAddress(this Object source, string address)
+		public static void SetAddressableAssetAddress(this Object source, string address, out string guid)
 		{
+			guid = "";
 			if (source == null || !AssetDatabase.Contains(source))
 				return;
 
-			var entry = source.GetAddressableAssetEntry();
+			var entry = source.GetAddressableAssetEntry(out guid);
 			if (entry != null)
 			{
 				entry.address = address;
 			}
 		}
-		public static void SetAddressableAssetGroup(this Object source, string groupName)
+		public static void SetAddressableAssetGroup(this Object source, string groupName, out string guid)
 		{
+			guid = "";
 			if (source == null || !AssetDatabase.Contains(source))
 				return;
 
-			var group = !GroupExists(groupName) ? CreateGroup(groupName) : GetGroup(groupName);
-			source.SetAddressableAssetGroup(group);
+			var group = !AddressableEditorHelper.GroupExists(groupName) ? AddressableEditorHelper.CreateGroup(groupName) : AddressableEditorHelper.GetGroup(groupName);
+			source.SetAddressableAssetGroup(group, out guid);
 		}
-		public static void SetAddressableAssetGroup(this Object source, AddressableAssetGroup group)
+		public static void SetAddressableAssetGroup(this Object source, AddressableAssetGroup group, out string guid)
 		{
+			guid = "";
 			if (source == null || !AssetDatabase.Contains(source))
 				return;
 
-			var entry = source.GetAddressableAssetEntry();
-			if (entry != null && !source.IsInAddressableAssetGroup(group.Name))
+			var entry = source.GetAddressableAssetEntry(out _);
+			if (entry != null && !source.IsInAddressableAssetGroup(group.Name, out guid))
 			{
 				entry.parentGroup = group;
 			}
 		}
-		public static HashSet<string> GetAddressableAssetLabels(this Object source)
+		public static HashSet<string> GetAddressableAssetLabels(this Object source, out string guid)
 		{
+			guid = "";
 			if (source == null || !AssetDatabase.Contains(source))
 				return null;
 
-			var entry = source.GetAddressableAssetEntry();
+			var entry = source.GetAddressableAssetEntry(out guid);
 			return entry?.labels;
 		}
-		public static string GetAddressableAssetPath(this Object source)
+		public static string GetAddressableAssetPath(this Object source, out string guid)
 		{
+			guid = "";
 			if (source == null || !AssetDatabase.Contains(source))
 				return string.Empty;
 
-			var entry = source.GetAddressableAssetEntry();
+			var entry = source.GetAddressableAssetEntry(out guid);
 			return entry != null ? entry.address : string.Empty;
 		}
-		public static bool IsInAddressableAssetGroup(this Object source, string groupName)
+		public static bool IsInAddressableAssetGroup(this Object source, string groupName, out string guid)
 		{
+			guid = "";
 			if (source == null || !AssetDatabase.Contains(source))
 				return false;
 
-			var group = source.GetCurrentAddressableAssetGroup();
+			var group = source.GetCurrentAddressableAssetGroup(out guid);
 			return group != null && group.Name == groupName;
 		}
-		public static AddressableAssetGroup GetCurrentAddressableAssetGroup(this Object source)
+		public static AddressableAssetGroup GetCurrentAddressableAssetGroup(this Object source, out string guid)
 		{
+			guid = "";
 			if (source == null || !AssetDatabase.Contains(source))
 				return null;
 
-			var entry = source.GetAddressableAssetEntry();
+			var entry = source.GetAddressableAssetEntry(out guid);
 			return entry?.parentGroup;
 		}
-		public static AddressableAssetEntry GetAddressableAssetEntry(this Object source)
+		public static AddressableAssetEntry GetAddressableAssetEntry(this Object source, out string guid)
 		{
+			guid = "";
 			if (source == null || !AssetDatabase.Contains(source))
 				return null;
 
 			var addressableSettings = AddressableAssetSettingsDefaultObject.Settings;
-			var sourcePath = AssetDatabase.GetAssetPath(source);
-			var sourceGuid = AssetDatabase.AssetPathToGUID(sourcePath);
-
-			return addressableSettings.FindAssetEntry(sourceGuid);
+			var path = AssetDatabase.GetAssetPath(source);
+			guid = AssetDatabase.AssetPathToGUID(path);
+			return addressableSettings.FindAssetEntry(guid);
+		}
+		public static bool SetAddressableAssetAddress(Object source, string pAddress, params string[] pLabels)
+		{
+			var assetEntry = source.GetAddressableAssetEntry(out _);
+			if (assetEntry != null)
+			{
+				assetEntry.address = pAddress;
+				if (pLabels != null && pLabels.Length > 0)
+				{
+					assetEntry.labels.Clear();
+					foreach (var label in pLabels)
+					{
+						if (!string.IsNullOrEmpty(label))
+						{
+							AddressableAssetSettingsDefaultObject.Settings.AddLabel(label);
+							assetEntry.labels.Add(label);
+						}
+					}
+				}
+				return true;
+			}
+			return false;
 		}
 	}
 }
+#endif

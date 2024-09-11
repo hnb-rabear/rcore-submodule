@@ -259,7 +259,7 @@ namespace RCore.Components
 
 #if UNITY_EDITOR
         [CustomEditor(typeof(OptimizedVerticalScrollView))]
-        public class OptimizedVerticalScrollViewEditor : Editor
+        public class OptimizedVerticalScrollViewEditor : UnityEditor.Editor
         {
             private OptimizedVerticalScrollView m_script;
             private int m_index;

@@ -255,7 +255,7 @@ namespace RCore.Components
 
 #if UNITY_EDITOR
 		[CustomEditor(typeof(OptimizedHorizontalScrollView))]
-		public class OptimizedHorizontalScrollViewEditor : Editor
+		public class OptimizedHorizontalScrollViewEditor : UnityEditor.Editor
 		{
 			private OptimizedHorizontalScrollView m_script;
 
