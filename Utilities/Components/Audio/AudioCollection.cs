@@ -103,25 +103,22 @@ namespace RCore.Components
 
 				EditorHelper.BoxVertical(() =>
 				{
-					string musicsSourcePath = m_Script.m_MusicsPath;
-					string sfxsSourcePath = m_Script.m_SfxsPath;
-					string exportConfigPath = m_Script.m_ConfigPath;
-					musicsSourcePath = EditorHelper.FolderSelector("Musics Sources Path", $"{m_Script.name}musicsSourcePath", m_Script.m_MusicsPath, true);
-					sfxsSourcePath = EditorHelper.FolderSelector("SFX Sources Path", $"{m_Script.name}sfxsSourcePath", m_Script.m_SfxsPath, true);
-					exportConfigPath = EditorHelper.FolderSelector("Export Config Path", $"{m_Script.name}exportConfigPath", m_Script.m_ConfigPath, true);
+                    string musicSourcePath = EditorHelper.FolderSelector("Musics Sources Path", $"{m_Script.name}musicsSourcePath", m_Script.m_MusicsPath, true);
+					string sfxSourcePath = EditorHelper.FolderSelector("SFX Sources Path", $"{m_Script.name}sfxsSourcePath", m_Script.m_SfxsPath, true);
+					string exportConfigPath = EditorHelper.FolderSelector("Export Config Path", $"{m_Script.name}exportConfigPath", m_Script.m_ConfigPath, true);
 
 					if (EditorHelper.Button("Build"))
 					{
-						musicsSourcePath = Application.dataPath + musicsSourcePath;
-						sfxsSourcePath = Application.dataPath + sfxsSourcePath;
+						musicSourcePath = Application.dataPath + musicSourcePath;
+						sfxSourcePath = Application.dataPath + sfxSourcePath;
 						exportConfigPath = Application.dataPath + exportConfigPath;
 
 						var musicFiles = m_Script.musicClips;
 						var sfxFiles = m_Script.sfxClips;
 						if (m_Script.m_ImportFromFolder)
 						{
-							musicFiles = EditorHelper.GetObjects<AudioClip>(musicsSourcePath, "t:AudioClip").ToArray();
-							sfxFiles = EditorHelper.GetObjects<AudioClip>(sfxsSourcePath, "t:AudioClip").ToArray();
+							musicFiles = EditorHelper.GetObjects<AudioClip>(musicSourcePath, "t:AudioClip").ToArray();
+							sfxFiles = EditorHelper.GetObjects<AudioClip>(sfxSourcePath, "t:AudioClip").ToArray();
 						}
 						string result = GetConfigTemplate();
 
@@ -135,7 +132,7 @@ namespace RCore.Components
 							m_Script.musicClips[i] = musicFiles[i];
 
 							stringKeys += $"\"{musicFiles[i].name}\"";
-							intKeys += $"{musicFiles[i].name.ToUpper()} = {i}";
+							intKeys += $"{musicFiles[i].name} = {i}";
 							enumKeys += $"{musicFiles[i].name} = {i}";
 							if (i < musicFiles.Length - 1)
 							{
@@ -156,7 +153,7 @@ namespace RCore.Components
 							m_Script.sfxClips[i] = sfxFiles[i];
 
 							stringKeys += $"\"{sfxFiles[i].name}\"";
-							intKeys += $"{sfxFiles[i].name.ToUpper()} = {i}";
+							intKeys += $"{sfxFiles[i].name} = {i}";
 							enumKeys += $"{sfxFiles[i].name} = {i}";
 							if (i < sfxFiles.Length - 1)
 							{
@@ -172,8 +169,8 @@ namespace RCore.Components
 
 						if (GUI.changed)
 						{
-							m_Script.m_MusicsPath = musicsSourcePath.Replace(Application.dataPath, "");
-							m_Script.m_SfxsPath = sfxsSourcePath.Replace(Application.dataPath, "");
+							m_Script.m_MusicsPath = musicSourcePath.Replace(Application.dataPath, "");
+							m_Script.m_SfxsPath = sfxSourcePath.Replace(Application.dataPath, "");
 							m_Script.m_ConfigPath = exportConfigPath.Replace(Application.dataPath, "");
 							EditorUtility.SetDirty(m_Script);
 							AssetDatabase.SaveAssets();
@@ -191,14 +188,14 @@ namespace RCore.Components
 					m_Script.m_NameClassMusic = "MusicIDs";
 
 				string musicTemplate =
-					$"public class {m_Script.m_NameClassMusic}\n"
+					$"public static class {m_Script.m_NameClassMusic}\n"
 					+ "{\n"
 					+ "\tpublic const int <M_CONSTANT_INT_KEYS>;\n"
 					+ "\tpublic static readonly string[] idStrings = new string[] { <M_CONSTANT_STRING_KEYS> };\n"
 					+ "\tpublic enum Music { <M_CONSTANTS_ENUM_KEYS> };\n"
 					+ "}";
 				string sfxTemplate =
-					$"public class {m_Script.m_NameClassSFX}\n"
+					$"public static class {m_Script.m_NameClassSFX}\n"
 					+ "{\n"
 					+ "\tpublic const int <S_CONSTANT_INT_KEYS>;\n"
 					+ "\tpublic static readonly string[] idStrings = new string[] { <S_CONSTANT_STRING_KEYS> };\n"
