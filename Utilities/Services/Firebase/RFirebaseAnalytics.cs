@@ -2,15 +2,16 @@
  * Author RadBear - nbhung71711 @gmail.com - 2019
  **/
 
-#if ACTIVE_FIREBASE_ANALYTICS
+#if FIREBASE_ANALYTICS
 using Firebase.Analytics;
 #endif
+using RCore.Common;
 
 namespace RCore.Service
 {
     public static class RFirebaseAnalytics
     {
-#if ACTIVE_FIREBASE_ANALYTICS
+#if FIREBASE_ANALYTICS
         public static bool initialized { get; private set; }
 
         public static void Initialize()

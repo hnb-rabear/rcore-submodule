@@ -574,7 +574,7 @@ namespace RCore.Common
 				WaitLoadTask(operation, pOnComplete);
 				return;
 			}
-			TimerEventsGlobal.Instance.WaitForCondition(new WaitUtil.ConditionEvent()
+			TimerEventsGlobal.Instance.WaitForCondition(new ConditionEvent()
 			{
 				triggerCondition = () => operation.IsDone,
 				onUpdate = () =>
@@ -606,7 +606,7 @@ namespace RCore.Common
 				return;
 			}
 
-            TimerEventsGlobal.Instance.WaitForCondition(new WaitUtil.ConditionEvent()
+            TimerEventsGlobal.Instance.WaitForCondition(new ConditionEvent()
 			{
 				triggerCondition = () => operation.IsDone,
 				onUpdate = () =>
@@ -644,7 +644,7 @@ namespace RCore.Common
 				WaitUnloadTask(operation, pOnComplete);
 				return;
 			}
-            TimerEventsGlobal.Instance.WaitForCondition(new WaitUtil.ConditionEvent()
+            TimerEventsGlobal.Instance.WaitForCondition(new ConditionEvent()
 			{
 				triggerCondition = () => operation.IsDone,
 				onUpdate = () =>

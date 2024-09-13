@@ -443,7 +443,7 @@ namespace RCore.Common
 
         public void Release(T pObj, float pDelay)
         {
-            TimerEventsInScene.Instance.WaitForSeconds(new WaitUtil.CountdownEvent()
+            TimerEventsInScene.Instance.WaitForSeconds(new CountdownEvent()
             {
                 id = pObj.GetInstanceID(),
                 onTimeOut = s =>
@@ -456,7 +456,7 @@ namespace RCore.Common
 
         public void Release(T pObj, ConditionalDelegate pCondition)
         {
-            TimerEventsInScene.Instance.WaitForCondition(new WaitUtil.ConditionEvent()
+            TimerEventsInScene.Instance.WaitForCondition(new ConditionEvent()
             {
                 id = pObj.GetInstanceID(),
                 onTrigger = () =>
@@ -481,7 +481,7 @@ namespace RCore.Common
 
         public void Release(GameObject pObj, float pDelay)
         {
-            TimerEventsInScene.Instance.WaitForSeconds(new WaitUtil.CountdownEvent()
+            TimerEventsInScene.Instance.WaitForSeconds(new CountdownEvent()
             {
                 id = pObj.GetInstanceID(),
                 onTimeOut = s =>
@@ -494,7 +494,7 @@ namespace RCore.Common
 
         public void Release(GameObject pObj, ConditionalDelegate pCondition)
         {
-            TimerEventsInScene.Instance.WaitForCondition(new WaitUtil.ConditionEvent()
+            TimerEventsInScene.Instance.WaitForCondition(new ConditionEvent()
             {
                 id = pObj.GetInstanceID(),
                 onTrigger = () =>

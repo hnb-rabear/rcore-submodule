@@ -3,7 +3,7 @@ namespace RCore.Service
 {
     public static class RCrashlytics
     {
-#if ACTIVE_FIREBASE_CRASHLYTICS
+#if FIREBASE_CRASHLYTICS
         public static void Log(string message)
         {
             Firebase.Crashlytics.Crashlytics.Log(message);

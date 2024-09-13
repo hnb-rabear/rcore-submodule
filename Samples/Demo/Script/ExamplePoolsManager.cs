@@ -34,13 +34,6 @@ namespace RCore.Demo
         /// </summary>
         private PoolsContainer<Image> mImagePools;
         /// <summary>
-        /// Simple class used to manage countdown action, called from update
-        /// Use CountdownEventsManager.Register and CountdownEventsManager.Unregister to declare and release event action
-        /// NOTE 1: View file CoroutineMediator.cs, this is a Global class used for Events Actions
-        /// NOTE 2: View file WaitUtil, it is easy tool which work with CoroutineMediator
-        /// </summary>
-        private CountdownEventsManager mCountdownEventsManager = new CountdownEventsManager();
-        /// <summary>
         /// Simple FPS Counter
         /// </summary>
         private FPSCounter mFPSCounter = new FPSCounter();
@@ -79,11 +72,6 @@ namespace RCore.Demo
             mFPSCounter.Update(Time.deltaTime);
             if (mFPSCounter.updated)
                 Debug.Log("FPS: " + mFPSCounter.fps);
-        }
-
-        private void LateUpdate()
-        {
-            mCountdownEventsManager.LateUpdate();
         }
 
         public void Init()
@@ -151,12 +139,12 @@ namespace RCore.Demo
         {
             if (pCountdown == 0)
             {
-                UnRegisterWait(pObj.GetInstanceID());
+                TimerEventsInScene.Instance.RemoveCountdownEvent(pObj.GetInstanceID());
                 mPoolsContainerTransform.Release(pObj);
             }
             else
             {
-                RegisterWait(new WaitUtil.CountdownEvent()
+                TimerEventsInScene.Instance.WaitForSeconds(new CountdownEvent()
                 {
                     id = pObj.GetInstanceID(),
                     waitTime = pCountdown,
@@ -172,35 +160,18 @@ namespace RCore.Demo
         {
             if (pCountdown == 0)
             {
-                UnRegisterWait(pObj.GetInstanceID());
+                TimerEventsInScene.Instance.RemoveCountdownEvent(pObj.GetInstanceID());
                 mPoolsContainerTransform.Release(pObj);
             }
             else
             {
-                RegisterWait(new WaitUtil.CountdownEvent()
+                TimerEventsInScene.Instance.WaitForSeconds(new CountdownEvent()
                 {
                     id = pObj.GetInstanceID(),
                     waitTime = pCountdown,
                     onTimeOut = s => mPoolsContainerTransform.Release(pObj)
                 });
             }
-        }
-
-#endregion
-
-        //=====================================================================
-
-#region Private
-
-        private void RegisterWait(WaitUtil.CountdownEvent pEvent)
-        {
-            mCountdownEventsManager.Register(pEvent);
-            enabled = true;
-        }
-
-        private void UnRegisterWait(int pId)
-        {
-            mCountdownEventsManager.UnRegister(pId);
         }
 
 #endregion

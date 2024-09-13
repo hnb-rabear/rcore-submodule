@@ -1,6 +1,7 @@
-﻿#if ACTIVE_FIREBASE_DATABASE
+﻿#if FIREBASE_DATABASE
 using Firebase;
 using Firebase.Database;
+using RCore.Common;
 #endif
 using System;
 
@@ -22,7 +23,7 @@ namespace RCore.Service
             }
         }
 
-#if ACTIVE_FIREBASE_DATABASE
+#if FIREBASE_DATABASE
         public RDatabaseReference userProfile;
 
         public CustomFirebaseDatabase(DatabaseReference pParent)
@@ -69,7 +70,7 @@ namespace RCore.Service
                 .EndAt(endAt)
                 .LimitToLast(limit)
                 .GetValueAsync();
-            WaitUtil.WaitTask(task, () =>
+            TimerEventsGlobal.Instance.WaitTask(task, () =>
             {
                 bool success = !task.IsFaulted && !task.IsCanceled;
                 string jsonData = "";
@@ -82,8 +83,7 @@ namespace RCore.Service
                             jsonData = snapshot.GetRawJsonValue();
                     }
                 }
-                if (pOnFinished != null)
-                    pOnFinished(success, jsonData);
+                pOnFinished?.Invoke(success, jsonData);
             });
         }
 #else

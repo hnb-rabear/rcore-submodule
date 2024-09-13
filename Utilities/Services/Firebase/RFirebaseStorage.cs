@@ -2,12 +2,17 @@
  * Author RadBear - nbhung71711 @gmail.com - 2019
  **/
 
-#if ACTIVE_FIREBASE_STORAGE
+#if FIREBASE_STORAGE
 using Firebase;
 using Firebase.Storage;
 #endif
+using RCore.Common;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
@@ -40,7 +45,7 @@ namespace RCore.Service
 
         private void LogException(Exception exception)
         {
-#if ACTIVE_FIREBASE_STORAGE
+#if FIREBASE_STORAGE
             var storageException = exception as StorageException;
             if (storageException != null)
             {
@@ -94,7 +99,7 @@ namespace RCore.Service
 
     public static class RFirebaseStorage
     {
-#if ACTIVE_FIREBASE_STORAGE
+#if FIREBASE_STORAGE
 
         #region Constants
 
@@ -132,7 +137,7 @@ namespace RCore.Service
 
             string appBucket = FirebaseApp.DefaultInstance.Options.StorageBucket;
             if (!string.IsNullOrEmpty(appBucket))
-                m_StorageBucket = string.Format("gs://{0}", appBucket);
+                m_StorageBucket = $"gs://{appBucket}";
 
             m_Initialized = true;
         }
@@ -165,7 +170,7 @@ namespace RCore.Service
             Debug.Log(string.Format("Bucket: {0}", storageReference.Bucket));
             Debug.Log(string.Format("Path: {0}", storageReference.Path));
             Debug.Log(string.Format("Name: {0}", storageReference.Name));
-            Debug.Log(string.Format("Parent Path: {0}", storageReference.Parent != null ? storageReference.Parent.Path : "(root)"));
+            Debug.Log($"Parent Path: {(storageReference.Parent != null ? storageReference.Parent.Path : "(root)")}");
             Debug.Log(string.Format("Root Path: {0}", storageReference.Root.Path));
             Debug.Log(string.Format("App: {0}", storageReference.Storage.App.Name));
             var task = storageReference.GetMetadataAsync();
@@ -180,8 +185,7 @@ namespace RCore.Service
         {
             if (!m_Initialized || string.IsNullOrEmpty(pStoDef.fileName))
             {
-                if (pOnFinished != null)
-                    pOnFinished(false);
+                pOnFinished?.Invoke(false);
                 return;
             }
 
@@ -190,7 +194,7 @@ namespace RCore.Service
             Debug.Log(string.Format("Deleting {0}...", storageReference.Path));
 
             m_IsDeleting = true;
-            WaitUtil.WaitTask(task, () =>
+            TimerEventsGlobal.Instance.WaitTask(task, () =>
             {
                 m_IsDeleting = false;
 
@@ -201,8 +205,7 @@ namespace RCore.Service
                 if (success)
                     Debug.Log(string.Format("{0} deleted", storageReference.Path));
 
-                if (pOnFinished != null)
-                    pOnFinished(success);
+                pOnFinished?.Invoke(success);
             });
         }
 
@@ -210,12 +213,11 @@ namespace RCore.Service
         {
             if (!m_Initialized || string.IsNullOrEmpty(pStoDef.fileName))
             {
-                if (pOnFinished != null)
-                    pOnFinished(false);
+                pOnFinished?.Invoke(false);
                 return;
             }
 
-            CoroutineUtil.StartCoroutine(IEDelete(pOnFinished, pStoDef));
+            RFirebaseManager.Instance.StartCoroutine(IEDelete(pOnFinished, pStoDef));
         }
 
         private static IEnumerator IEDelete(Action<bool> pOnFinished, SavedFileDefinition pStoDef)
@@ -235,8 +237,7 @@ namespace RCore.Service
             if (success)
                 Debug.Log(string.Format("{0} deleted", storageReference.Path));
 
-            if (pOnFinished != null)
-                pOnFinished(success);
+            pOnFinished?.Invoke(success);
         }
 
         //== DOWNLOAD / UPLOAD STREAM
@@ -245,8 +246,7 @@ namespace RCore.Service
         {
             if (!m_Initialized || string.IsNullOrEmpty(pStoDef.fileName))
             {
-                if (pOnFinished != null)
-                    pOnFinished(false);
+                pOnFinished?.Invoke(false);
                 return;
             }
 
@@ -259,20 +259,19 @@ namespace RCore.Service
             Debug.Log(string.Format("Uploading to {0} using stream...", storageReference.Path));
 
             m_IsUploading = true;
-            WaitUtil.WaitTask(task, () =>
+            TimerEventsGlobal.Instance.WaitTask(task, () =>
             {
                 m_IsUploading = false;
 
                 if (!task.IsFaulted && !task.IsCanceled)
                     Debug.Log("[storage]: Finished uploading " + MetadataToString(task.Result, false));
                 else
-                    Debug.LogError(string.Format("[storage]: Uploading Fail, cancel: {0}, faulted: {1}", task.IsCanceled, task.IsFaulted));
+                    Debug.LogError($"[storage]: Uploading Fail, cancel: {task.IsCanceled}, faulted: {task.IsFaulted}");
 
                 if (task.IsFaulted)
                     Debug.LogError(task.Exception.ToString());
 
-                if (pOnFinished != null)
-                    pOnFinished(!task.IsFaulted && !task.IsCanceled);
+                pOnFinished?.Invoke(!task.IsFaulted && !task.IsCanceled);
             });
         }
 
@@ -280,12 +279,11 @@ namespace RCore.Service
         {
             if (!m_Initialized || string.IsNullOrEmpty(pStoDef.fileName))
             {
-                if (pOnFinished != null)
-                    pOnFinished(false);
+                pOnFinished?.Invoke(false);
                 return;
             }
 
-            CoroutineUtil.StartCoroutine(IEUploadStream(pContent, pOnFinished, pStoDef));
+            RFirebaseManager.Instance.StartCoroutine(IEUploadStream(pContent, pOnFinished, pStoDef));
         }
 
         private static IEnumerator IEUploadStream(string pContent, Action<bool> pOnFinished, SavedFileDefinition pStoDef)
@@ -305,21 +303,19 @@ namespace RCore.Service
             if (!task.IsFaulted && !task.IsCanceled)
                 Debug.Log("[storage]: Finished uploading " + MetadataToString(task.Result, false));
             else
-                Debug.LogError(string.Format("[storage]: Uploading Fail, cancel: {0}, faulted: {1}", task.IsCanceled, task.IsFaulted));
+                Debug.LogError($"[storage]: Uploading Fail, cancel: {task.IsCanceled}, faulted: {task.IsFaulted}");
 
             if (task.IsFaulted)
                 Debug.LogError(task.Exception.ToString());
 
-            if (pOnFinished != null)
-                pOnFinished(!task.IsFaulted && !task.IsCanceled);
+            pOnFinished?.Invoke(!task.IsFaulted && !task.IsCanceled);
         }
 
         public static void DownloadStream(Action<Task, string> pOnFinished, SavedFileDefinition pStoDef)
         {
             if (!m_Initialized || string.IsNullOrEmpty(pStoDef.fileName))
             {
-                if (pOnFinished != null)
-                    pOnFinished(null, "");
+                pOnFinished?.Invoke(null, "");
                 return;
             }
 
@@ -339,7 +335,7 @@ namespace RCore.Service
             }, new StorageProgress<DownloadState>(DisplayDownloadState), m_CancellationTokenSource.Token);
 
             m_IsDownloading = true;
-            WaitUtil.WaitTask(task, () =>
+            TimerEventsGlobal.Instance.WaitTask(task, () =>
             {
                 m_IsDownloading = false;
 
@@ -350,10 +346,9 @@ namespace RCore.Service
                 if (success)
                     Debug.Log("Finished downloading stream\n");
                 else
-                    Debug.LogError(string.Format("[storage]: Downloaded Fail, cancel: {0}, faulted: {1}", task.IsCanceled, task.IsFaulted));
+                    Debug.LogError($"[storage]: Downloaded Fail, cancel: {task.IsCanceled}, faulted: {task.IsFaulted}");
 
-                if (pOnFinished != null)
-                    pOnFinished(task, content);
+                pOnFinished?.Invoke(task, content);
             });
         }
 
@@ -361,12 +356,11 @@ namespace RCore.Service
         {
             if (!m_Initialized || string.IsNullOrEmpty(pStoDef.fileName))
             {
-                if (pOnFinished != null)
-                    pOnFinished(null, "");
+                pOnFinished?.Invoke(null, "");
                 return;
             }
 
-            CoroutineUtil.StartCoroutine(IEDownloadStream(pOnFinished, pStoDef));
+            RFirebaseManager.Instance.StartCoroutine(IEDownloadStream(pOnFinished, pStoDef));
         }
 
         private static IEnumerator IEDownloadStream(Action<Task, string> pOnFinished, SavedFileDefinition pStoDef)
@@ -397,10 +391,9 @@ namespace RCore.Service
             if (success)
                 Debug.Log("Finished downloading stream\n");
             else
-                Debug.LogError(string.Format("[storage]: Downloaded Fail, cancel: {0}, faulted: {1}", task.IsCanceled, task.IsFaulted));
+                Debug.LogError($"[storage]: Downloaded Fail, cancel: {task.IsCanceled}, faulted: {task.IsFaulted}");
 
-            if (pOnFinished != null)
-                pOnFinished(task, content);
+            pOnFinished?.Invoke(task, content);
         }
 
         //== DOWNLOAD / UPLOAD FILE
@@ -419,10 +412,10 @@ namespace RCore.Service
                 localFilenameUriString, StringToMetadataChange(pStoDef.metaData),
                 new StorageProgress<UploadState>(DisplayUploadState),
                 m_CancellationTokenSource.Token, null);
-            Debug.Log(string.Format("Uploading '{0}' to '{1}'...", localFilenameUriString, storageReference.Path));
+            Debug.Log($"Uploading '{localFilenameUriString}' to '{storageReference.Path}'...");
 
             m_IsUploading = true;
-            WaitUtil.WaitTask(task, () =>
+            TimerEventsGlobal.Instance.WaitTask(task, () =>
             {
                 m_IsUploading = false;
 
@@ -431,13 +424,12 @@ namespace RCore.Service
                 if (success)
                     Debug.Log("[storage]: Finished uploading " + MetadataToString(task.Result, false));
                 else
-                    Debug.LogError(string.Format("[storage]: Uploading Fail, cancel: {0}, faulted: {1}", task.IsCanceled, task.IsFaulted));
+                    Debug.LogError($"[storage]: Uploading Fail, cancel: {task.IsCanceled}, faulted: {task.IsFaulted}");
 
                 if (task.IsFaulted)
                     Debug.LogError(task.Exception.ToString());
 
-                if (pOnFinished != null)
-                    pOnFinished(success);
+                pOnFinished?.Invoke(success);
             });
         }
 
@@ -445,12 +437,11 @@ namespace RCore.Service
         {
             if (!m_Initialized || string.IsNullOrEmpty(pStoDef.fileName))
             {
-                if (pOnFinished != null)
-                    pOnFinished(false);
+                pOnFinished?.Invoke(false);
                 return;
             }
 
-            CoroutineUtil.StartCoroutine(IEUploadFromFile(pOnFinished, pOriginalFilePath, pStoDef));
+            RFirebaseManager.Instance.StartCoroutine(IEUploadFromFile(pOnFinished, pOriginalFilePath, pStoDef));
         }
 
         private static IEnumerator IEUploadFromFile(Action<bool> pOnFinished, string pOriginalFilePath, SavedFileDefinition pStoDef)
@@ -461,7 +452,7 @@ namespace RCore.Service
                 localFilenameUriString, StringToMetadataChange(pStoDef.metaData),
                 new StorageProgress<UploadState>(DisplayUploadState),
                 m_CancellationTokenSource.Token, null);
-            Debug.Log(string.Format("Uploading '{0}' to '{1}'...", localFilenameUriString, storageReference.Path));
+            Debug.Log($"Uploading '{localFilenameUriString}' to '{storageReference.Path}'...");
 
             m_IsUploading = true;
             yield return new WaitForTaskStorage(task);
@@ -470,21 +461,19 @@ namespace RCore.Service
             if (!task.IsFaulted && !task.IsCanceled)
                 Debug.Log("[storage]: Finished uploading " + MetadataToString(task.Result, false));
             else
-                Debug.LogError(string.Format("[storage]: Uploading Fail, cancel: {0}, faulted: {1}", task.IsCanceled, task.IsFaulted));
+                Debug.LogError($"[storage]: Uploading Fail, cancel: {task.IsCanceled}, faulted: {task.IsFaulted}");
 
             if (task.IsFaulted)
                 Debug.LogError(task.Exception.ToString());
 
-            if (pOnFinished != null)
-                pOnFinished(!task.IsFaulted && !task.IsCanceled);
+            pOnFinished?.Invoke(!task.IsFaulted && !task.IsCanceled);
         }
 
         public static void DownloadToFile(Action<Task, string> pOnFinished, string pOutPutPath, SavedFileDefinition pStoDef)
         {
             if (!m_Initialized || string.IsNullOrEmpty(pStoDef.fileName))
             {
-                if (pOnFinished != null)
-                    pOnFinished(null, "");
+                pOnFinished?.Invoke(null, "");
                 return;
             }
 
@@ -492,10 +481,10 @@ namespace RCore.Service
             var localFilenameUriString = PathToPersistentDataPathUriString(pOutPutPath);
             var task = storageReference.GetFileAsync(localFilenameUriString, new StorageProgress<DownloadState>(DisplayDownloadState), m_CancellationTokenSource.Token);
             var content = "";
-            Debug.Log(string.Format("Downloading {0} to {1}...", storageReference.Path, localFilenameUriString));
+            Debug.Log($"Downloading {storageReference.Path} to {localFilenameUriString}...");
 
             m_IsDownloading = true;
-            WaitUtil.WaitTask(task, () =>
+            TimerEventsGlobal.Instance.WaitTask(task, () =>
             {
                 m_IsDownloading = false;
 
@@ -506,15 +495,14 @@ namespace RCore.Service
                 if (success)
                 {
                     var filename = FileUriStringToPath(localFilenameUriString);
-                    Debug.Log(string.Format("Finished downloading file {0} ({1})", localFilenameUriString, filename));
-                    Debug.Log(string.Format("File Size {0} bytes\n", (new FileInfo(filename)).Length));
+                    Debug.Log($"Finished downloading file {localFilenameUriString} ({filename})");
+                    Debug.Log($"File Size {(new FileInfo(filename)).Length} bytes\n");
                     content = File.ReadAllText(filename);
                 }
                 else
-                    Debug.LogError(string.Format("[storage]: Downloaded Fail, cancel: {0}, faulted: {1}", task.IsCanceled, task.IsFaulted));
+                    Debug.LogError($"[storage]: Downloaded Fail, cancel: {task.IsCanceled}, faulted: {task.IsFaulted}");
 
-                if (pOnFinished != null)
-                    pOnFinished(task, content);
+                pOnFinished?.Invoke(task, content);
             });
         }
 
@@ -522,12 +510,11 @@ namespace RCore.Service
         {
             if (!m_Initialized || string.IsNullOrEmpty(pStoDef.fileName))
             {
-                if (pOnFinished != null)
-                    pOnFinished(null, "");
+                pOnFinished?.Invoke(null, "");
                 return;
             }
 
-            CoroutineUtil.StartCoroutine(IEDownloadToFile(pOnFinished, pOutPutPath, pStoDef));
+            RFirebaseManager.Instance.StartCoroutine(IEDownloadToFile(pOnFinished, pOutPutPath, pStoDef));
         }
 
         private static IEnumerator IEDownloadToFile(Action<Task, string> pOnFinished, string pOutPutPath, SavedFileDefinition pStoDef)
@@ -536,7 +523,7 @@ namespace RCore.Service
             var localFilenameUriString = PathToPersistentDataPathUriString(pOutPutPath);
             var task = storageReference.GetFileAsync(localFilenameUriString, new StorageProgress<DownloadState>(DisplayDownloadState), m_CancellationTokenSource.Token);
             var content = "";
-            Debug.Log(string.Format("Downloading {0} to {1}...", storageReference.Path, localFilenameUriString));
+            Debug.Log($"Downloading {storageReference.Path} to {localFilenameUriString}...");
 
             m_IsDownloading = true;
             yield return new WaitForTaskStorage(task);
@@ -549,15 +536,14 @@ namespace RCore.Service
             if (success)
             {
                 var filename = FileUriStringToPath(localFilenameUriString);
-                Debug.Log(string.Format("Finished downloading file {0} ({1})", localFilenameUriString, filename));
-                Debug.Log(string.Format("File Size {0} bytes\n", (new FileInfo(filename)).Length));
+                Debug.Log($"Finished downloading file {localFilenameUriString} ({filename})");
+                Debug.Log($"File Size {(new FileInfo(filename)).Length} bytes\n");
                 content = File.ReadAllText(filename);
             }
             else
-                Debug.LogError(string.Format("[storage]: Downloaded Fail, cancel: {0}, faulted: {1}", task.IsCanceled, task.IsFaulted));
+                Debug.LogError($"[storage]: Downloaded Fail, cancel: {task.IsCanceled}, faulted: {task.IsFaulted}");
 
-            if (pOnFinished != null)
-                pOnFinished(task, content);
+            pOnFinished?.Invoke(task, content);
         }
 
         //== DOWNLOAD / UPLOAD BYTES
@@ -593,12 +579,11 @@ namespace RCore.Service
         {
             if (!m_Initialized || string.IsNullOrEmpty(pStoDef.fileName))
             {
-                if (pOnFinished != null)
-                    pOnFinished(false);
+                pOnFinished?.Invoke(false);
                 return;
             }
 
-            CoroutineUtil.StartCoroutine(IEUploadBytes(pContent, pOnFinished, pStoDef));
+            RFirebaseManager.Instance.StartCoroutine(IEUploadBytes(pContent, pOnFinished, pStoDef));
         }
 
         /// <summary>
@@ -617,21 +602,19 @@ namespace RCore.Service
             if (!task.IsFaulted && !task.IsCanceled)
                 Debug.Log("[storage]: Finished uploading " + MetadataToString(task.Result, false));
             else
-                Debug.LogError(string.Format("[storage]: Uploading Fail, cancel: {0}, faulted: {1}", task.IsCanceled, task.IsFaulted));
+                Debug.LogError($"[storage]: Uploading Fail, cancel: {task.IsCanceled}, faulted: {task.IsFaulted}");
 
             if (task.IsFaulted)
                 Debug.LogError(task.Exception.ToString());
 
-            if (pOnFinished != null)
-                pOnFinished(!task.IsFaulted && !task.IsCanceled);
+            pOnFinished?.Invoke(!task.IsFaulted && !task.IsCanceled);
         }
 
         public static void UploadBytes(string pContent, Action<bool> pOnFinished, SavedFileDefinition pStoDef)
         {
             if (!m_Initialized || string.IsNullOrEmpty(pStoDef.fileName))
             {
-                if (pOnFinished != null)
-                    pOnFinished(false);
+                pOnFinished?.Invoke(false);
                 return;
             }
 
@@ -640,7 +623,7 @@ namespace RCore.Service
             Debug.Log(string.Format("Uploading to {0} ...", storageReference.Path));
 
             m_IsUploading = true;
-            WaitUtil.WaitTask(task, () =>
+            TimerEventsGlobal.Instance.WaitTask(task, () =>
             {
                 m_IsUploading = false;
 
@@ -648,13 +631,12 @@ namespace RCore.Service
                 if (success)
                     Debug.Log("[storage]: Finished uploading " + MetadataToString(task.Result, false));
                 else
-                    Debug.LogError(string.Format("[storage]: Uploading Fail, cancel: {0}, faulted: {1}", task.IsCanceled, task.IsFaulted));
+                    Debug.LogError($"[storage]: Uploading Fail, cancel: {task.IsCanceled}, faulted: {task.IsFaulted}");
 
                 if (task.IsFaulted)
                     Debug.LogError(task.Exception.ToString());
 
-                if (pOnFinished != null)
-                    pOnFinished(success);
+                pOnFinished?.Invoke(success);
             });
         }
 
@@ -662,8 +644,7 @@ namespace RCore.Service
         {
             if (!m_Initialized || string.IsNullOrEmpty(pStoDef.fileName))
             {
-                if (pOnFinished != null)
-                    pOnFinished(null, "");
+                pOnFinished?.Invoke(null, "");
                 return;
             }
 
@@ -673,7 +654,7 @@ namespace RCore.Service
             Debug.Log(string.Format("[storage]: Downloading {0} ...", storageRef.Path));
 
             m_IsDownloading = true;
-            WaitUtil.WaitTask(task, () =>
+            TimerEventsGlobal.Instance.WaitTask(task, () =>
             {
                 m_IsDownloading = false;
 
@@ -681,16 +662,15 @@ namespace RCore.Service
                 if (success)
                 {
                     content = Encoding.Default.GetString(task.Result);
-                    Debug.Log(string.Format("[storage]: Finished downloading bytes\nFile Size {0} bytes\n", content.Length));
+                    Debug.Log($"[storage]: Finished downloading bytes\nFile Size {content.Length} bytes\n");
                 }
                 else
-                    Debug.LogError(string.Format("[storage]: Downloaded Fail, cancel: {0}, faulted: {1}", task.IsCanceled, task.IsFaulted));
+                    Debug.LogError($"[storage]: Downloaded Fail, cancel: {task.IsCanceled}, faulted: {task.IsFaulted}");
 
                 if (task.IsFaulted)
                     LogException(task.Exception);
 
-                if (pOnFinished != null)
-                    pOnFinished(task, content);
+                pOnFinished?.Invoke(task, content);
             });
         }
 
@@ -698,12 +678,11 @@ namespace RCore.Service
         {
             if (!m_Initialized || string.IsNullOrEmpty(pStoDef.fileName))
             {
-                if (pOnFinished != null)
-                    pOnFinished(null, "");
+                pOnFinished?.Invoke(null, "");
                 return;
             }
 
-            CoroutineUtil.StartCoroutine(IEDownLoadBytes(pOnFinished, pStoDef));
+            RFirebaseManager.Instance.StartCoroutine(IEDownLoadBytes(pOnFinished, pStoDef));
         }
 
         private static IEnumerator IEDownLoadBytes(Action<Task, string> pOnFinished, SavedFileDefinition pStoDef)
@@ -724,13 +703,12 @@ namespace RCore.Service
             if (success)
             {
                 content = Encoding.Default.GetString(task.Result);
-                Debug.Log(string.Format("[storage]: Finished downloading bytes\nFile Size {0} bytes\n", content.Length));
+                Debug.Log($"[storage]: Finished downloading bytes\nFile Size {content.Length} bytes\n");
             }
             else
-                Debug.LogError(string.Format("[storage]: Downloaded Fail, cancel: {0}, faulted: {1}", task.IsCanceled, task.IsFaulted));
+                Debug.LogError($"[storage]: Downloaded Fail, cancel: {task.IsCanceled}, faulted: {task.IsFaulted}");
 
-            if (pOnFinished != null)
-                pOnFinished(task, content);
+            pOnFinished?.Invoke(task, content);
 
         }
 
@@ -754,7 +732,7 @@ namespace RCore.Service
             if (location.StartsWith("gs://") || location.StartsWith("http://") || location.StartsWith("https://"))
             {
                 var storageUri = new Uri(location);
-                var firebaseStorage = FirebaseStorage.GetInstance(string.Format("{0}://{1}", storageUri.Scheme, storageUri.Host));
+                var firebaseStorage = FirebaseStorage.GetInstance($"{storageUri.Scheme}://{storageUri.Host}");
                 return firebaseStorage.GetReferenceFromUrl(location);
             }
 
@@ -770,7 +748,7 @@ namespace RCore.Service
             if (filename.StartsWith(URI_FILE_SCHEME))
                 return filename;
 
-            return string.Format("{0}{1}/{2}", URI_FILE_SCHEME, Application.persistentDataPath, filename);
+            return $"{URI_FILE_SCHEME}{Application.persistentDataPath}/{filename}";
         }
 
         /// <summary>
@@ -779,7 +757,7 @@ namespace RCore.Service
         private static void DisplayUploadState(UploadState uploadState)
         {
             if (m_IsUploading)
-                Debug.Log(string.Format("Uploading {0}: {1} out of {2}", uploadState.Reference.Name, uploadState.BytesTransferred, uploadState.TotalByteCount));
+                Debug.Log($"Uploading {uploadState.Reference.Name}: {uploadState.BytesTransferred} out of {uploadState.TotalByteCount}");
         }
 
         /// <summary>
@@ -803,7 +781,7 @@ namespace RCore.Service
                 var keyValue = metadataStringLine.Split(new char[] { '=' });
                 if (keyValue.Length != 2)
                 {
-                    Debug.Log(string.Format("Ignoring malformed metadata line '{0}' tokens={1}", metadataStringLine, keyValue.Length));
+                    Debug.Log($"Ignoring malformed metadata line '{metadataStringLine}' tokens={keyValue.Length}");
                     continue;
                 }
 
@@ -866,7 +844,7 @@ namespace RCore.Service
             var fieldAndValueStrings = new List<string>();
             foreach (var kv in fieldsAndValues)
             {
-                fieldAndValueStrings.Add(string.Format("{0}={1}", kv.Key, kv.Value));
+                fieldAndValueStrings.Add($"{kv.Key}={kv.Value}");
             }
             return string.Join("\n", fieldAndValueStrings.ToArray());
         }
@@ -877,7 +855,7 @@ namespace RCore.Service
         private static void DisplayDownloadState(DownloadState downloadState)
         {
             if (m_IsDownloading)
-                Debug.Log(string.Format("Downloading {0}: {1} out of {2}", downloadState.Reference.Name, downloadState.BytesTransferred, downloadState.TotalByteCount));
+                Debug.Log($"Downloading {downloadState.Reference.Name}: {downloadState.BytesTransferred} out of {downloadState.TotalByteCount}");
         }
 
         private static void LogException(Exception exception)

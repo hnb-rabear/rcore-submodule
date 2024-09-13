@@ -1,18 +1,19 @@
 ﻿/***
  * Author RadBear - nbhung71711 @gmail.com - 2019
  **/
-#pragma warning disable 0649
-#if ACTIVE_FIREBASE_DATABASE
+#if FIREBASE_DATABASE
 using Firebase;
 using Firebase.Database;
 #endif
+using System.Collections;
+using RCore.Common;
 using System;
 
 namespace RCore.Service
 {
     public class RDatabaseReference
     {
-#if ACTIVE_FIREBASE_DATABASE
+#if FIREBASE_DATABASE
         public string name;
         public DatabaseReference reference;
 
@@ -41,12 +42,11 @@ namespace RCore.Service
         {
             if (string.IsNullOrEmpty(name))
             {
-                if (pOnFinished != null)
-                    pOnFinished(null, false);
+                pOnFinished?.Invoke(null, false);
                 return;
             }
             var task = reference.GetValueAsync();
-            WaitUtil.WaitTask(task, () =>
+            TimerEventsGlobal.Instance.WaitTask(task, () =>
             {
                 string loadData = "";
                 bool success = !task.IsFaulted && !task.IsCanceled;
@@ -56,20 +56,18 @@ namespace RCore.Service
                         loadData = task.Result.Value.ToString();
                 }
 
-                if (pOnFinished != null)
-                    pOnFinished(loadData, success);
+                pOnFinished?.Invoke(loadData, success);
             });
         }
         public void GetDataWithCoroutine(Action<string, bool> pOnFinished)
         {
             if (string.IsNullOrEmpty(name))
             {
-                if (pOnFinished != null)
-                    pOnFinished(null, false);
+                pOnFinished?.Invoke(null, false);
                 return;
             }
 
-            CoroutineUtil.StartCoroutine(IEGetData(pOnFinished));
+            RFirebaseManager.Instance.StartCoroutine(IEGetData(pOnFinished));
         }
         private IEnumerator IEGetData(Action<string, bool> pOnFinished)
         {
@@ -85,19 +83,17 @@ namespace RCore.Service
                     loadData = task.Result.Value.ToString();
             }
 
-            if (pOnFinished != null)
-                pOnFinished(loadData, success);
+            pOnFinished?.Invoke(loadData, success);
         }
         public void GetData(string child, Action<string, bool> pOnFinished)
         {
             if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(child))
             {
-                if (pOnFinished != null)
-                    pOnFinished(null, false);
+                pOnFinished?.Invoke(null, false);
                 return;
             }
             var task = reference.Child(child).GetValueAsync();
-            WaitUtil.WaitTask(task, () =>
+            TimerEventsGlobal.Instance.WaitTask(task, () =>
             {
                 string loadData = "";
                 bool success = !task.IsFaulted && !task.IsCanceled;
@@ -107,8 +103,7 @@ namespace RCore.Service
                         loadData = task.Result.Value.ToString();
                 }
 
-                if (pOnFinished != null)
-                    pOnFinished(loadData, success);
+                pOnFinished?.Invoke(loadData, success);
             });
         }
 
@@ -116,24 +111,21 @@ namespace RCore.Service
         {
             if (string.IsNullOrEmpty(name))
             {
-                if (pOnFinished != null)
-                    pOnFinished(false);
+                pOnFinished?.Invoke(false);
                 return;
             }
             var task = reference.SetValueAsync(pUploadData);
-            WaitUtil.WaitTask(task, () =>
+            TimerEventsGlobal.Instance.WaitTask(task, () =>
             {
                 bool success = !task.IsFaulted && !task.IsCanceled;
-                if (pOnFinished != null)
-                    pOnFinished(success);
+                pOnFinished?.Invoke(success);
             });
         }
         public void SetDataWithCoroutine(string pUploadData, Action<bool> pOnFinished)
         {
             if (string.IsNullOrEmpty(name))
             {
-                if (pOnFinished != null)
-                    pOnFinished(false);
+                pOnFinished?.Invoke(false);
                 return;
             }
 
@@ -143,16 +135,14 @@ namespace RCore.Service
         {
             if (string.IsNullOrEmpty(name))
             {
-                if (pOnFinished != null)
-                    pOnFinished(false);
+                pOnFinished?.Invoke(false);
                 return;
             }
             var task = reference.SetRawJsonValueAsync(pUploadJsonData);
-            WaitUtil.WaitTask(task, () =>
+            TimerEventsGlobal.Instance.WaitTask(task, () =>
             {
                 bool success = !task.IsFaulted && !task.IsCanceled;
-                if (pOnFinished != null)
-                    pOnFinished(success);
+                pOnFinished?.Invoke(success);
             });
         }
         private IEnumerator IESetData(string pUploadData, Action<bool> pOnFinished)
@@ -160,55 +150,48 @@ namespace RCore.Service
             var task = reference.SetValueAsync(pUploadData);
             yield return new WaitForTask(task);
             bool success = !task.IsFaulted && !task.IsCanceled;
-            if (pOnFinished != null)
-                pOnFinished(success);
+            pOnFinished?.Invoke(success);
         }
         public void SetData(string child, string pUploadData, Action<bool> pOnFinished)
         {
             if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(child))
             {
-                if (pOnFinished != null)
-                    pOnFinished(false);
+                pOnFinished?.Invoke(false);
                 return;
             }
             var task = reference.Child(child).SetValueAsync(pUploadData);
-            WaitUtil.WaitTask(task, () =>
+            TimerEventsGlobal.Instance.WaitTask(task, () =>
             {
                 bool success = !task.IsFaulted && !task.IsCanceled;
-                if (pOnFinished != null)
-                    pOnFinished(success);
+                pOnFinished?.Invoke(success);
             });
         }
         public void SetJsonData(string child, string pUploadData, Action<bool> pOnFinished)
         {
             if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(child))
             {
-                if (pOnFinished != null)
-                    pOnFinished(false);
+                pOnFinished?.Invoke(false);
                 return;
             }
             var task = reference.Child(child).SetRawJsonValueAsync(pUploadData);
-            WaitUtil.WaitTask(task, () =>
+            TimerEventsGlobal.Instance.WaitTask(task, () =>
             {
                 bool success = !task.IsFaulted && !task.IsCanceled;
-                if (pOnFinished != null)
-                    pOnFinished(success);
+                pOnFinished?.Invoke(success);
             });
         }
         public void SetJsonDataPriority(string child, string pUploadData, Action<bool> pOnFinished)
         {
             if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(child))
             {
-                if (pOnFinished != null)
-                    pOnFinished(false);
+                pOnFinished?.Invoke(false);
                 return;
             }
             var task = reference.Child(child).SetRawJsonValueAsync(pUploadData, 1);
-            WaitUtil.WaitTask(task, () =>
+            TimerEventsGlobal.Instance.WaitTask(task, () =>
             {
                 bool success = !task.IsFaulted && !task.IsCanceled;
-                if (pOnFinished != null)
-                    pOnFinished(success);
+                pOnFinished?.Invoke(success);
             });
         }
 
@@ -216,32 +199,28 @@ namespace RCore.Service
         {
             if (string.IsNullOrEmpty(name))
             {
-                if (pOnFinished != null)
-                    pOnFinished(false);
+                pOnFinished?.Invoke(false);
                 return;
             }
             var task = reference.RemoveValueAsync();
-            WaitUtil.WaitTask(task, () =>
+            TimerEventsGlobal.Instance.WaitTask(task, () =>
             {
                 bool success = !task.IsFaulted && !task.IsCanceled;
-                if (pOnFinished != null)
-                    pOnFinished(success);
+                pOnFinished?.Invoke(success);
             });
         }
         public void RemoveData(string child, Action<bool> pOnFinished)
         {
             if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(child))
             {
-                if (pOnFinished != null)
-                    pOnFinished(false);
+                pOnFinished?.Invoke(false);
                 return;
             }
             var task = reference.Child(child).RemoveValueAsync();
-            WaitUtil.WaitTask(task, () =>
+            TimerEventsGlobal.Instance.WaitTask(task, () =>
             {
                 bool success = !task.IsFaulted && !task.IsCanceled;
-                if (pOnFinished != null)
-                    pOnFinished(success);
+                pOnFinished?.Invoke(success);
             });
         }
 #endif
@@ -252,7 +231,7 @@ namespace RCore.Service
         private static bool m_Initialized;
 
         public static bool Initialized => m_Initialized;
-#if ACTIVE_FIREBASE_DATABASE
+#if FIREBASE_DATABASE
         public static void Initialize()
         {
             if (m_Initialized)
@@ -265,8 +244,7 @@ namespace RCore.Service
             var reference = FirebaseDatabase.DefaultInstance.GetReference(".info/connected");
             GetData(reference, (loadData, success) =>
             {
-                if (pOnConnected != null)
-                    pOnConnected();
+                pOnConnected?.Invoke();
             });
         }
 
@@ -274,12 +252,11 @@ namespace RCore.Service
         {
             if (reference == null)
             {
-                if (pOnFinished != null)
-                    pOnFinished(null, false);
+                pOnFinished?.Invoke(null, false);
                 return;
             }
             var task = reference.GetValueAsync();
-            WaitUtil.WaitTask(task, () =>
+            TimerEventsGlobal.Instance.WaitTask(task, () =>
             {
                 string loadData = "";
                 bool success = !task.IsFaulted && !task.IsCanceled;
@@ -289,16 +266,14 @@ namespace RCore.Service
                         loadData = task.Result.Value.ToString();
                 }
 
-                if (pOnFinished != null)
-                    pOnFinished(loadData, success);
+                pOnFinished?.Invoke(loadData, success);
             });
         }
         public static void GetDataWithCoroutine(DatabaseReference reference, Action<string, bool> pOnFinished)
         {
             if (reference == null)
             {
-                if (pOnFinished != null)
-                    pOnFinished(null, false);
+                pOnFinished?.Invoke(null, false);
                 return;
             }
             CoroutineUtil.StartCoroutine(IEGetData(reference, pOnFinished));
@@ -317,32 +292,28 @@ namespace RCore.Service
                     loadData = task.Result.Value.ToString();
             }
 
-            if (pOnFinished != null)
-                pOnFinished(loadData, success);
+            pOnFinished?.Invoke(loadData, success);
         }
 
         public static void SetData(DatabaseReference reference, string pUploadData, Action<bool> pOnFinished)
         {
             if (reference == null)
             {
-                if (pOnFinished != null)
-                    pOnFinished(false);
+                pOnFinished?.Invoke(false);
                 return;
             }
             var task = reference.SetValueAsync(pUploadData);
-            WaitUtil.WaitTask(task, () =>
+            TimerEventsGlobal.Instance.WaitTask(task, () =>
             {
                 bool success = !task.IsFaulted && !task.IsCanceled;
-                if (pOnFinished != null)
-                    pOnFinished(success);
+                pOnFinished?.Invoke(success);
             });
         }
         public static void SetDataWithCoroutine(DatabaseReference reference, string pUploadData, Action<bool> pOnFinished)
         {
             if (reference == null)
             {
-                if (pOnFinished != null)
-                    pOnFinished(false);
+                pOnFinished?.Invoke(false);
                 return;
             }
             CoroutineUtil.StartCoroutine(IESetData(reference, pUploadData, pOnFinished));
@@ -352,24 +323,21 @@ namespace RCore.Service
             var task = reference.SetValueAsync(pUploadData);
             yield return new WaitForTask(task);
             bool success = !task.IsFaulted && !task.IsCanceled;
-            if (pOnFinished != null)
-                pOnFinished(success);
+            pOnFinished?.Invoke(success);
         }
 
         public static void RemoveData(DatabaseReference reference, Action<bool> pOnFinished)
         {
             if (reference == null)
             {
-                if (pOnFinished != null)
-                    pOnFinished(false);
+                pOnFinished?.Invoke(false);
                 return;
             }
             var task = reference.RemoveValueAsync();
-            WaitUtil.WaitTask(task, () =>
+            TimerEventsGlobal.Instance.WaitTask(task, () =>
             {
                 bool success = !task.IsFaulted && !task.IsCanceled;
-                if (pOnFinished != null)
-                    pOnFinished(success);
+                pOnFinished?.Invoke(success);
             });
         }
 #else

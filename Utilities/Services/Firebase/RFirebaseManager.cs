@@ -8,7 +8,7 @@ using UnityEngine;
 using RCore.Common;
 using System.Threading.Tasks;
 using Debug = UnityEngine.Debug;
-#if ACTIVE_FIREBASE
+#if FIREBASE
 using Firebase;
 using Firebase.Extensions;
 #endif
@@ -108,24 +108,23 @@ namespace RCore.Service
             if (initialized)
                 return;
 
-#if ACTIVE_FIREBASE
+#if FIREBASE
             FirebaseApp.CheckAndFixDependenciesAsync().ContinueWithOnMainThread(task =>
             {
-                Debug.Log("Firebase Status " + task.Result.ToString());
+                Debug.Log("Firebase Status " + task.Result);
                 if (task.Result == DependencyStatus.Available)
                 {
                     RFirebaseAnalytics.Initialize();
                     RFirebaseAuth.Initialize();
-                    RFirebaseMessaging.Initialize();
                     RFirebaseStorage.Initialize();
                     RFirebaseDatabase.Initialize();
                     initialized = true;
-                    pOnfinished.Raise(true);
+                    pOnFinished.Raise(true);
                 }
                 else
                 {
                     initialized = false;
-                    pOnfinished.Raise(false);
+                    pOnFinished.Raise(false);
                 }
             });
 #else
@@ -171,15 +170,15 @@ namespace RCore.Service
 
                 m_Directives = new List<string>()
                 {
-                    "ACTIVE_FIREBASE",
-                    "ACTIVE_FIREBASE_ANALYTICS",
-                    "ACTIVE_FIREBASE_STORAGE",
-                    "ACTIVE_FIREBASE_DATABASE",
-                    "ACTIVE_FIREBASE_AUTH",
-                    "ACTIVE_FIREBASE_CRASHLYTICS",
-                    "ACTIVE_FIREBASE_MESSAGING",
-                    "ACTIVE_FIREBASE_REMOTE",
-                    "ACTIVE_FIREBASE_FIRESTORE"
+                    "FIREBASE",
+                    "FIREBASE_ANALYTICS",
+                    "FIREBASE_STORAGE",
+                    "FIREBASE_DATABASE",
+                    "FIREBASE_AUTH",
+                    "FIREBASE_CRASHLYTICS",
+                    "FIREBASE_MESSAGING",
+                    "FIREBASE_REMOTE",
+                    "FIREBASE_FIRESTORE"
                 };
                 m_DisplayNames = new List<string>()
                 {
@@ -218,9 +217,9 @@ namespace RCore.Service
                 if (EditorHelper.Button("Apply"))
                 {
                     if (selectedDirectives.Count > 0)
-                        selectedDirectives.Add("ACTIVE_FIREBASE");
+                        selectedDirectives.Add("FIREBASE");
                     else
-                        EditorHelper.RemoveDirective("ACTIVE_FIREBASE");
+                        EditorHelper.RemoveDirective("FIREBASE");
                     EditorHelper.AddDirectives(selectedDirectives);
                     EditorHelper.RemoveDirective(nonSelectedDirectives);
                 }

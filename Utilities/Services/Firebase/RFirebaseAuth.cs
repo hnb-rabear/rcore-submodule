@@ -2,17 +2,20 @@
  * Author RadBear - nbhung71711 @gmail.com - 2019
  **/
 
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-#if ACTIVE_FIREBASE_AUTH
+#if FIREBASE_AUTH
 using Firebase;
 using Firebase.Auth;
 #endif
+using RCore.Common;
 
 namespace RCore.Service
 {
     public static class RFirebaseAuth
     {
-#if ACTIVE_FIREBASE_AUTH
+#if FIREBASE_AUTH
         private static bool m_FetchingToken = true;
         private static Dictionary<string, FirebaseUser> m_UserByAuth;
 
@@ -47,7 +50,7 @@ namespace RCore.Service
         public static Task SigninAnonymouslyAsync()
         {
             var task = auth.SignInAnonymouslyAsync();
-            WaitUtil.WaitTask(task, () =>
+            TimerEventsGlobal.Instance.WaitTask(task, () =>
             {
                 LogTaskCompletion(task, "Sign-in");
                 LogUserInfo();
@@ -61,7 +64,7 @@ namespace RCore.Service
         public static Task SignInWithCustomTokenAsync(string pToken)
         {
             var task = auth.SignInWithCustomTokenAsync(pToken);
-            WaitUtil.WaitTask(task, () =>
+            TimerEventsGlobal.Instance.WaitTask(task, () =>
             {
                 LogTaskCompletion(task, "Sign-in");
                 LogUserInfo();
@@ -74,7 +77,7 @@ namespace RCore.Service
             if (pSignInAndFetchProfile)
             {
                 var task = auth.SignInAndRetrieveDataWithCredentialAsync(EmailAuthProvider.GetCredential(pEmail, pPassword));
-                WaitUtil.WaitTask(task, () =>
+                TimerEventsGlobal.Instance.WaitTask(task, () =>
                 {
                     LogTaskCompletion(task, "Sign-in");
                     LogUserInfo();
@@ -84,7 +87,7 @@ namespace RCore.Service
             else
             {
                 var task = auth.SignInWithEmailAndPasswordAsync(pEmail, pPassword);
-                WaitUtil.WaitTask(task, () =>
+                TimerEventsGlobal.Instance.WaitTask(task, () =>
                 {
                     LogTaskCompletion(task, "Sign-in");
                     LogUserInfo();
@@ -103,7 +106,7 @@ namespace RCore.Service
             if (pSignInAndFetchProfile)
             {
                 var task = auth.SignInAndRetrieveDataWithCredentialAsync(EmailAuthProvider.GetCredential(pEmail, pPassword));
-                WaitUtil.WaitTask(task, () =>
+                TimerEventsGlobal.Instance.WaitTask(task, () =>
                 {
                     LogTaskCompletion(task, "Sign-in");
                     LogUserInfo();
@@ -113,43 +116,10 @@ namespace RCore.Service
             else
             {
                 var task = auth.SignInWithCredentialAsync(EmailAuthProvider.GetCredential(pEmail, pPassword));
-                WaitUtil.WaitTask(task, () =>
+                TimerEventsGlobal.Instance.WaitTask(task, () =>
                 {
                     LogTaskCompletion(task, "Sign-in");
                     LogUserInfo();
-                });
-                return task;
-            }
-        }
-
-        /// <summary>
-        /// Link the current user with an email / password credential.
-        /// </summary>
-        public static Task LinkWithEmailCredentialAsync(bool signInAndFetchProfile, string email, string password)
-        {
-            if (auth.CurrentUser == null)
-            {
-                Debug.Log("Not signed in, unable to link credential to user.");
-                var tcs = new TaskCompletionSource<bool>();
-                tcs.SetException(new Exception("Not signed in"));
-                return tcs.Task;
-            }
-            Credential cred = EmailAuthProvider.GetCredential(email, password);
-            if (signInAndFetchProfile)
-            {
-                var task = auth.CurrentUser.LinkAndRetrieveDataWithCredentialAsync(cred);
-                WaitUtil.WaitTask(task, () =>
-                {
-                    LogTaskCompletion(task, "Link Credential");
-                });
-                return task;
-            }
-            else
-            {
-                var task = auth.CurrentUser.LinkWithCredentialAsync(cred);
-                WaitUtil.WaitTask(task, () =>
-                {
-                    LogTaskCompletion(task, "Link Credential");
                 });
                 return task;
             }
@@ -172,7 +142,7 @@ namespace RCore.Service
             if (signInAndFetchProfile)
             {
                 var task = user.ReauthenticateAndRetrieveDataAsync(cred);
-                WaitUtil.WaitTask(task, () =>
+                TimerEventsGlobal.Instance.WaitTask(task, () =>
                 {
                     LogTaskCompletion(task, "Reauthentication");
                 });
@@ -181,7 +151,7 @@ namespace RCore.Service
             else
             {
                 var task = user.ReauthenticateAsync(cred);
-                WaitUtil.WaitTask(task, () =>
+                TimerEventsGlobal.Instance.WaitTask(task, () =>
                 {
                     LogTaskCompletion(task, "Reauthentication");
                 });
@@ -202,7 +172,7 @@ namespace RCore.Service
                 return tcs.Task;
             }
             var task = auth.CurrentUser.UnlinkAsync(EmailAuthProvider.GetCredential(pEmail, pPassword).Provider);
-            WaitUtil.WaitTask(task, () => { LogTaskCompletion(task, "Unlinking"); });
+            TimerEventsGlobal.Instance.WaitTask(task, () => { LogTaskCompletion(task, "Unlinking"); });
             return task;
         }
 
@@ -212,7 +182,7 @@ namespace RCore.Service
         public static void ReloadUser()
         {
             var task = auth.CurrentUser.ReloadAsync();
-            WaitUtil.WaitTask(task, () =>
+            TimerEventsGlobal.Instance.WaitTask(task, () =>
             {
                 LogTaskCompletion(task, "Reload");
                 LogUserInfo();
@@ -229,7 +199,7 @@ namespace RCore.Service
             if (auth.CurrentUser != null)
             {
                 var task = auth.CurrentUser.DeleteAsync();
-                WaitUtil.WaitTask(task, () =>
+                TimerEventsGlobal.Instance.WaitTask(task, () =>
                 {
                     LogTaskCompletion(task, "Delete user");
                 });
@@ -254,7 +224,7 @@ namespace RCore.Service
             }
             m_FetchingToken = true;
             var task = auth.CurrentUser.TokenAsync(false);
-            WaitUtil.WaitTask(task, () =>
+            TimerEventsGlobal.Instance.WaitTask(task, () =>
             {
                 m_FetchingToken = false;
                 LogTaskCompletion(task, "User token fetch");
@@ -269,7 +239,7 @@ namespace RCore.Service
             else if (task.IsFaulted)
             {
                 Debug.Log($"RFirebaseAuth:{operation} encounted an error.");
-                foreach (Exception exception in task.Exception.Flatten().InnerExceptions)
+                foreach (var exception in task.Exception.Flatten().InnerExceptions)
                 {
                     string authErrorCode = "";
                     var firebaseEx = exception as FirebaseException;
@@ -287,11 +257,11 @@ namespace RCore.Service
 
         private static void OnTokenChanged(object sender, EventArgs e)
         {
-            FirebaseAuth senderAuth = sender as FirebaseAuth;
+            var senderAuth = sender as FirebaseAuth;
             if (senderAuth == auth && senderAuth.CurrentUser != null && !m_FetchingToken)
             {
                 var task = senderAuth.CurrentUser.TokenAsync(false);
-                WaitUtil.WaitTask(task, () =>
+                TimerEventsGlobal.Instance.WaitTask(task, () =>
                 {
                     Debug.Log(string.Format("[RFirebaseAuth:OnTokenChanged] Token[0:8] = {0}", task.Result.Substring(0, 8)));
                 });
@@ -300,7 +270,7 @@ namespace RCore.Service
 
         private static void OnStateChanged(object sender, EventArgs e)
         {
-            FirebaseAuth senderAuth = sender as FirebaseAuth;
+            var senderAuth = sender as FirebaseAuth;
             FirebaseUser user = null;
             if (senderAuth != null)
                 m_UserByAuth.TryGetValue(senderAuth.App.Name, out user);
