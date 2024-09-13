@@ -97,7 +97,7 @@ namespace RCore.Components
             }
             else
             {
-                WaitUtil.Start(0.03f, (a) =>
+                TimerEventsInScene.Instance.WaitForSeconds(0.03f, (a) =>
                 {
                     mContentAnchoredXMin = -100000;
                     mContentAnchoredXMax = 100000;

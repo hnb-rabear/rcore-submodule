@@ -264,8 +264,8 @@ namespace RCore.Components
             }
 
             enabled = true;
-            WaitUtil.RemoveCountdownEvent(mIwtToastMessage.GetInstanceID());
-            WaitUtil.Start(pLifeTime, (s) =>
+            TimerEventsInScene.Instance.RemoveCountdownEvent(mIwtToastMessage.GetInstanceID());
+            TimerEventsInScene.Instance.WaitForSeconds(pLifeTime, (s) =>
             {
                 try
                 {

@@ -77,7 +77,7 @@ namespace RCore.Editor
 			if (EditorHelper.HeaderFoldout("Find GameObjects missing script"))
 			{
 				m_AlsoChildren = EditorHelper.Toggle(m_AlsoChildren, "Also Children of children");
-				if (!SelectedGameObject())
+				if (!EditorHelper.HasSelectedGameObject(true))
 					return;
 
 				if (EditorHelper.Button("Scan"))
@@ -238,7 +238,7 @@ namespace RCore.Editor
 		{
 			if (EditorHelper.HeaderFoldout("Combine Meshes"))
 			{
-				if (!SelectedGameObject())
+				if (!EditorHelper.HasSelectedGameObject(true))
 					return;
 
 				bool available = false;
@@ -292,7 +292,7 @@ namespace RCore.Editor
 		{
 			if (EditorHelper.HeaderFoldout("Align Center Mesh Renderer obj"))
 			{
-				if (!SelectedGameObject())
+				if (!EditorHelper.HasSelectedGameObject(true))
 					return;
 
 				foreach (var g in Selection.gameObjects)
@@ -311,7 +311,7 @@ namespace RCore.Editor
 		{
 			if (EditorHelper.HeaderFoldout("Fix Sprite Renderer Sorting Order"))
 			{
-				if (!SelectedGameObject())
+				if (!EditorHelper.HasSelectedGameObject(true))
 					return;
 				
 				if (EditorHelper.Button("Fix Sprite Renderer Sorting Order"))
@@ -541,7 +541,7 @@ namespace RCore.Editor
 			{
 				GUILayout.BeginVertical("box");
 				{
-					if (!SelectedGameObject())
+					if (!EditorHelper.HasSelectedGameObject(true))
 					{
 						GUILayout.EndVertical();
 						return;
@@ -648,7 +648,7 @@ namespace RCore.Editor
 			{
 				GUILayout.BeginVertical("box");
 
-				if (!SelectedGameObject())
+                if (!EditorHelper.HasSelectedGameObject(true))
 				{
 					GUILayout.EndVertical();
 					return;
@@ -730,7 +730,7 @@ namespace RCore.Editor
 			{
 				GUILayout.BeginVertical("box");
 
-				if (!SelectedGameObject())
+                if (!EditorHelper.HasSelectedGameObject(true))
 				{
 					GUILayout.EndVertical();
 					return;
@@ -790,7 +790,7 @@ namespace RCore.Editor
 			{
 				GUILayout.BeginVertical("box");
 
-				if (!SelectedGameObject())
+                if (!EditorHelper.HasSelectedGameObject(true))
 				{
 					GUILayout.EndVertical();
 					return;
@@ -841,7 +841,7 @@ namespace RCore.Editor
 			{
 				GUILayout.BeginVertical("box");
 
-				if (!SelectedGameObject())
+                if (!EditorHelper.HasSelectedGameObject(true))
 				{
 					GUILayout.EndVertical();
 					return;
@@ -887,7 +887,7 @@ namespace RCore.Editor
 		{
 			if (EditorHelper.HeaderFoldout("Replace Text By TextMeshProUGUI"))
 			{
-				if (!SelectedGameObject())
+                if (!EditorHelper.HasSelectedGameObject(true))
 					return;
 
 				if (EditorHelper.Button("Replace Texts"))
@@ -899,7 +899,7 @@ namespace RCore.Editor
 		{
 			if (EditorHelper.HeaderFoldout("Perfect Ratio Images"))
 			{
-				if (!SelectedGameObject())
+				if (!EditorHelper.HasSelectedGameObject(true))
 					return;
 
 				if (EditorHelper.Button("Set Perfect Width"))
@@ -918,7 +918,7 @@ namespace RCore.Editor
 		{
 			if (EditorHelper.HeaderFoldout("Convert Transform To RectTransform"))
 			{
-				if (!SelectedGameObject())
+				if (!EditorHelper.HasSelectedGameObject(true))
 					return;
 
 				if (EditorHelper.Button("Convert"))
@@ -1001,7 +1001,7 @@ namespace RCore.Editor
 		{
 			if (EditorHelper.HeaderFoldout("Generate Animations Pack Script"))
 			{
-				if (!SelectedGameObject())
+				if (!EditorHelper.HasSelectedGameObject(true))
 					return;
 
 				m_AnimationClipsPackScript = new EditorPrefsString("m_AnimationClipsPackScript");
@@ -1096,7 +1096,7 @@ namespace RCore.Editor
 		{
 			if (EditorHelper.HeaderFoldout("Generate json contain list for files"))
 			{
-				if (!SelectedObject())
+				if (!EditorHelper.HasSelectedObject(true))
 					return;
 
 				if (EditorHelper.Button("Generate"))
@@ -1172,28 +1172,6 @@ namespace RCore.Editor
 #endregion
 
 		//===================================================================================================
-
-		private static bool SelectedGameObject()
-		{
-			if (Selection.gameObjects == null || Selection.gameObjects.Length == 0)
-			{
-				EditorGUILayout.HelpBox("Select at least one GameObject to see how it work", MessageType.Info);
-				return false;
-			}
-
-			return true;
-		}
-
-		private static bool SelectedObject()
-		{
-			if (Selection.objects == null || Selection.objects.Length == 0)
-			{
-				EditorGUILayout.HelpBox("Select at least one Object to see how it work", MessageType.Info);
-				return false;
-			}
-
-			return true;
-		}
 
 		[MenuItem("RCore/Tools/Tools Collection")]
 		private static void OpenEditorWindow()

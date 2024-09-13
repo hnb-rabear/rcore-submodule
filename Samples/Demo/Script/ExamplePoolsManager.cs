@@ -63,15 +63,15 @@ namespace RCore.Demo
 
             //Simple Wait For Work
             int a = 0;
-            WaitUtil.Start(3f, s => Debug.Log("Wait 3s"));
-            WaitUtil.Start(5f, s => Debug.Log("Wait 5f"));
-            WaitUtil.Start(7f, s => Debug.Log("Wait 7f"));
-            WaitUtil.Start(9f, s =>
+            TimerEventsInScene.Instance.WaitForSeconds(3f, s => Debug.Log("Wait 3s"));
+            TimerEventsInScene.Instance.WaitForSeconds(5f, s => Debug.Log("Wait 5f"));
+            TimerEventsInScene.Instance.WaitForSeconds(7f, s => Debug.Log("Wait 7f"));
+            TimerEventsInScene.Instance.WaitForSeconds(9f, s =>
             {
                 Debug.Log("Wait 9f");
                 a = 9;
             });
-            WaitUtil.Start(() => a == 9, () => Debug.Log("Wait till a = 9"));
+            TimerEventsInScene.Instance.WaitForCondition(() => a == 9, () => Debug.Log("Wait till a = 9"));
         }
 
         private void Update()

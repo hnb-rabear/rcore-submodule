@@ -502,7 +502,7 @@ namespace RCore.Common
             w.SendWebRequest();
 
             m_WaitingRequest = true;
-            WaitUtil.Start(() => w.isDone, () =>
+            TimerEventsGlobal.Instance.WaitForCondition(() => w.isDone, () =>
             {
                 m_WaitingRequest = false;
                 bool success = false;
@@ -520,7 +520,7 @@ namespace RCore.Common
                     }
                 }
                 if (!success && m_RequestTimeAttempt < 5)
-                    WaitUtil.Start(30, _ => RequestServerTime()); // Retry after 30 seconds
+                    TimerEventsGlobal.Instance.WaitForSeconds(30, _ => RequestServerTime()); // Retry after 30 seconds
                 m_RequestTimeAttempt++;
                 pCallback?.Invoke(success);
             });

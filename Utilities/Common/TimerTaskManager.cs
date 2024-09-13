@@ -25,7 +25,7 @@ namespace RCore.Framework.Data
 
         public TimerTaskManager()
         {
-            WaitUtil.AddUpdate(this);
+            TimerEventsGlobal.Instance.AddUpdate(this);
         }
 
         public long GetSecondsSinceBoot()

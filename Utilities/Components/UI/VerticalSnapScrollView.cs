@@ -205,7 +205,7 @@ namespace RCore.Components
             }
             else
             {
-                WaitUtil.Start(() => m_Validated, () =>
+                TimerEventsInScene.Instance.WaitForCondition(() => m_Validated, () =>
                 {
                     SetFocusedIndex(pIndex);
                     MoveToFocusedItem(pImmediately, m_SpringThreshold);

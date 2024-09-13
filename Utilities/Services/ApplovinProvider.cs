@@ -117,7 +117,7 @@ namespace RCore.Service
             m_InterstitialRetryAttempt++;
             var retryDelay = Mathf.Pow(2, Mathf.Min(6, m_InterstitialRetryAttempt));
 
-            WaitUtil.Start(retryDelay, (s) => LoadInterstitial());
+            TimerEventsGlobal.Instance.WaitForSeconds(retryDelay, (s) => LoadInterstitial());
         }
 
         private void OnInterstitialDisplayedEvent(string adUnitId, MaxSdkBase.AdInfo adInfo)
@@ -205,10 +205,7 @@ namespace RCore.Service
             m_RewardedRetryAttempt++;
             var retryDelay = Mathf.Pow(2, Mathf.Min(6, m_RewardedRetryAttempt));
 
-            WaitUtil.Start(retryDelay, (s) =>
-            {
-                LoadRewardedAd();
-            });
+            TimerEventsGlobal.Instance.WaitForSeconds(retryDelay, (s) => LoadRewardedAd());
         }
 
         private void OnRewardedAdDisplayedEvent(string adUnitId, MaxSdkBase.AdInfo adInfo) { }

@@ -13,7 +13,7 @@ namespace RCore.Framework.Data
         private DateTimeData m_LocalStart;
         private DateTimeData m_ServerStart;
         private LongData m_Duration;
-        private WaitUtil.CountdownEvent m_Counter;
+        private CountdownEvent m_Counter;
 
         public TimeCounterData(int pId) : base(pId)
         {
@@ -80,13 +80,13 @@ namespace RCore.Framework.Data
         public void Stop()
         {
             if (m_Counter != null)
-                WaitUtil.RemoveCountdownEvent(m_Counter);
+                TimerEventsGlobal.Instance.RemoveCountdownEvent(m_Counter);
         }
 
         public void Finish()
         {
             if (m_Counter != null)
-                WaitUtil.RemoveCountdownEvent(m_Counter);
+                TimerEventsGlobal.Instance.RemoveCountdownEvent(m_Counter);
 
             m_OnFinished?.Invoke(GetRemainSeconds());
         }
@@ -94,9 +94,9 @@ namespace RCore.Framework.Data
         private void Register()
         {
             if (m_Counter != null)
-                WaitUtil.RemoveCountdownEvent(m_Counter);
+                TimerEventsGlobal.Instance.RemoveCountdownEvent(m_Counter);
 
-            m_Counter = WaitUtil.Start(new WaitUtil.CountdownEvent()
+            m_Counter = TimerEventsGlobal.Instance.WaitForSeconds(new CountdownEvent()
             {
                 waitTime = (float)GetRemainSeconds(),
                 unscaledTime = true,

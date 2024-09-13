@@ -991,7 +991,28 @@ namespace RCore.Common
 				sum += vec;
 			return sum / vectors.Count;
 		}
-	}
+        
+        public static List<Vector3> CalcGridNodes(Vector3 rootPos, int width, int length, float tileSize, bool pRootIsCenter = false)
+        {
+            var list = new List<Vector3>();
+            for (int i = 0; i < width; i++)
+            {
+                for (int j = 0; j < length; j++)
+                {
+                    var pos = rootPos;
+                    pos.x += tileSize * i + tileSize / 2f;
+                    pos.z += tileSize * j + tileSize / 2f;
+                    if (pRootIsCenter)
+                    {
+                        pos.x -= width * tileSize / 2f;
+                        pos.z -= length * tileSize / 2f;
+                    }
+                    list.Add(pos);
+                }
+            }
+            return list;
+        }
+    }
 
 	public static class MathExtension
 	{
