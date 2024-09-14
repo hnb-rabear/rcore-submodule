@@ -69,11 +69,6 @@ namespace RCore.Editor
 			DrawColorMark(guid, selectionRect);
 		}
 
-		private static bool IsOutOfView(Rect rect)
-		{
-			return rect.y < 0 || rect.y > Screen.height; // Simplified, you may need a more advanced check
-		}
-
 		private static string GetAssetPath(string guid)
 		{
 			if (!m_PathCache.TryGetValue(guid, out string path))
@@ -86,8 +81,6 @@ namespace RCore.Editor
 
 		private static void DrawColorMark(string guid, Rect selectionRect)
 		{
-			if (IsOutOfView(selectionRect))
-				return;
 			if (!m_Colors.TryGetValue(guid, out Color color))
 			{
 				var path = GetAssetPath(guid);
