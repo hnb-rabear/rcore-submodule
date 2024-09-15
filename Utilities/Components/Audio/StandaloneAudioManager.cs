@@ -18,10 +18,10 @@ namespace RCore.Components
 		{
 			base.OnValidate();
 
-			mSFXSourceUnlimited.loop = false;
-			mSFXSourceUnlimited.playOnAwake = false;
-			mMusicSource.loop = true;
-			mMusicSource.playOnAwake = false;
+			m_sfxSourceUnlimited.loop = false;
+			m_sfxSourceUnlimited.playOnAwake = false;
+			m_musicSource.loop = true;
+			m_musicSource.playOnAwake = false;
 		}
 #endif
 
@@ -33,14 +33,14 @@ namespace RCore.Components
 
 		public AudioSource PlaySFX(string pFileName, int limitNumber, bool pLoop = false, float pPitchRandomMultiplier = 1)
 		{
-			if (!m_EnabledSFX) return null;
+			if (!m_enabledSfx) return null;
 			var clip = audioCollection.GetSFXClip(pFileName);
 			return PlaySFX(clip, limitNumber, pLoop, pPitchRandomMultiplier);
 		}
 
 		public AudioSource PlaySFX(int pIndex, int limitNumber, bool pLoop = false, float pPitchRandomMultiplier = 1)
 		{
-			if (!m_EnabledSFX) return null;
+			if (!m_enabledSfx) return null;
 			var clip = audioCollection.GetSFXClip(pIndex);
 			return PlaySFX(clip, limitNumber, pLoop, pPitchRandomMultiplier);
 		}

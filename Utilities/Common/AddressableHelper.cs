@@ -767,6 +767,7 @@ namespace RCore.Common
 		}
 	}
 
+    [Serializable]
 	public class AssetBundleRef<M> where M : Object
 	{
 		public AssetReferenceT<M> reference;

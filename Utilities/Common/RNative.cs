@@ -3,10 +3,12 @@
 *  Copyright (c) 2017 RedAntz. All rights reserved.
 */
 using System;
+using System.Runtime.InteropServices;
+using UnityEngine;
 
 namespace RCore.Common
 {
-    public class RNative
+    public static class RNative
     {
 #if UNITY_EDITOR || (!UNITY_ANDROID && !UNITY_IPHONE)
         // get millis since boot
@@ -97,7 +99,7 @@ namespace RCore.Common
             if (adr_initialized == false)
             {
                 bool success = true;
-                IntPtr local_class_RNative = AndroidJNI.FindClass("com/redantz/game/util/RNative");
+                var local_class_RNative = AndroidJNI.FindClass("com/redantz/game/util/RNative");
                 if (local_class_RNative != IntPtr.Zero)
                 {
                     class_RNative = AndroidJNI.NewGlobalRef(local_class_RNative);
@@ -115,9 +117,9 @@ namespace RCore.Common
                     method_getBootMillis = AndroidJNI.GetStaticMethodID(class_RNative, "getMillisSinceBoot2", "()J");
                     method_showToast = AndroidJNI.GetStaticMethodID(class_RNative, "showToast", "(Ljava/lang/String;)V");
                     //
-                    AndroidJavaClass class_UnityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+                    var class_UnityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
                     var j_activity = class_UnityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
-                    jvalue[] args = new jvalue[1];
+                    var args = new jvalue[1];
                     args[0].l = j_activity.GetRawObject();
                     AndroidJNI.CallStaticVoidMethod(class_RNative, AndroidJNI.GetStaticMethodID(class_RNative, "config", "(Landroid/content/Context;)V"), args);
                     //
@@ -130,7 +132,7 @@ namespace RCore.Common
         public static bool isAppInstalled(string pAppPackage)
         {
             config();
-            jvalue[] args = new jvalue[1];
+            var args = new jvalue[1];
             args[0].l = AndroidJNI.NewStringUTF(pAppPackage);
             return AndroidJNI.CallStaticBooleanMethod(class_RNative, method_isAppInstalled, args);
         }
@@ -139,7 +141,7 @@ namespace RCore.Common
         public static string getMarketLink(string pAppPackage)
         {
             config();
-            jvalue[] args = new jvalue[1];
+            var args = new jvalue[1];
             args[0].l = AndroidJNI.NewStringUTF(pAppPackage);
             return AndroidJNI.CallStaticStringMethod(class_RNative, method_getMarketLink, args);
         }
@@ -148,7 +150,7 @@ namespace RCore.Common
         public static bool isOnline()
         {
             config();
-            jvalue[] args = new jvalue[0];
+            var args = Array.Empty<jvalue>();
             return AndroidJNI.CallStaticBooleanMethod(class_RNative, method_isOnline, args);
         }
 
@@ -156,27 +158,26 @@ namespace RCore.Common
         public static long getMillisSinceBoot()
         {
             config();
-            jvalue[] args = new jvalue[0];
+            var args = Array.Empty<jvalue>();
             return AndroidJNI.CallStaticLongMethod(class_RNative, method_getBootMillis, args);
         }
 
         public static int getVersionCode()
         {
-            AndroidJavaClass contextCls = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
-            AndroidJavaObject context = contextCls.GetStatic<AndroidJavaObject>("currentActivity");
-            AndroidJavaObject packageMngr = context.Call<AndroidJavaObject>("getPackageManager");
+            var contextCls = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+            var context = contextCls.GetStatic<AndroidJavaObject>("currentActivity");
+            var packageMngr = context.Call<AndroidJavaObject>("getPackageManager");
             string packageName = context.Call<string>("getPackageName");
-            AndroidJavaObject packageInfo = packageMngr.Call<AndroidJavaObject>("getPackageInfo", packageName, 0);
+            var packageInfo = packageMngr.Call<AndroidJavaObject>("getPackageInfo", packageName, 0);
             return packageInfo.Get<int>("versionCode");
         }
 
         public static void showToast(string pMessage)
         {
             config();
-            jvalue[] args = new jvalue[1];
+            var args = new jvalue[1];
             args[0].l = AndroidJNI.NewStringUTF(pMessage);
             AndroidJNI.CallStaticVoidMethod(class_RNative, method_showToast, args);
-            return;
         }
 #endif
     }

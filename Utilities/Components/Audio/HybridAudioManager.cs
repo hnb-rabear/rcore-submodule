@@ -49,7 +49,7 @@ namespace RCore.Components
 
 		public void PlaySFX(string pFileName, bool pLoop = false, float pPitchRandomMultiplier = 1)
 		{
-			if (!m_EnabledSFX) return;
+			if (!m_enabledSfx) return;
 			var clip = HybridAudioCollection.Instance.GetClip(pFileName, false, out int _);
 			if (clip != null)
 				PlaySFX(clip.clip, clip.limitNumber, pLoop, pPitchRandomMultiplier);
@@ -57,7 +57,7 @@ namespace RCore.Components
 
 		public void PlaySFXById(int pId, bool pLoop = false, float pPitchRandomMultiplier = 1)
 		{
-			if (!m_EnabledSFX) return;
+			if (!m_enabledSfx) return;
 			var clip = HybridAudioCollection.Instance.GetClipById(pId, false, out int _);
 			if (clip != null)
 				PlaySFX(clip.clip, clip.limitNumber, pLoop, pPitchRandomMultiplier);
@@ -65,7 +65,7 @@ namespace RCore.Components
 
 		public void PlaySFXByIndex(int pIndex, bool pLoop = false, float pPitchRandomMultiplier = 1)
 		{
-			if (!m_EnabledSFX) return;
+			if (!m_enabledSfx) return;
 			var clip = HybridAudioCollection.Instance.GetClipByIndex(pIndex, false);
 			if (clip != null)
 				PlaySFX(clip.clip, clip.limitNumber, pLoop, pPitchRandomMultiplier);

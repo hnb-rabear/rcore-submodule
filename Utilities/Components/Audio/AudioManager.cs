@@ -10,22 +10,22 @@ namespace RCore.Components
 {
     public class AudioManager : BaseAudioManager
     {
-        #region Members
+#region Members
 
-        private static AudioManager mInstance;
-        public static AudioManager Instance => mInstance;
+        private static AudioManager m_Instance;
+        public static AudioManager Instance => m_Instance;
 
-        #endregion
+#endregion
 
         //=====================================
 
-        #region MonoBehaviour
+#region MonoBehaviour
 
         private void Awake()
         {
-            if (mInstance == null)
-                mInstance = this;
-            else if (mInstance != this)
+            if (m_Instance == null)
+                m_Instance = this;
+            else if (m_Instance != this)
                 Destroy(gameObject);
         }
 
@@ -34,29 +34,32 @@ namespace RCore.Components
         {
             base.OnValidate();
 
-            mSFXSourceUnlimited.loop = false;
-            mSFXSourceUnlimited.playOnAwake = false;
-            mMusicSource.loop = true;
-            mMusicSource.playOnAwake = false;
+            m_sfxSourceUnlimited.loop = false;
+            m_sfxSourceUnlimited.playOnAwake = false;
+            m_musicSource.loop = true;
+            m_musicSource.playOnAwake = false;
+            
+            if (audioCollection == null)
+                audioCollection = Resources.Load<AudioCollection>("AudioCollection");
         }
 #endif
 
-        #endregion
+#endregion
 
         //=====================================
 
-        #region Public
+#region Public
 
         public AudioSource PlaySFX(string pFileName, int limitNumber, bool pLoop = false, float pPitchRandomMultiplier = 1)
         {
-            if (!m_EnabledSFX) return null;
+            if (!m_enabledSfx) return null;
             var clip = audioCollection.GetSFXClip(pFileName);
             return PlaySFX(clip, limitNumber, pLoop, pPitchRandomMultiplier);
         }
 
         public AudioSource PlaySFX(int pIndex, int limitNumber, bool pLoop = false, float pPitchRandomMultiplier = 1)
         {
-            if (!m_EnabledSFX) return null;
+            if (!m_enabledSfx) return null;
             var clip = audioCollection.GetSFXClip(pIndex);
             return PlaySFX(clip, limitNumber, pLoop, pPitchRandomMultiplier);
         }
@@ -87,11 +90,11 @@ namespace RCore.Components
             PlayMusics(clips, pFadeDuration, pVolume);
         }
 
-        #endregion
+#endregion
 
         //=====================================
 
-        #region Private
+#region Private
 
 #if UNITY_EDITOR
 
@@ -112,8 +115,7 @@ namespace RCore.Components
                 base.OnInspectorGUI();
 
                 if (m_Target.audioCollection == null)
-                    EditorGUILayout.HelpBox("AudioManager require AudioCollection. " +
-                        "To create AudioCollection, In project window select RUtilities/Create Audio Collection", MessageType.Error);
+                    EditorGUILayout.HelpBox("AudioManager require AudioCollection. " + "To create AudioCollection, In project window select RUtilities/Create Audio Collection", MessageType.Error);
                 else if (GUILayout.Button("Open Audio Collection"))
                     Selection.activeObject = m_Target.audioCollection;
             }
@@ -121,6 +123,6 @@ namespace RCore.Components
 
 #endif
 
-        #endregion
+#endregion
     }
 }

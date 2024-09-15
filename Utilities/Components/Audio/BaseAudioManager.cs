@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using RCore.Common;
 using System;
+using UnityEngine.Serialization;
 #if USE_DOTWEEN
 using DG.Tweening;
 #endif
@@ -19,56 +20,64 @@ namespace RCore.Components
 	public class BaseAudioManager : MonoBehaviour
 	{
 		public AudioCollection audioCollection;
-		[SerializeField] protected bool m_EnabledSFX = true;
-		[SerializeField] protected bool m_EnabledMusic = true;
-		[SerializeField] protected AudioSource[] mSFXSources;
-		[SerializeField] protected AudioSource mSFXSourceUnlimited;
-		[SerializeField] protected AudioSource mMusicSource;
-		[SerializeField, Range(0, 1f)] protected float m_MasterVolume = 1f;
-		[SerializeField, Range(0, 1f)] protected float m_SFXVolume = 1f;
-		[SerializeField, Range(0, 1f)] protected float m_MusicVolume = 1f;
+        [FormerlySerializedAs("m_EnabledSFX")]
+        [SerializeField] protected bool m_enabledSfx = true;
+		[FormerlySerializedAs("m_EnabledMusic")]
+        [SerializeField] protected bool m_enabledMusic = true;
+		[FormerlySerializedAs("mSFXSources")]
+        [SerializeField] protected AudioSource[] m_sfxSources;
+		[FormerlySerializedAs("mSFXSourceUnlimited")]
+        [SerializeField] protected AudioSource m_sfxSourceUnlimited;
+		[FormerlySerializedAs("mMusicSource")]
+        [SerializeField] protected AudioSource m_musicSource;
+		[FormerlySerializedAs("m_MasterVolume")]
+        [SerializeField, Range(0, 1f)] protected float m_masterVolume = 1f;
+		[FormerlySerializedAs("m_SFXVolume")]
+        [SerializeField, Range(0, 1f)] protected float m_sfxVolume = 1f;
+		[FormerlySerializedAs("m_MusicVolume")]
+        [SerializeField, Range(0, 1f)] protected float m_musicVolume = 1f;
 
-		public bool EnabledSFX => m_EnabledSFX;
-		public bool EnabledMusic => m_EnabledMusic;
-		public float MasterVolume => m_MasterVolume;
-		public float SFXVolume => m_SFXVolume;
-		public float MusicVolume => m_MusicVolume;
+		public bool EnabledSFX => m_enabledSfx;
+		public bool EnabledMusic => m_enabledMusic;
+		public float MasterVolume => m_masterVolume;
+		public float SFXVolume => m_sfxVolume;
+		public float MusicVolume => m_musicVolume;
 
 #if USE_DOTWEEN
-		private Tweener m_MasterTweener;
-		private Tweener m_MusicTweener;
-		private Tweener m_SFXTweener;
+		private Tweener m_masterTweener;
+		private Tweener m_musicTweener;
+		private Tweener m_sfxTweener;
 #endif
-		private Coroutine m_IEPlayMusics;
+		private Coroutine m_playMusicsCoroutine;
 
 		private void Awake()
 		{
-			mMusicSource.volume = m_MasterVolume * m_MusicVolume;
-			mSFXSourceUnlimited.volume = m_MasterVolume * m_SFXVolume;
-			foreach (var sound in mSFXSources)
-				sound.volume = m_MasterVolume * m_SFXVolume;
+			m_musicSource.volume = m_masterVolume * m_musicVolume;
+			m_sfxSourceUnlimited.volume = m_masterVolume * m_sfxVolume;
+			foreach (var sound in m_sfxSources)
+				sound.volume = m_masterVolume * m_sfxVolume;
 		}
 
 		public void EnableMusic(bool pValue)
 		{
-			m_EnabledMusic = pValue;
-			mMusicSource.mute = !pValue;
+			m_enabledMusic = pValue;
+			m_musicSource.mute = !pValue;
 		}
 
 		public void EnableSFX(bool pValue)
 		{
-			m_EnabledSFX = pValue;
-			foreach (var s in mSFXSources)
+			m_enabledSfx = pValue;
+			foreach (var s in m_sfxSources)
 				s.mute = !pValue;
-			mSFXSourceUnlimited.mute = !pValue;
+			m_sfxSourceUnlimited.mute = !pValue;
 		}
 
 		public void SetMasterVolume(float pValue, float pFadeDuration = 0, Action pOnComplete = null)
 		{
 #if USE_DOTWEEN
-			m_MasterTweener.Kill();
+			m_masterTweener.Kill();
 #endif
-			if (m_MasterVolume == pValue)
+			if (m_masterVolume == pValue)
 			{
 				pOnComplete?.Invoke();
 				return;
@@ -76,27 +85,27 @@ namespace RCore.Components
 
 			if (pFadeDuration <= 0)
 			{
-				m_MasterVolume = pValue;
-				mMusicSource.volume = m_MasterVolume * m_MusicVolume;
-				mSFXSourceUnlimited.volume = m_MasterVolume * m_SFXVolume;
-				foreach (var source in mSFXSources)
-					source.volume = m_MasterVolume * m_SFXVolume;
+				m_masterVolume = pValue;
+				m_musicSource.volume = m_masterVolume * m_musicVolume;
+				m_sfxSourceUnlimited.volume = m_masterVolume * m_sfxVolume;
+				foreach (var source in m_sfxSources)
+					source.volume = m_masterVolume * m_sfxVolume;
 				pOnComplete?.Invoke();
 			}
 			else
 			{
-				float fromVal = m_MasterVolume;
+				float fromVal = m_masterVolume;
 #if USE_DOTWEEN
 				float lerp = 0;
-				m_MasterTweener = DOTween.To(() => lerp, x => lerp = x, 1f, pFadeDuration)
+				m_masterTweener = DOTween.To(() => lerp, x => lerp = x, 1f, pFadeDuration)
 					.SetUpdate(true)
 					.OnUpdate(() =>
 					{
-						m_MasterVolume = Mathf.Lerp(fromVal, pValue, lerp);
-						mMusicSource.volume = m_MasterVolume * m_MusicVolume;
-						mSFXSourceUnlimited.volume = m_MasterVolume * m_SFXVolume;
-						foreach (var source in mSFXSources)
-							source.volume = m_MasterVolume * m_SFXVolume;
+						m_masterVolume = Mathf.Lerp(fromVal, pValue, lerp);
+						m_musicSource.volume = m_masterVolume * m_musicVolume;
+						m_sfxSourceUnlimited.volume = m_masterVolume * m_sfxVolume;
+						foreach (var source in m_sfxSources)
+							source.volume = m_masterVolume * m_sfxVolume;
 					})
 					.OnComplete(() =>
 					{
@@ -123,33 +132,33 @@ namespace RCore.Components
 		public void SetMusicVolume(float pValue, float pFadeDuration = 0, Action pOnComplete = null)
 		{
 #if USE_DOTWEEN
-			m_MusicTweener.Kill();
+			m_musicTweener.Kill();
 #endif
-			if (!m_EnabledMusic || pValue == m_MusicVolume)
+			if (!m_enabledMusic || pValue == m_musicVolume)
 			{
-				m_MusicVolume = pValue;
-				mMusicSource.volume = m_MasterVolume * m_MusicVolume;
+				m_musicVolume = pValue;
+				m_musicSource.volume = m_masterVolume * m_musicVolume;
 				pOnComplete?.Invoke();
 				return;
 			}
 
 			if (pFadeDuration <= 0)
 			{
-				m_MusicVolume = pValue;
-				mMusicSource.volume = m_MasterVolume * m_MusicVolume;
+				m_musicVolume = pValue;
+				m_musicSource.volume = m_masterVolume * m_musicVolume;
 				pOnComplete?.Invoke();
 			}
 			else
 			{
-				float fromVal = m_MusicVolume;
+				float fromVal = m_musicVolume;
 #if USE_DOTWEEN
 				float lerp = 0;
-				m_MusicTweener = DOTween.To(() => lerp, x => lerp = x, 1f, pFadeDuration)
+				m_musicTweener = DOTween.To(() => lerp, x => lerp = x, 1f, pFadeDuration)
 					.SetUpdate(true)
 					.OnUpdate(() =>
 					{
-						m_MusicVolume = Mathf.Lerp(fromVal, pValue, lerp);
-						mMusicSource.volume = m_MasterVolume * m_MusicVolume;
+						m_musicVolume = Mathf.Lerp(fromVal, pValue, lerp);
+						m_musicSource.volume = m_masterVolume * m_musicVolume;
 					})
 					.OnComplete(() =>
 					{
@@ -171,9 +180,9 @@ namespace RCore.Components
 		public void SetSFXVolume(float pValue, float pFadeDuration = 0, Action pOnComplete = null)
 		{
 #if USE_DOTWEEN
-			m_SFXTweener.Kill();
+			m_sfxTweener.Kill();
 #endif
-			if (pValue == m_SFXVolume)
+			if (pValue == m_sfxVolume)
 			{
 				pOnComplete?.Invoke();
 				return;
@@ -181,25 +190,25 @@ namespace RCore.Components
 
 			if (pFadeDuration <= 0)
 			{
-				m_SFXVolume = pValue;
-				mSFXSourceUnlimited.volume = m_MasterVolume * pValue;
-				foreach (var sound in mSFXSources)
-					sound.volume = m_MasterVolume * pValue;
+				m_sfxVolume = pValue;
+				m_sfxSourceUnlimited.volume = m_masterVolume * pValue;
+				foreach (var sound in m_sfxSources)
+					sound.volume = m_masterVolume * pValue;
 				pOnComplete?.Invoke();
 			}
 			else
 			{
-				float fromVal = m_SFXVolume;
+				float fromVal = m_sfxVolume;
 #if USE_DOTWEEN
 				float lerp = 0;
-				m_SFXTweener = DOTween.To(() => lerp, x => lerp = x, 1f, pFadeDuration)
+				m_sfxTweener = DOTween.To(() => lerp, x => lerp = x, 1f, pFadeDuration)
 					.SetUpdate(true)
 					.OnUpdate(() =>
 					{
-						m_SFXVolume = Mathf.Lerp(fromVal, pValue, lerp);
-						mSFXSourceUnlimited.volume = m_MasterVolume * m_SFXVolume;
-						foreach (var sound in mSFXSources)
-							sound.volume = m_MasterVolume * m_SFXVolume;
+						m_sfxVolume = Mathf.Lerp(fromVal, pValue, lerp);
+						m_sfxSourceUnlimited.volume = m_masterVolume * m_sfxVolume;
+						foreach (var sound in m_sfxSources)
+							sound.volume = m_masterVolume * m_sfxVolume;
 					})
 					.OnComplete(() =>
 					{
@@ -224,7 +233,7 @@ namespace RCore.Components
 		{
 			SetMusicVolume(0, pFadeDuration, () =>
 			{
-				mMusicSource.Stop();
+				m_musicSource.Stop();
 				pOnComplete?.Invoke();
 			});
 		}
@@ -234,32 +243,32 @@ namespace RCore.Components
 			if (pClip == null)
 				return;
 
-			for (int i = 0; i < mSFXSources.Length; i++)
+			for (int i = 0; i < m_sfxSources.Length; i++)
 			{
-				if (mSFXSources[i].clip != null && mSFXSources[i].clip.GetInstanceID() == pClip.GetInstanceID())
+				if (m_sfxSources[i].clip != null && m_sfxSources[i].clip.GetInstanceID() == pClip.GetInstanceID())
 				{
-					mSFXSources[i].Stop();
-					mSFXSources[i].clip = null;
+					m_sfxSources[i].Stop();
+					m_sfxSources[i].clip = null;
 				}
 			}
 
-			if (mSFXSourceUnlimited.clip == pClip)
+			if (m_sfxSourceUnlimited.clip == pClip)
 			{
-				mSFXSourceUnlimited.Stop();
-				mSFXSourceUnlimited.clip = null;
+				m_sfxSourceUnlimited.Stop();
+				m_sfxSourceUnlimited.clip = null;
 			}
 		}
 
 		public void StopSFXs()
 		{
-			for (int i = 0; i < mSFXSources.Length; i++)
+			for (int i = 0; i < m_sfxSources.Length; i++)
 			{
-				mSFXSources[i].Stop();
-				mSFXSources[i].clip = null;
+				m_sfxSources[i].Stop();
+				m_sfxSources[i].clip = null;
 			}
 
-			mSFXSourceUnlimited.Stop();
-			mSFXSourceUnlimited.clip = null;
+			m_sfxSourceUnlimited.Stop();
+			m_sfxSourceUnlimited.clip = null;
 		}
 
 		protected void CreateAudioSources()
@@ -270,8 +279,8 @@ namespace RCore.Components
 			{
 				if (i == 0)
 				{
-					mMusicSource = audioSources[i];
-					mMusicSource.name = "Music";
+					m_musicSource = audioSources[i];
+					m_musicSource.name = "Music";
 				}
 				else
 				{
@@ -286,15 +295,15 @@ namespace RCore.Components
 					obj.transform.SetParent(transform);
 					sfxSources.Add(obj.AddComponent<AudioSource>());
 				}
-			mSFXSources = sfxSources.ToArray();
+			m_sfxSources = sfxSources.ToArray();
 		}
 
 		protected AudioSource CreateMoreSFXSource()
 		{
-			var obj = new GameObject("SFX_" + mSFXSources.Length);
+			var obj = new GameObject("SFX_" + m_sfxSources.Length);
 			obj.transform.SetParent(transform);
 			var newAudioSource = obj.AddComponent<AudioSource>();
-			mSFXSources.Add(newAudioSource, out mSFXSources);
+			m_sfxSources.Add(newAudioSource, out m_sfxSources);
 			return newAudioSource;
 		}
 
@@ -321,33 +330,33 @@ namespace RCore.Components
 					if (!pLoop)
 					{
 						int countSameClips = 0;
-						for (int i = mSFXSources.Length - 1; i >= 0; i--)
+						for (int i = m_sfxSources.Length - 1; i >= 0; i--)
 						{
-							if (mSFXSources[i].isPlaying && mSFXSources[i].clip != null && mSFXSources[i].clip.GetInstanceID() == pClip.GetInstanceID())
+							if (m_sfxSources[i].isPlaying && m_sfxSources[i].clip != null && m_sfxSources[i].clip.GetInstanceID() == pClip.GetInstanceID())
 								countSameClips++;
-							else if (!mSFXSources[i].isPlaying)
-								mSFXSources[i].clip = null;
+							else if (!m_sfxSources[i].isPlaying)
+								m_sfxSources[i].clip = null;
 						}
 						if (countSameClips < pLimitNumber)
 						{
-							for (int i = mSFXSources.Length - 1; i >= 0; i--)
-								if (mSFXSources[i].clip == null)
-									return mSFXSources[i];
+							for (int i = m_sfxSources.Length - 1; i >= 0; i--)
+								if (m_sfxSources[i].clip == null)
+									return m_sfxSources[i];
 
 							return CreateMoreSFXSource();
 						}
 					}
 					else
 					{
-						for (int i = mSFXSources.Length - 1; i >= 0; i--)
-							if (mSFXSources[i].clip == null || !mSFXSources[i].isPlaying
-								|| mSFXSources[i].clip.GetInstanceID() == pClip.GetInstanceID())
-								return mSFXSources[i];
+						for (int i = m_sfxSources.Length - 1; i >= 0; i--)
+							if (m_sfxSources[i].clip == null || !m_sfxSources[i].isPlaying
+								|| m_sfxSources[i].clip.GetInstanceID() == pClip.GetInstanceID())
+								return m_sfxSources[i];
 					}
 				}
 				else
 				{
-					return mSFXSourceUnlimited;
+					return m_sfxSourceUnlimited;
 				}
 				return null;
 			}
@@ -360,8 +369,8 @@ namespace RCore.Components
 
 		public void PlayMusic(float pFadeDuration = 0, float pVolume = 1f)
 		{
-			if (!mMusicSource.isPlaying)
-				mMusicSource.Play();
+			if (!m_musicSource.isPlaying)
+				m_musicSource.Play();
 			SetMusicVolume(pVolume, pFadeDuration);
 		}
 
@@ -370,22 +379,22 @@ namespace RCore.Components
 			if (pClip == null)
 				return;
 
-			bool play = !(mMusicSource.clip == pClip && mMusicSource.isPlaying);
+			bool play = !(m_musicSource.clip == pClip && m_musicSource.isPlaying);
 
-			mMusicSource.clip = pClip;
-			mMusicSource.loop = pLoop;
-			if (!m_EnabledMusic) return;
+			m_musicSource.clip = pClip;
+			m_musicSource.loop = pLoop;
+			if (!m_enabledMusic) return;
 
 			if (play)
-				mMusicSource.Play();
+				m_musicSource.Play();
 			SetMusicVolume(pVolume, pFadeDuration);
 		}
 
 		public void PlayMusics(AudioClip[] pClips, float pFadeDuration = 0, float pVolume = 1f)
 		{
-			if (m_IEPlayMusics != null)
-				StopCoroutine(m_IEPlayMusics);
-			m_IEPlayMusics = StartCoroutine(IEPlayMusics(pClips, pFadeDuration, pVolume));
+			if (m_playMusicsCoroutine != null)
+				StopCoroutine(m_playMusicsCoroutine);
+			m_playMusicsCoroutine = StartCoroutine(IEPlayMusics(pClips, pFadeDuration, pVolume));
 		}
 
 		private IEnumerator IEPlayMusics(AudioClip[] pClips, float pFadeDuration = 0, float pVolume = 1f)
@@ -401,7 +410,7 @@ namespace RCore.Components
 
 			int index = 0;
 			for (int i = 0; i < pClips.Length; i++)
-				if (pClips[i] == mMusicSource.clip)
+				if (pClips[i] == m_musicSource.clip)
 				{
 					index = i;
 					break;
@@ -411,20 +420,20 @@ namespace RCore.Components
 				bool play = true;
 				var clip = pClips[index];
 
-				if (mMusicSource.clip == clip && mMusicSource.isPlaying)
+				if (m_musicSource.clip == clip && m_musicSource.isPlaying)
 					play = false;
 
 				if (play)
 				{
-					mMusicSource.clip = clip;
-					mMusicSource.loop = false;
-					mMusicSource.Play();
+					m_musicSource.clip = clip;
+					m_musicSource.loop = false;
+					m_musicSource.Play();
 				}
-				if (m_EnabledMusic)
+				if (m_enabledMusic)
 					SetMusicVolume(pVolume, pFadeDuration);
 				else
 					SetMusicVolume(0);
-				yield return new WaitUntil(() => !mMusicSource.isPlaying || mMusicSource.clip == null);
+				yield return new WaitUntil(() => !m_musicSource.isPlaying || m_musicSource.clip == null);
 				index = (index + 1) % pClips.Length;
 			}
 		}
@@ -436,7 +445,7 @@ namespace RCore.Components
 			var source = GetSFXSouce(pClip, limitNumber, pLoop);
 			if (source == null)
 				return null;
-			source.volume = m_MasterVolume * m_SFXVolume;
+			source.volume = m_masterVolume * m_sfxVolume;
 			source.loop = pLoop;
 			source.clip = pClip;
 			source.pitch = 1;
@@ -454,54 +463,54 @@ namespace RCore.Components
 			return source;
 		}
 
-		public bool IsPlayingMusic() => mMusicSource.isPlaying;
+		public bool IsPlayingMusic() => m_musicSource.isPlaying;
 
 #if UNITY_EDITOR
 		protected virtual void OnValidate()
 		{
-			mSFXSources ??= new AudioSource[0];
+			m_sfxSources ??= new AudioSource[0];
 			var audioSources = gameObject.FindComponentsInChildren<AudioSource>();
-			for (int i = mSFXSources.Length - 1; i >= 0; i--)
+			for (int i = m_sfxSources.Length - 1; i >= 0; i--)
 			{
 				audioSources[i].playOnAwake = false;
 
-				if (audioSources.Contains(mSFXSources[i]))
-					audioSources.Remove(mSFXSources[i]);
+				if (audioSources.Contains(m_sfxSources[i]))
+					audioSources.Remove(m_sfxSources[i]);
 			}
-			if (mMusicSource == null && audioSources.Count > 0)
+			if (m_musicSource == null && audioSources.Count > 0)
 			{
-				mMusicSource = audioSources[0];
+				m_musicSource = audioSources[0];
 				audioSources.RemoveAt(0);
-				mMusicSource.name = "Music";
+				m_musicSource.name = "Music";
 			}
-			else if (mMusicSource == null)
+			else if (m_musicSource == null)
 			{
 				var obj = new GameObject("Music");
 				obj.AddComponent<AudioSource>();
 				obj.transform.SetParent(transform);
-				mMusicSource = obj.GetComponent<AudioSource>();
+				m_musicSource = obj.GetComponent<AudioSource>();
 			}
-			if (mSFXSourceUnlimited == null && audioSources.Count > 0)
+			if (m_sfxSourceUnlimited == null && audioSources.Count > 0)
 			{
-				mSFXSourceUnlimited = audioSources[0];
+				m_sfxSourceUnlimited = audioSources[0];
 				audioSources.RemoveAt(0);
-				mSFXSourceUnlimited.name = "SFXUnlimited";
+				m_sfxSourceUnlimited.name = "SFXUnlimited";
 			}
-			else if (mSFXSourceUnlimited == null || mSFXSourceUnlimited == mMusicSource)
+			else if (m_sfxSourceUnlimited == null || m_sfxSourceUnlimited == m_musicSource)
 			{
 				var obj = new GameObject("SFXUnlimited");
 				obj.AddComponent<AudioSource>();
 				obj.transform.SetParent(transform);
-				mSFXSourceUnlimited = obj.GetComponent<AudioSource>();
+				m_sfxSourceUnlimited = obj.GetComponent<AudioSource>();
 			}
 
 #if USE_DOTWEEN
-			if (m_MasterTweener == null || !m_MasterTweener.IsPlaying())
-				SetMasterVolume(m_MasterVolume);
-			if (m_MusicTweener == null || !m_MusicTweener.IsPlaying())
-				SetMusicVolume(m_MusicVolume);
-			if (m_SFXTweener == null || !m_SFXTweener.IsPlaying())
-				SetSFXVolume(m_SFXVolume);
+			if (m_masterTweener == null || !m_masterTweener.IsPlaying())
+				SetMasterVolume(m_masterVolume);
+			if (m_musicTweener == null || !m_musicTweener.IsPlaying())
+				SetMusicVolume(m_musicVolume);
+			if (m_sfxTweener == null || !m_sfxTweener.IsPlaying())
+				SetSFXVolume(m_sfxVolume);
 #endif
 		}
 
@@ -524,21 +533,21 @@ namespace RCore.Components
 			{
 				base.OnInspectorGUI();
 
-				if (EditorHelper.ButtonColor("Add Music Audio Source", m_Script.mMusicSource == null ? Color.green : Color.grey))
+				if (EditorHelper.ButtonColor("Add Music Audio Source", m_Script.m_musicSource == null ? Color.green : Color.grey))
 				{
-					if (m_Script.mMusicSource == null)
+					if (m_Script.m_musicSource == null)
 					{
 						var obj = new GameObject("Music");
 						obj.transform.SetParent(m_Script.transform);
 						obj.AddComponent<AudioSource>();
-						m_Script.mMusicSource = obj.GetComponent<AudioSource>();
+						m_Script.m_musicSource = obj.GetComponent<AudioSource>();
 					}
-					if (m_Script.mSFXSourceUnlimited == null)
+					if (m_Script.m_sfxSourceUnlimited == null)
 					{
 						var obj = new GameObject("SFX_Unlimited");
 						obj.transform.SetParent(m_Script.transform);
 						obj.AddComponent<AudioSource>();
-						m_Script.mMusicSource = obj.GetComponent<AudioSource>();
+						m_Script.m_musicSource = obj.GetComponent<AudioSource>();
 					}
 				}
 				if (EditorHelper.ButtonColor("Add SFX Audio Source"))
