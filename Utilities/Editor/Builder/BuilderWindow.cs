@@ -15,12 +15,12 @@ namespace RCore.Editor
 {
     public class BuilderWindow : EditorWindow
     {
-        private BuildSettingsCollection mBuildProfilesCollection;
-        private Vector2 scrollPosition;
-        private int mRemovingIndex = -1;
-        private int mToggleOptions = -1;
-        private int mSelectedCount;
-        private string mCommandLine;
+        private BuildSettingsCollection m_buildProfilesCollection;
+        private Vector2 m_scrollPosition;
+        private int m_removingIndex = -1;
+        private int m_toggleOptions = -1;
+        private int m_selectedCount;
+        private string m_commandLine;
 
         private void OnEnable()
         {
@@ -29,54 +29,54 @@ namespace RCore.Editor
 
         private void OnGUI()
         {
-            scrollPosition = GUILayout.BeginScrollView(scrollPosition, false, false);
-            mSelectedCount = 0;
+            m_scrollPosition = GUILayout.BeginScrollView(m_scrollPosition, false, false);
+            m_selectedCount = 0;
 
             EditorHelper.BoxVertical("Simple Builder Util [by RadBear]", () =>
             {
-                for (int i = 0; i < mBuildProfilesCollection.profiles.Count; i++)
+                for (int i = 0; i < m_buildProfilesCollection.profiles.Count; i++)
                 {
-                    var profile = mBuildProfilesCollection.profiles[i];
+                    var profile = m_buildProfilesCollection.profiles[i];
                     bool show = true;
 
                     int i1 = i;
                     EditorHelper.BoxHorizontal(() =>
                     {
                         profile.selected = EditorGUILayout.Toggle(profile.selected, GUILayout.Height(20), GUILayout.Width(20));
-                        mSelectedCount += profile.selected ? 1 : 0;
+                        m_selectedCount += profile.selected ? 1 : 0;
                         string surfix = string.IsNullOrEmpty(profile.note) ? "" : $" [{profile.note}]";
                         string prefix = "";
                         if (!string.IsNullOrEmpty(profile.bundleVersion))
                             prefix = $"[{profile.bundleVersion}|{profile.bundleVersionCode}] ";
                         show = EditorHelper.HeaderFoldout(prefix + profile.GetBuildName() + surfix, "BuilderWindow" + i1);
 
-                        if (mToggleOptions == i1)
+                        if (m_toggleOptions == i1)
                         {
-                            if (mRemovingIndex == i1)
+                            if (m_removingIndex == i1)
                             {
                                 EditorHelper.BoxHorizontal(() =>
                                 {
                                     if (EditorHelper.ButtonColor("Yes", Color.green))
                                     {
-                                        mBuildProfilesCollection.profiles.Remove(profile);
-                                        mRemovingIndex = -1;
+                                        m_buildProfilesCollection.profiles.Remove(profile);
+                                        m_removingIndex = -1;
                                     }
                                     else if (EditorHelper.ButtonColor("No", Color.red))
-                                        mRemovingIndex = -1;
+                                        m_removingIndex = -1;
                                 });
                             }
                             else if (EditorHelper.ButtonColor("x", Color.red, 24))
-                                mRemovingIndex = i1;
+                                m_removingIndex = i1;
                             else if (EditorHelper.ButtonColor("copy", Color.yellow, 50))
                             {
                                 var copiedProfile = new BuildProfile(profile);
-                                mBuildProfilesCollection.profiles.Add(copiedProfile);
+                                m_buildProfilesCollection.profiles.Add(copiedProfile);
                             }
                             else if (EditorHelper.ButtonColor("Hide", Color.white, 50))
-                                mToggleOptions = -1;
+                                m_toggleOptions = -1;
                         }
                         else if (EditorHelper.ButtonColor("Show", Color.cyan, 50))
-                            mToggleOptions = i1;
+                            m_toggleOptions = i1;
                     });
                     if (show)
                     {
@@ -307,7 +307,7 @@ namespace RCore.Editor
                                 if (EditorHelper.ButtonColor("Build Profile", Color.cyan))
                                     EditorApplication.delayCall += () => { Build(profile); };
                                 if (EditorHelper.ButtonColor("CLI", Color.cyan, 50))
-                                    Debug.Log(mCommandLine.Replace("[index]", i2.ToString()).Replace("[path]", profile.outputFolder));
+                                    Debug.Log(m_commandLine.Replace("[index]", i2.ToString()).Replace("[path]", profile.outputFolder));
                             });
                         }, default(Color), true);
                     }
@@ -319,11 +319,11 @@ namespace RCore.Editor
                     {
                         var s = new BuildProfile();
                         s.Reset();
-                        mBuildProfilesCollection.profiles.Add(s);
+                        m_buildProfilesCollection.profiles.Add(s);
                     }
                     if (EditorHelper.ButtonColor("Save", Color.green))
                         AssetDatabase.SaveAssets();
-                    if (mSelectedCount > 0)
+                    if (m_selectedCount > 0)
                     {
                         if (EditorHelper.ButtonColor("Build Selected Profiles", Color.cyan))
                             EditorApplication.delayCall += BuildSelectedProfiles;
@@ -334,19 +334,19 @@ namespace RCore.Editor
                 }, default(Color), true);
                 EditorHelper.SeparatorBox();
                 EditorGUILayout.LabelField("Build By Command Line", EditorStyles.boldLabel);
-                EditorGUILayout.TextField(mCommandLine);
+                EditorGUILayout.TextField(m_commandLine);
             });
 
             GUILayout.EndScrollView();
 
             if (GUI.changed)
-                EditorUtility.SetDirty(mBuildProfilesCollection);
+                EditorUtility.SetDirty(m_buildProfilesCollection);
         }
 
         private void Init()
         {
-            if (mBuildProfilesCollection == null)
-                mBuildProfilesCollection = BuildSettingsCollection.LoadOrCreateSettings();
+            if (m_buildProfilesCollection == null)
+                m_buildProfilesCollection = BuildSettingsCollection.LoadOrCreateSettings();
 
             string projectPath = Application.dataPath.Replace("/Assets", "");
             string[] splits = projectPath.Split('/');
@@ -362,15 +362,15 @@ namespace RCore.Editor
                     splits[i] = $"\"{splits[i]}\"";
             unityExePath = string.Join("\\", splits);
 
-            mCommandLine = $"{unityExePath} -quit -batchmode -projectPath {projectPath} " +
+            m_commandLine = $"{unityExePath} -quit -batchmode -projectPath {projectPath} " +
                 "-executeMethod Utilities.Editor.BuilderUtil.BuildByCommandLine -profileIndex [index] -outputFolder [path]";
         }
 
         private void BuildSelectedProfiles()
         {
-            for (int i = 0; i < mBuildProfilesCollection.profiles.Count; i++)
-                if (mBuildProfilesCollection.profiles[i].selected)
-                    Build(mBuildProfilesCollection.profiles[i]);
+            for (int i = 0; i < m_buildProfilesCollection.profiles.Count; i++)
+                if (m_buildProfilesCollection.profiles[i].selected)
+                    Build(m_buildProfilesCollection.profiles[i]);
         }
 
         private void Build(BuildProfile pProfile)

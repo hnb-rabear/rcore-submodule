@@ -1173,7 +1173,7 @@ namespace RCore.Editor
 
 		//===================================================================================================
 
-		[MenuItem("RCore/Tools/Tools Collection")]
+		[MenuItem("RCore/Tools/Tools Collection %_&_k")]
 		private static void OpenEditorWindow()
 		{
 			var window = GetWindow<ToolsCollectionWindow>("Tools Collection", true);

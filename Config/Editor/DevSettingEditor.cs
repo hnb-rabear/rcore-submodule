@@ -20,7 +20,7 @@ public class DevSettingEditor : UnityEditor.Editor
 	//-- FIREBASE CONFIGURATION
 	private static string FirebaseDevConfigPath { get => EditorPrefs.GetString("firebaseDevConfigPath"); set => EditorPrefs.SetString("firebaseDevConfigPath", value); }
 	private static string FirebaseLiveConfigPath { get => EditorPrefs.GetString("firebaseLiveConfigPath"); set => EditorPrefs.SetString("firebaseLiveConfigPath", value); }
-	public static string FirebaseConfigOutputFolder
+    private static string FirebaseConfigOutputFolder
 	{
 		get => EditorPrefs.GetString("FirebaseConfigOutputFolder", Application.dataPath);
 		set => EditorPrefs.SetString("FirebaseConfigOutputFolder", value);
@@ -67,7 +67,7 @@ public class DevSettingEditor : UnityEditor.Editor
 			case "Custom":
 				DrawSettingsProfiles();
 				break;
-			case "Firebases":
+			case "Firebase":
 				DrawFirebaseConfiguration();
 				break;
 			default:
@@ -450,7 +450,7 @@ public class DevSettingEditor : UnityEditor.Editor
 
 	//======== CHEATS
 
-	[MenuItem("RCore/Tools/Open Dev Settings %_#_;")]
+	[MenuItem("RCore/Tools/Open Dev Settings %_&_j")]
 	private static void OpenDevSettings()
 	{
 		Selection.activeObject = DevSetting.Instance;

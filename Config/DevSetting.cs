@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
-using RCore.Inspector;
-using Debug = UnityEngine.Debug;
 using RCore.Common;
 
 [CreateAssetMenu(fileName = "DevSetting", menuName = "RCore/Dev Setting")]
