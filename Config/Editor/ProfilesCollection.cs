@@ -1,11 +1,11 @@
 ﻿/***
  * Author RadBear - Nguyen Ba Hung - nbhung71711@gmail.com 
  **/
-
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using RCore.Common;
+using RCore.Common.Editor;
 
 public class ProfilesCollection : ScriptableObject
 {

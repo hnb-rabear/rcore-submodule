@@ -1,7 +1,9 @@
 ﻿/**
  * Author RadBear - nbhung71711@gmail.com - 2017
  **/
-
+#if UNITY_EDITOR
+using RCore.Common.Editor;
+#endif
 using System;
 using System.Collections.Generic;
 using UnityEngine;

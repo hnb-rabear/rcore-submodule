@@ -10,8 +10,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using RCore.Common;
 using RCore.Inspector;
-using System;
 #if UNITY_EDITOR
+using RCore.Common.Editor;
 using UnityEditor;
 #endif
 

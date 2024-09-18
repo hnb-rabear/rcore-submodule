@@ -14,6 +14,7 @@ using Firebase.Extensions;
 #endif
 
 #if UNITY_EDITOR
+using RCore.Common.Editor;
 using UnityEditor;
 #endif
 

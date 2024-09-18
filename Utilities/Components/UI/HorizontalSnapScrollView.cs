@@ -14,6 +14,7 @@ using UnityEngine.EventSystems;
 using DG.Tweening;
 #endif
 #if UNITY_EDITOR
+using RCore.Common.Editor;
 using UnityEditor;
 #endif
 

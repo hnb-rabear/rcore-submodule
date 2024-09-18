@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 using RCore.Common;
+#if UNITY_EDITOR
+using RCore.Common.Editor;
+#endif
 
 [CreateAssetMenu(fileName = "DevSetting", menuName = "RCore/Dev Setting")]
 public class DevSetting : ScriptableObject

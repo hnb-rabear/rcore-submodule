@@ -21,7 +21,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
 
-namespace RCore.Common
+namespace RCore.Common.Editor
 {
     public interface IDraw
     {
@@ -784,7 +784,7 @@ namespace RCore.Common
         public static string ObjectToGuid(Object obj)
         {
             string path = AssetDatabase.GetAssetPath(obj);
-            return (!string.IsNullOrEmpty(path)) ? AssetDatabase.AssetPathToGUID(path) : null;
+            return !string.IsNullOrEmpty(path) ? AssetDatabase.AssetPathToGUID(path) : null;
         }
 
 #endregion
@@ -988,9 +988,39 @@ namespace RCore.Common
                 GUI.backgroundColor = bgColor;
         }
 
-        public static void Separator()
+        public static void Separator(string label = null, Color labelColor = default)
         {
-            EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
+            if (string.IsNullOrEmpty(label))
+            {
+                EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
+            }
+            else
+            {
+                GUILayout.Space(10);
+                GUILayout.BeginHorizontal();
+
+                // Left separator line
+                GUILayout.Label("", GUI.skin.horizontalSlider);
+
+                // Set bold and colored style for the label
+                var boldStyle = new GUIStyle(GUI.skin.label);
+                boldStyle.fontStyle = FontStyle.Bold;
+                boldStyle.alignment = TextAnchor.MiddleCenter; // Center the label vertically
+                if (labelColor != default)
+                    GUI.contentColor = labelColor; // Set the desired color (red in this example)
+
+                // Label with "Editor" in bold and color
+                GUILayout.Label(label, boldStyle, GUILayout.Width(50), GUILayout.ExpandWidth(false));
+
+                // Reset content color to default (to avoid affecting other GUI elements)
+                GUI.contentColor = Color.white;
+
+                // Right separator line
+                GUILayout.Label("", GUI.skin.horizontalSlider);
+
+                GUILayout.EndHorizontal();
+                GUILayout.Space(10);
+            }
         }
 
         /// <summary>
@@ -3143,7 +3173,7 @@ namespace RCore.Common
 
             return true;
         }
-        
+
 #endregion
     }
 

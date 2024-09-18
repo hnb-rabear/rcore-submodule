@@ -6,6 +6,7 @@ using RCore.Inspector;
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEditor.Events;
+using RCore.Common.Editor;
 #endif
 
 namespace RCore.Components

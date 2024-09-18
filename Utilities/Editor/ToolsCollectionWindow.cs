@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEditor;
 using RCore.Common;
+using RCore.Common.Editor;
 using System.Collections.Generic;
 using UnityEngine.UI;
 using TMPro;
@@ -1064,7 +1065,7 @@ namespace RCore.Editor
 							names += $"\tpublic const string {fieldName}_NAME = \"{clip.name}\";\n";
 							arrayElements += $"\t\t\t\t{fieldName},\n";
 							paths += $"\tprivate const string {fieldName}_PATH = \"{m_AnimationPaths[i]}\";\n";
-							validateFields += $"\t\t\tif ({fieldName} == null) {fieldName} = RCore.Common.EditorHelper.GetAnimationFromModel({fieldName}_PATH, {fieldName}_NAME);\n";
+							validateFields += $"\t\t\tif ({fieldName} == null) {fieldName} = RCore.Common.Editor.EditorHelper.GetAnimationFromModel({fieldName}_PATH, {fieldName}_NAME);\n";
 							validateFields += $"\t\t\tif ({fieldName} == null) Debug.LogError(nameof({fieldName}) + \" is Null\");\n";
 							i++;
 						}

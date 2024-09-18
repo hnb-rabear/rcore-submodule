@@ -5,7 +5,7 @@ using UnityEditor.AddressableAssets;
 using UnityEditor.AddressableAssets.Settings;
 using UnityEngine;
 
-namespace RCore.Editor
+namespace RCore.Common.Editor
 {
 	public static class AddressableEditorHelper
 	{

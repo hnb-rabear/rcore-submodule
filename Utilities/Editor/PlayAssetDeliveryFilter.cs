@@ -5,6 +5,7 @@ using UnityEditor.AddressableAssets;
 using UnityEditor.AddressableAssets.Settings;
 using UnityEngine;
 using RCore.Common;
+using RCore.Common.Editor;
 
 namespace RCore.Editor
 {

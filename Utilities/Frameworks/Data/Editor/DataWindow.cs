@@ -3,12 +3,13 @@
  **/
 
 using RCore.Common;
+using RCore.Common.Editor;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using EditorPrefs = UnityEditor.EditorPrefs;
 
-namespace RCore.Framework.Data
+namespace RCore.Framework.Data.Editor
 {
     public class DataWindow : EditorWindow
     {

@@ -4,7 +4,7 @@ using System.Globalization;
 using UnityEditor;
 using UnityEngine;
 
-namespace RCore.Common
+namespace RCore.Common.Editor
 {
     public class REditorPrefs
     {

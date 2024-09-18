@@ -2,15 +2,13 @@
  * Author RadBear - nbhung71711 @gmail.com - 2017
  **/
 
-#if USE_DOTWEEN
-#endif
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using RCore.Common;
-using System;
 using Debug = RCore.Common.Debug;
 #if UNITY_EDITOR
+using RCore.Common.Editor;
 using UnityEditor;
 #endif
 

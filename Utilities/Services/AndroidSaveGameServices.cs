@@ -36,13 +36,13 @@ namespace RCore.Service
 #endif
 
 
-	public class AndroidSaveGameServices
+	public static class AndroidSaveGameServices
 	{
 #if UNITY_ANDROID && GPGS
+        private const string SAVE_NAME = "default_save";
 		private static bool Authenticated => Social.Active.localUser.authenticated;
 		private static bool m_Saving;
-		private static string m_SaveFileName = "default_save";
-		private static string m_GameData = "";
+        private static string m_GameData = "";
 		private static float m_TotalPlayTime;
 		private static Action<bool> m_OnSave;
 		private static Action<bool, string> m_OnLoad;
@@ -56,7 +56,7 @@ namespace RCore.Service
 				fileName,
 				dataSource,
 				conflictResolutionStrategy,
-				(SavedGameRequestStatus status, ISavedGameMetadata game) =>
+				(status, game) =>
 				{
 					Debug.Log($"OpenWithAutomaticConflictResolution {status}");
 					callback?.Invoke(game, status);
@@ -67,7 +67,7 @@ namespace RCore.Service
 		{
 			PlayGamesPlatform.Instance.SavedGame.OpenWithManualConflictResolution(fileName, dataSource, prefetchDataOnConflict,
 				// Internal conflict callback
-				(IConflictResolver resolver, ISavedGameMetadata original, byte[] originalData, ISavedGameMetadata unmerged, byte[] unmergedData) =>
+				(resolver, original, originalData, unmerged, unmergedData) =>
 				{
 					// Invoke the user's conflict resolving function, get their choice
 					var choice = resolverFunction(original, originalData, unmerged, unmergedData);
@@ -90,7 +90,7 @@ namespace RCore.Service
 					resolver.ChooseMetadata(selectedGame);
 				},
 				// Completed callback
-				(SavedGameRequestStatus status, ISavedGameMetadata game) =>
+				(status, game) =>
 				{
 					completedCallback?.Invoke(game, status);
 				});
@@ -100,7 +100,7 @@ namespace RCore.Service
 		{
 			PlayGamesPlatform.Instance.SavedGame.ReadBinaryData(
 				savedGame,
-				(SavedGameRequestStatus status, byte[] data) =>
+				(status, data) =>
 				{
 					Debug.Log($"ReadSavedGameData {status}");
 					callback?.Invoke(savedGame, data, status);
@@ -121,7 +121,7 @@ namespace RCore.Service
 				savedGame,
 				updatedMetadata,
 				data,
-				(SavedGameRequestStatus status, ISavedGameMetadata game) =>
+				(status, game) =>
 				{
 					Debug.Log($"WriteSavedGameData {status}");
 					callback?.Invoke(game, status);
@@ -132,7 +132,7 @@ namespace RCore.Service
 		public static void FetchAllSavedGames(DataSource dataSource, Action<List<ISavedGameMetadata>, SavedGameRequestStatus> callback)
 		{
 			PlayGamesPlatform.Instance.SavedGame.FetchAllSavedGames(dataSource,
-				(SavedGameRequestStatus status, List<ISavedGameMetadata> games) =>
+				(status, games) =>
 				{
 					var savedGames = new List<ISavedGameMetadata>();
 					Debug.Log($"FetchAllSavedGames {status}");
@@ -169,7 +169,7 @@ namespace RCore.Service
 			if (savedGameClient != null)
 			{
 				savedGameClient.ShowSelectSavedGameUI(Social.localUser.userName + "\u0027s saves", maxNumToDisplay, allowCreateNew, allowDelete,
-					(SelectUIStatus status, ISavedGameMetadata saveGame) =>
+					(status, saveGame) =>
 					{
 						// some error occured, just show window again
 						if (status == SelectUIStatus.BadInputError
@@ -202,13 +202,13 @@ namespace RCore.Service
 			// Takes the screenshot from top left hand corner of screen and maps to top
 			// left hand corner of screenShot texture
 			screenShot.ReadPixels(
-				new Rect(0, 0, Screen.width, (Screen.width / 1024) * 700), 0, 0);
+				new Rect(0, 0, Screen.width, Screen.width / 1024f * 700), 0, 0);
 			return screenShot;
 		}
 
 		public static void DownloadSaveGame(Action<bool, string> pCallback = null)
 		{
-			DownloadSaveGame(m_SaveFileName, pCallback);
+			DownloadSaveGame(SAVE_NAME, pCallback);
 		}
 
 		public static void DownloadSaveGame(string pFileName, Action<bool, string> pCallback = null)
@@ -220,7 +220,7 @@ namespace RCore.Service
 			}
 
 			if (string.IsNullOrEmpty(pFileName))
-				pFileName = m_SaveFileName;
+				pFileName = SAVE_NAME;
 
 			Debug.Log("Loading game progress from the cloud.");
 			m_Saving = false;
@@ -234,7 +234,7 @@ namespace RCore.Service
 
 		public static void UploadSaveGame(string pContent, float pTotalPlayTime, Action<bool> pCallback = null)
 		{
-			UploadSaveGame(m_SaveFileName, pContent, pTotalPlayTime, pCallback);
+			UploadSaveGame(SAVE_NAME, pContent, pTotalPlayTime, pCallback);
 		}
 
 		public static void UploadSaveGame(string pFileName, string pContent, float pTotalPlayTime, Action<bool> pCallback = null)
@@ -246,7 +246,7 @@ namespace RCore.Service
 			}
 
 			if (string.IsNullOrEmpty(pFileName))
-				pFileName = m_SaveFileName;
+				pFileName = SAVE_NAME;
 
 			Debug.Log("Saving progress to the cloud... filename: " + pFileName);
 			m_Saving = true;
@@ -273,7 +273,7 @@ namespace RCore.Service
 						.WithUpdatedDescription("Updated Date " + DateTime.Now);
 					var updatedMetadata = builder.Build();
 					((PlayGamesPlatform)Social.Active).SavedGame.CommitUpdate(gameMetaData, updatedMetadata, data,
-						(SavedGameRequestStatus status2, ISavedGameMetadata metaData2) =>
+						(status2, metaData2) =>
 						{
 							if (status2 == SavedGameRequestStatus.Success)
 								Debug.Log("Game " + metaData2.Description + " written");
@@ -285,7 +285,7 @@ namespace RCore.Service
 				}
 				else
 					((PlayGamesPlatform)Social.Active).SavedGame.ReadBinaryData(gameMetaData,
-						(SavedGameRequestStatus status2, byte[] byteData) =>
+						(status2, byteData) =>
 						{
 							string cloudData = "";
 							if (status2 == SavedGameRequestStatus.Success)

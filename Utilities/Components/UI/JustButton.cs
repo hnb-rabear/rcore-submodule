@@ -10,6 +10,7 @@ using RCore.Common;
 using UnityEngine.Serialization;
 
 #if UNITY_EDITOR
+using RCore.Common.Editor;
 using UnityEditor;
 using UnityEditor.UI;
 #endif

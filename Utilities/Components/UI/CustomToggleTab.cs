@@ -12,6 +12,7 @@ using RCore.Common;
 using UnityEngine.EventSystems;
 using UnityEngine.Serialization;
 #if UNITY_EDITOR
+using RCore.Common.Editor;
 using UnityEditor;
 #endif
 #if USE_DOTWEEN

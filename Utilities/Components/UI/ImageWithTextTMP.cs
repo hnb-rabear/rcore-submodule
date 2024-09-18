@@ -11,6 +11,7 @@ using RCore.Common;
 using RCore.Inspector;
 using UnityEngine.Serialization;
 #if UNITY_EDITOR
+using RCore.Common.Editor;
 using UnityEditor;
 #endif
 

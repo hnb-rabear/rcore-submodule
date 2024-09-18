@@ -4,9 +4,9 @@
 
 using UnityEditor;
 using UnityEngine;
-using RCore.Common;
+using RCore.Common.Editor;
 
-namespace RCore.Framework.Data
+namespace RCore.Framework.Data.Editor
 {
     public static class DataMenuTools
     {
