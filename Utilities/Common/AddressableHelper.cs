@@ -33,7 +33,9 @@ namespace RCore.Common
 	{
 		public TComponent instance;
 		public TComponent asset;
+		private AsyncOperationHandle<GameObject> m_operation;
 		public ComponentRef(string guid) : base(guid) { }
+		
 		public override bool ValidateAsset(Object obj)
 		{
 			var go = obj as GameObject;
@@ -51,7 +53,8 @@ namespace RCore.Common
 		}
 		public async UniTask<TComponent> InternalInstantiateAsync(bool pDefaultActive = false)
 		{
-			var go = await Addressables.InstantiateAsync(this);
+			m_operation = Addressables.InstantiateAsync(this);
+			var go = await m_operation;
 			go.SetActive(pDefaultActive);
 			go.TryGetComponent(out instance);
 			Debug.Log($"Instantiate Asset Bundle {instance.name}");
@@ -78,18 +81,25 @@ namespace RCore.Common
 		}
 		public void Unload()
 		{
-			if (instance != null)
+			try
 			{
-				string name = instance.name;
-				if (Addressables.ReleaseInstance(instance.gameObject))
-					UnityEngine.Debug.Log($"Unload asset bundle success {name}");
+				if (instance != null)
+				{
+					string instanceName = instance.name;
+					if (m_operation.IsValid() && Addressables.ReleaseInstance(m_operation))
+						Debug.Log($"Unload asset bundle success {instanceName}");
+				}
+				if (asset != null)
+				{
+					string name = asset.name;
+					asset = null;
+					ReleaseAsset();
+					Debug.Log($"Unload asset bundle success {name}");
+				}
 			}
-			if (asset != null)
+			catch (Exception ex)
 			{
-				string name = asset.name;
-				asset = null;
-				ReleaseAsset();
-				UnityEngine.Debug.Log($"Unload asset bundle success {name}");
+				UnityEngine.Debug.LogError(ex);
 			}
 		}
 	}
@@ -303,13 +313,15 @@ namespace RCore.Common
 
 #region Instantiate
 
-		public static AsyncOperationHandle<GameObject> InstantiateAsync<TReference>(TReference pReference, Transform parent, Action<GameObject> pOnComplete, Action<float> pProgress = null) where TReference : AssetReference
+		public static AsyncOperationHandle<GameObject> InstantiateAsync<TReference>(TReference pReference, Transform parent, Action<GameObject> pOnComplete, Action<float> pProgress = null)
+			where TReference : AssetReference
 		{
 			var operation = Addressables.InstantiateAsync(pReference, parent);
 			WaitLoadTask(operation, pOnComplete, pProgress);
 			return operation;
 		}
-		public static AsyncOperationHandle<GameObject> InstantiateAsync<TComponent, TReference>(TReference pReference, Transform parent, Action<TComponent> pOnComplete, Action<float> pProgress = null) where TComponent : Component where TReference : AssetReference
+		public static AsyncOperationHandle<GameObject> InstantiateAsync<TComponent, TReference>(TReference pReference, Transform parent, Action<TComponent> pOnComplete, Action<float> pProgress = null)
+			where TComponent : Component where TReference : AssetReference
 		{
 			var operation = Addressables.InstantiateAsync(pReference, parent);
 			WaitLoadTask(operation, (result) =>
@@ -401,7 +413,8 @@ namespace RCore.Common
 			var result = await operation;
 			return result;
 		}
-		public static AsyncOperationHandle<TObject> LoadAssetAsync<TObject, TReference>(TReference pReference, Action<TObject> pOnComplete, Action<float> pProgress = null) where TObject : Object where TReference : AssetReference
+		public static AsyncOperationHandle<TObject> LoadAssetAsync<TObject, TReference>(TReference pReference, Action<TObject> pOnComplete, Action<float> pProgress = null) where TObject : Object
+			where TReference : AssetReference
 		{
 			var operation = pReference.IsValid() ? pReference.OperationHandle.Convert<TObject>() : pReference.LoadAssetAsync<TObject>();
 			WaitLoadTask(operation, pOnComplete, pProgress);
@@ -574,7 +587,7 @@ namespace RCore.Common
 				WaitLoadTask(operation, pOnComplete);
 				return;
 			}
-			TimerEventsGlobal.Instance.WaitForCondition(new ConditionEvent()
+            TimerEventsGlobal.Instance.WaitForCondition(new ConditionEvent()
 			{
 				triggerCondition = () => operation.IsDone,
 				onUpdate = () =>
@@ -644,7 +657,7 @@ namespace RCore.Common
 				WaitUnloadTask(operation, pOnComplete);
 				return;
 			}
-            TimerEventsGlobal.Instance.WaitForCondition(new ConditionEvent()
+			TimerEventsGlobal.Instance.WaitForCondition(new ConditionEvent()
 			{
 				triggerCondition = () => operation.IsDone,
 				onUpdate = () =>
@@ -690,6 +703,20 @@ namespace RCore.Common
 				return false;
 			return true;
 		}
+
+		public static void RemoveEmptyAssetBundles<M>(List<AssetBundleWithIntKey<M>> list) where M : UnityEngine.Object
+		{
+			for (int i = 0; i < list.Count; i++)
+			{
+				var assetBundle = list[i];
+				string guiId = assetBundle.reference.AssetGUID;
+				if (string.IsNullOrEmpty(guiId))
+				{
+					list.RemoveAt(i);
+					i--;
+				}
+			}
+		}
 #endif
 	}
 
@@ -701,22 +728,26 @@ namespace RCore.Common
 		internal bool loading { get; private set; }
 		internal T asset { get; private set; }
 		internal T instance;
-		public async UniTask<T> InstantiateAsync(bool pDefaultActive = false)
+		private AsyncOperationHandle<GameObject> m_operation;
+		public async UniTask<T> InstantiateAsync(bool defaultActive = false)
 		{
+			UnityEngine.Debug.Assert(parent != null, "parent != null");
 			if (instance != null) return instance;
 			if (asset != null)
 			{
 				instance = Object.Instantiate(asset, parent);
-				instance.SetActive(pDefaultActive);
+				instance.SetActive(defaultActive);
 				instance.name = asset.name;
 			}
 			else
 			{
 				loading = true;
-				var go = await Addressables.InstantiateAsync(reference, parent);
+				m_operation = Addressables.InstantiateAsync(reference, parent);
+				var go = await m_operation;
 				loading = false;
-				go.SetActive(pDefaultActive);
+				go.SetActive(defaultActive);
 				go.TryGetComponent(out instance);
+				go.name = go.name.Replace("(Clone)", "");
 				Debug.Log($"Instantiate Asset Bundle {instance.name}");
 				return instance;
 			}
@@ -728,7 +759,8 @@ namespace RCore.Common
 			if (asset == null)
 			{
 				loading = true;
-				var obj = await Addressables.LoadAssetAsync<GameObject>(reference);
+				m_operation = Addressables.LoadAssetAsync<GameObject>(reference);
+				var obj = await m_operation;
 				if (obj)
 					asset = obj.GetComponent<T>();
 				loading = false;
@@ -738,63 +770,122 @@ namespace RCore.Common
 			}
 			return asset;
 		}
-		public bool InstanceLoaded(bool p_active = false)
+		//NOTE: Coroutine doesn't wait UniTask
+		public IEnumerator IEInstantiate(bool defaultActive = false)
+		{
+			if (instance != null)
+			{
+				yield break;
+			}
+			if (asset != null)
+			{
+				instance = Object.Instantiate(asset, parent);
+				instance.SetActive(defaultActive);
+				instance.name = asset.name;
+			}
+			else
+			{
+				loading = true;
+				m_operation = Addressables.InstantiateAsync(reference, parent);
+				yield return m_operation;
+				var go = m_operation.Result;
+				loading = false;
+				go.SetActive(defaultActive);
+				go.TryGetComponent(out instance);
+				go.name = go.name.Replace("(Clone)", "");
+				Debug.Log($"Instantiate Asset Bundle {instance.name}");
+			}
+		}
+		public IEnumerator IELoad()
+		{
+			if (asset != null)
+				yield break;
+			loading = true;
+			m_operation = Addressables.LoadAssetAsync<GameObject>(reference);
+			yield return m_operation;
+			if (m_operation.Result)
+				asset = m_operation.Result.GetComponent<T>();
+			loading = false;
+
+			if (asset != null)
+				Debug.Log($"Load Asset Bundle {asset.name}");
+		}
+		public bool InstanceLoaded(bool active = false)
 		{
 			if (instance == null && asset != null)
 			{
 				instance = Object.Instantiate(asset, parent);
-				instance.SetActive(p_active);
+				instance.SetActive(active);
 				instance.name = asset.name;
 			}
 			if (instance == null)
-				InstantiateAsync(p_active);
+				InstantiateAsync(active);
 			return instance != null;
 		}
 		public void Unload()
 		{
-			if (asset != null)
+			try
 			{
-				Debug.Log($"Unload Asset Bundle {asset.name}");
-				if (instance != null)
-					Object.Destroy(instance.gameObject);
-				Addressables.Release(asset.gameObject);
+				if (asset != null)
+				{
+					Debug.Log($"Unload Asset Bundle {asset.name}");
+					if (instance != null)
+						Object.Destroy(instance.gameObject);
+					if (m_operation.IsValid())
+						Addressables.Release(m_operation);
+				}
+				else if (instance != null)
+				{
+					string instanceName = instance.name;
+					if (m_operation.IsValid() && Addressables.ReleaseInstance(m_operation))
+						Debug.Log($"Unload Asset Bundle {instanceName}");
+				}
 			}
-			else if (instance != null)
+			catch (Exception ex)
 			{
-				Debug.Log($"Unload Asset Bundle {instance.name}");
-				Addressables.ReleaseInstance(instance.gameObject);
+				UnityEngine.Debug.LogError(ex);
 			}
 		}
 	}
 
-    [Serializable]
+	[Serializable]
 	public class AssetBundleRef<M> where M : Object
 	{
 		public AssetReferenceT<M> reference;
+		private AsyncOperationHandle<M> m_operation;
 		public M asset { get; set; }
 		public async UniTask<M> LoadAsync() //NOTE: this function should be awaited in an async, Coroutine does not working correctly
 		{
 			if (asset != null)
 				return asset;
-			var operation = Addressables.LoadAssetAsync<M>(reference);
-			await operation;
-			asset = operation.Result;
-			Debug.Log($"Load Asset Bundle {asset.name}");
+			m_operation = Addressables.LoadAssetAsync<M>(reference);
+			await m_operation;
+			asset = m_operation.Result;
+			// Debug.Log($"Load Asset Bundle {asset.name}");
 			return asset;
+		}
+		public IEnumerator IELoad()
+		{
+			if (asset != null)
+				yield break;
+			m_operation = Addressables.LoadAssetAsync<M>(reference);
+			yield return m_operation;
+			asset = m_operation.Result;
 		}
 		public void Unload()
 		{
-			if (asset == null)
-				return;
-			Debug.Log($"Unload Asset Bundle {asset.name}");
-			Addressables.Release(asset);
+			if (m_operation.IsValid())
+			{
+				// Debug.Log($"Unload Asset Bundle {asset.name}");
+				Addressables.Release(m_operation);
+			}
 		}
 	}
 
 	[Serializable]
 	public class AssetBundleWithEnumKey<T, M> : AssetBundleRef<M> where T : Enum where M : Object
 	{
-		public T key;
+		[FormerlySerializedAs("id")] public T key;
 	}
 
 	[Serializable]

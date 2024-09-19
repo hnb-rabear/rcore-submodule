@@ -523,7 +523,7 @@ namespace RCore.Components
 #if UNITY_EDITOR
         protected virtual void OnValidate()
         {
-            m_sfxSources ??= new AudioSource[0];
+            m_sfxSources ??= Array.Empty<AudioSource>();
             var audioSources = gameObject.FindComponentsInChildren<AudioSource>();
             for (int i = m_sfxSources.Length - 1; i >= 0; i--)
             {

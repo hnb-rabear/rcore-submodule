@@ -30,11 +30,11 @@ namespace RCore.Components
         [SerializeField] private AudioClip[] musicClips;
         [SerializeField] private AssetReferenceT<AudioClip>[] m_abSfxClips;
         [SerializeField] private AssetReferenceT<AudioClip>[] m_abMusicClips;
-
-        public AudioClip GetMusicClip(int pKey)
+        
+        public AudioClip GetMusicClip(int pIndex)
         {
-            if (pKey < musicClips.Length)
-                return musicClips[pKey];
+            if (pIndex < musicClips.Length)
+                return musicClips[pIndex];
             return null;
         }
 
@@ -100,6 +100,56 @@ namespace RCore.Components
             return names;
         }
 
+#region Addressable Assets
+
+        public async void LoadABSfx(int pIndex)
+        {
+            if (pIndex < 0 || pIndex >= sfxClips.Length || sfxClips[pIndex] != null)
+                return;
+            var asset = m_abSfxClips[pIndex];
+            if (asset != null)
+            {
+                var operation = asset.IsValid() ? asset.OperationHandle.Convert<AudioClip>() : asset.LoadAssetAsync<AudioClip>();
+                await operation.Task;
+                sfxClips[pIndex] = operation.Result;
+            }
+        }
+
+        public void UnloadABSfx(int pIndex)
+        {
+            var ab = m_abSfxClips[pIndex];
+            if (ab != null)
+            {
+                sfxClips[pIndex] = null;
+                ab.ReleaseAsset();
+            }
+        }
+        
+        public async void LoadABMusic(int pIndex)
+        {
+            if (pIndex < 0 || pIndex >= musicClips.Length || musicClips[pIndex] != null)
+                return;
+            var ab = m_abMusicClips[pIndex];
+            if (ab != null)
+            {
+                var operation = Addressables.LoadAssetAsync<AudioClip>(ab);
+                await operation.Task;
+                musicClips[pIndex] = operation.Result;
+            }
+        }
+        
+        public void UnloadABMusic(int pIndex)
+        {
+            var ab = m_abMusicClips[pIndex];
+            if (ab != null)
+            {
+                musicClips[pIndex] = null;
+                ab.ReleaseAsset();
+            }
+        }
+        
+#endregion
+        
 #if UNITY_EDITOR
         [CustomEditor(typeof(AudioCollection))]
         private class AudioCollectionEditor : UnityEditor.Editor
