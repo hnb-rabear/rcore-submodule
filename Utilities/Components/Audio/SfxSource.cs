@@ -24,7 +24,12 @@ namespace RCore.Components
         [SerializeField, Range(0, 1f)] private float m_Vol = 1f;
 
         private bool m_initialized;
-        private int[] m_indexes;
+        private int[] m_indexes = Array.Empty<int>();
+
+        private void Awake()
+        {
+            Init();
+        }
 
         private void Start()
         {
