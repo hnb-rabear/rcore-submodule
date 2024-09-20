@@ -71,13 +71,12 @@ namespace RCore.Common
 
 		public static void Reverse(StringBuilder sb)
 		{
-			char t;
-			int end = sb.Length - 1;
+            int end = sb.Length - 1;
 			int start = 0;
 
 			while (end - start > 0)
 			{
-				t = sb[end];
+				char t = sb[end];
 				sb[end] = sb[start];
 				sb[start] = t;
 				start++;
@@ -88,23 +87,19 @@ namespace RCore.Common
 		public static void CollectGC()
 		{
 #if UNITY_EDITOR
-			string log = "BEFORE\n" + LogMemoryUsages(false);
+			string log = $"BEFORE\n{LogMemoryUsages(false)}";
 #endif
 			GC.Collect();
 #if UNITY_EDITOR
-			log += "\nAFTER\n" + LogMemoryUsages(false);
+			log += $"\nAFTER\n{LogMemoryUsages(false)}";
 			UnityEngine.Debug.Log(log);
 #endif
 		}
 
 		public static string LogMemoryUsages(bool printLog = true)
 		{
-			string str = "" +
-				$"\nTotal Reserved memory by Unity [GetTotalReservedMemoryLong]: {UnityEngine.Profiling.Profiler.GetTotalReservedMemoryLong() / 1048576}mb" +
-				$"\n - Allocated memory by Unity [GetTotalAllocatedMemoryLong]: {UnityEngine.Profiling.Profiler.GetTotalAllocatedMemoryLong() / 1048576}mb" +
-				$"\n - Reserved but not allocated [GetTotalUnusedReservedMemoryLong]: {UnityEngine.Profiling.Profiler.GetTotalUnusedReservedMemoryLong() / 1048576}mb" +
-				$"\n - Mono Used Size [GetMonoUsedSizeLong]: {UnityEngine.Profiling.Profiler.GetMonoUsedSizeLong() / 1048576}mb" +
-				$"\n - Mono Heap Size [GetMonoHeapSizeLong]: {UnityEngine.Profiling.Profiler.GetMonoHeapSizeLong() / 1048576}mb";
+			string str =
+                $"\nTotal Reserved memory by Unity [GetTotalReservedMemoryLong]: {UnityEngine.Profiling.Profiler.GetTotalReservedMemoryLong() / 1048576}mb\n - Allocated memory by Unity [GetTotalAllocatedMemoryLong]: {UnityEngine.Profiling.Profiler.GetTotalAllocatedMemoryLong() / 1048576}mb\n - Reserved but not allocated [GetTotalUnusedReservedMemoryLong]: {UnityEngine.Profiling.Profiler.GetTotalUnusedReservedMemoryLong() / 1048576}mb\n - Mono Used Size [GetMonoUsedSizeLong]: {UnityEngine.Profiling.Profiler.GetMonoUsedSizeLong() / 1048576}mb\n - Mono Heap Size [GetMonoHeapSizeLong]: {UnityEngine.Profiling.Profiler.GetMonoHeapSizeLong() / 1048576}mb";
 			if (printLog)
 				UnityEngine.Debug.Log(str);
 			return str;
@@ -118,41 +113,36 @@ namespace RCore.Common
 			var oHeightTop = (Screen.currentResolution.height - Screen.safeArea.height - Screen.safeArea.y) / 2f;
 			var oWidthBot = -Screen.safeArea.x / 2f;
 			var oHeightBot = -Screen.safeArea.y / 2f;
-			Debug.Log($"Screen size: (width:{sWidth}, height:{sHeight})" +
-				$"\nSafe area: {Screen.safeArea}" +
-				$"\nOffset Top: (width:{oWidthTop}, height:{oHeightTop})" +
-				$"\nOffset Bottom: (width:{oWidthBot}, height:{oHeightBot})");
+			Debug.Log(
+                $"Screen size: (width:{sWidth}, height:{sHeight})\nSafe area: {Screen.safeArea}\nOffset Top: (width:{oWidthTop}, height:{oHeightTop})\nOffset Bottom: (width:{oWidthBot}, height:{oHeightBot})");
 		}
 
 		public static void CreateBackup(string pContent, string pFileName = null)
 		{
 			pFileName ??= $"{Application.productName}_{DateTime.Now:yyyyMMdd_HHmm}";
 			pFileName = pFileName.RemoveSpecialCharacters();
-			string folder = Application.persistentDataPath + Path.DirectorySeparatorChar + "Backup" + Path.DirectorySeparatorChar;
+			string folder = $"{Application.persistentDataPath}{Path.DirectorySeparatorChar}Backup{Path.DirectorySeparatorChar}";
 #if UNITY_EDITOR
-			folder = Application.dataPath + Path.DirectorySeparatorChar + "Backup" + Path.DirectorySeparatorChar;
+			folder = $"{Application.dataPath}{Path.DirectorySeparatorChar}Backup{Path.DirectorySeparatorChar}";
 #endif
 			if (!string.IsNullOrEmpty(pContent) && pContent != "{}")
 			{
 				var directoryPath = Path.GetDirectoryName(folder);
-				if (!Directory.Exists(directoryPath))
-					Directory.CreateDirectory(directoryPath);
+				if (directoryPath != null && !Directory.Exists(directoryPath))
+                    Directory.CreateDirectory(directoryPath);
 
-				string path = folder + pFileName + ".json";
+                string path = $"{folder}{pFileName}.json";
 				File.WriteAllText(path, pContent);
 				Debug.Log($"Created Backup successfully {path}", Color.green);
 #if UNITY_EDITOR
-				UnityEditor.EditorApplication.delayCall += () =>
-				{
-					System.Diagnostics.Process.Start(folder);
-				};
+				UnityEditor.EditorApplication.delayCall += () => System.Diagnostics.Process.Start(folder);
 #endif
 			}
 		}
 
 		public static string DictToString(IDictionary<string, object> d)
 		{
-			return "{ " + d.Select(kv => "(" + kv.Key + ", " + kv.Value + ")").Aggregate("", (current, next) => current + next + ", ") + "}";
+			return $"{{ {d.Select(kv => $"({kv.Key}, {kv.Value})").Aggregate("", (current, next) => $"{current}{next}, ")}}}";
 		}
 
 		[Obsolete]
@@ -182,15 +172,6 @@ namespace RCore.Common
 			combinedMesh.GetComponent<MeshRenderer>().sharedMaterial = pMat;
 		}
 
-		public static IEnumerator SendWebRequest(string url, WWWForm form, Action<string> pCallback = null)
-		{
-			using var w = form == null ? UnityWebRequest.Get(url) : UnityWebRequest.Post(url, form);
-			yield return w.SendWebRequest();
-			while (w.isDone == false)
-				yield return null;
-			pCallback?.Invoke(w.result == UnityWebRequest.Result.Success ? w.downloadHandler.text : null);
-		}
-
 		public static int GetVersionInt(string version)
 		{
 			if (!int.TryParse(version.Last().ToString(), out _))
@@ -203,14 +184,14 @@ namespace RCore.Common
 			return versionInt;
 		}
 
-		public static int CompareVersion(string version1, string version2)
+		public static int CompareVersion(string curVersion, string newVersion)
 		{
-			if (!int.TryParse(version1.Last().ToString(), out _))
-				version1 = version1.Remove(version1.Length - 1);
-			if (!int.TryParse(version2.Last().ToString(), out _))
-				version2 = version2.Remove(version2.Length - 1);
-			string[] version1s = version1.Split('.');
-			string[] version2s = version2.Split('.');
+			if (!int.TryParse(curVersion.Last().ToString(), out _))
+				curVersion = curVersion.Remove(curVersion.Length - 1);
+			if (!int.TryParse(newVersion.Last().ToString(), out _))
+				newVersion = newVersion.Remove(newVersion.Length - 1);
+			string[] version1s = curVersion.Split('.');
+			string[] version2s = newVersion.Split('.');
 			int maxIndex = Mathf.Min(version1s.Length, version2s.Length);
 			int p1 = 0;
 			int p2 = 0;
