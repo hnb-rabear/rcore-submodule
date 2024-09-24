@@ -87,7 +87,7 @@ namespace RCore.Components
 
         public void PlaySFX()
         {
-            if (m_initialized)
+            if (!m_initialized)
                 return;
             var audioManager = AudioManager.Instance;
             if (!audioManager.EnabledSFX)
