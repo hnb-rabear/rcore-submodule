@@ -36,15 +36,15 @@ namespace RCore.Common
 
         public CustomPool<T> Get(T pPrefab)
         {
-            if (poolDict.ContainsKey(pPrefab.GameObjectId()))
-                return poolDict[pPrefab.GameObjectId()];
-            else
-            {
-                var pool = new CustomPool<T>(pPrefab, m_initialNumber, container.transform);
-                pool.limitNumber = limitNumber;
-                poolDict.Add(pPrefab.GameObjectId(), pool);
-                return pool;
-            }
+            if (pPrefab == null)
+                return null;
+            int prefabInstanceId = pPrefab.gameObject.GetInstanceID();
+            if (poolDict.TryGetValue(prefabInstanceId, out var prefabPool))
+                return prefabPool;
+            var pool = new CustomPool<T>(pPrefab, m_initialNumber, container.transform);
+            pool.limitNumber = limitNumber;
+            poolDict.Add(prefabInstanceId, pool);
+            return pool;
         }
 
         public void CreatePool(T pPrefab, List<T> pBuiltInObjs)
@@ -63,8 +63,8 @@ namespace RCore.Common
             var pool = Get(prefab);
             var clone = pool.Spawn(position, pIsWorldPosition);
             //Keep the trace of clone
-            if (!m_idOfAllClones.ContainsKey(clone.GameObjectId()))
-                m_idOfAllClones.Add(clone.GameObjectId(), prefab.GameObjectId());
+            if (!m_idOfAllClones.ContainsKey(clone.gameObject.GetInstanceID()))
+                m_idOfAllClones.Add(clone.gameObject.GetInstanceID(), prefab.gameObject.GetInstanceID());
             return clone;
         }
 
@@ -73,31 +73,31 @@ namespace RCore.Common
             var pool = Get(prefab);
             var clone = pool.Spawn(transform);
             //Keep the trace of clone
-            if (!m_idOfAllClones.ContainsKey(clone.GameObjectId()))
-                m_idOfAllClones.Add(clone.GameObjectId(), prefab.GameObjectId());
+            if (!m_idOfAllClones.ContainsKey(clone.gameObject.GetInstanceID()))
+                m_idOfAllClones.Add(clone.gameObject.GetInstanceID(), prefab.gameObject.GetInstanceID());
             return clone;
         }
 
         public CustomPool<T> Add(T pPrefab)
         {
-            if (!poolDict.ContainsKey(pPrefab.GameObjectId()))
+            if (!poolDict.ContainsKey(pPrefab.gameObject.GetInstanceID()))
             {
                 var pool = new CustomPool<T>(pPrefab, m_initialNumber, container.transform);
                 pool.limitNumber = limitNumber;
-                poolDict.Add(pPrefab.GameObjectId(), pool);
+                poolDict.Add(pPrefab.gameObject.GetInstanceID(), pool);
             }
             else
                 Debug.Log($"Pool Prefab {pPrefab.name} has already existed!");
-            return poolDict[pPrefab.GameObjectId()];
+            return poolDict[pPrefab.gameObject.GetInstanceID()];
         }
 
         public void Add(CustomPool<T> pPool)
         {
-            if (!poolDict.ContainsKey(pPool.Prefab.GameObjectId()))
-                poolDict.Add(pPool.Prefab.GameObjectId(), pPool);
+            if (!poolDict.ContainsKey(pPool.Prefab.gameObject.GetInstanceID()))
+                poolDict.Add(pPool.Prefab.gameObject.GetInstanceID(), pPool);
             else
             {
-                var pool = poolDict[pPool.Prefab.GameObjectId()];
+                var pool = poolDict[pPool.Prefab.gameObject.GetInstanceID()];
                 //Merge two pool
                 foreach (var obj in pPool.ActiveList())
                     if (!pool.ActiveList().Contains(obj))
@@ -131,8 +131,8 @@ namespace RCore.Common
 
         public void Release(T pObj)
         {
-            if (m_idOfAllClones.ContainsKey(pObj.GameObjectId()))
-                Release(m_idOfAllClones[pObj.GameObjectId()], pObj);
+            if (m_idOfAllClones.ContainsKey(pObj.gameObject.GetInstanceID()))
+                Release(m_idOfAllClones[pObj.gameObject.GetInstanceID()], pObj);
             else
             {
                 foreach (var pool in poolDict)
@@ -142,7 +142,7 @@ namespace RCore.Common
 
         public void Release(T pPrefab, T pObj)
         {
-            Release(pPrefab.GameObjectId(), pObj);
+            Release(pPrefab.gameObject.GetInstanceID(), pObj);
         }
 
         public void Release(int pPrefabId, T pObj)
@@ -359,7 +359,7 @@ namespace RCore.Common
             return Spawn(position, pIsWorldPosition);
         }
 
-        public T Spawn(Vector3 position, bool pIsWorldPosition, ref bool pReused)
+        public T Spawn(Vector3 position, bool pIsWorldPosition, out bool pReused)
         {
             if (m_LimitNumber > 0 && m_ActiveList.Count == m_LimitNumber)
             {
@@ -406,7 +406,7 @@ namespace RCore.Common
             }
             pReused = false;
 
-            return Spawn(position, pIsWorldPosition, ref pReused);
+            return Spawn(position, pIsWorldPosition, out pReused);
         }
 
         public void AddOutsiders(List<T> pInSceneObjs)
@@ -473,7 +473,7 @@ namespace RCore.Common
         {
             for (int i = 0; i < m_ActiveList.Count; i++)
             {
-                if (m_ActiveList[i].GameObjectId() == pObj.GetInstanceID())
+                if (m_ActiveList[i].gameObject.GetInstanceID() == pObj.GetInstanceID())
                 {
                     Active(m_ActiveList[i], false, i);
                     return;

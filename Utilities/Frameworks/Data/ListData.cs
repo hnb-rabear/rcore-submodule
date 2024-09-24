@@ -11,9 +11,9 @@ namespace RCore.Framework.Data
 {
     public class ListData<T> : FunData
     {
-        private List<T> mValues;
-        private List<T> mDefaultValues;
-        private bool mChanged;
+        private List<T> m_values;
+        private List<T> m_defaultValues;
+        private bool m_changed;
 
         /// <summary>
         /// NOTE: This type of data should not has Get method
@@ -23,96 +23,96 @@ namespace RCore.Framework.Data
         {
             set
             {
-                if (value != mValues)
+                if (value != m_values)
                 {
-                    mValues = value;
-                    mChanged = true;
+                    m_values = value;
+                    m_changed = true;
                 }
             }
         }
 
-        public int Count => mValues == null ? 0 : mValues.Count;
+        public int Count => m_values?.Count ?? 0;
 
         /// <summary>
         /// NOTE: use this carefully because we can not detect the change made in an element
         /// </summary>
         public T this[int index]
         {
-            get => mValues[index];
+            get => m_values[index];
             set
             {
-                mValues[index] = value;
-                mChanged = true;
+                m_values[index] = value;
+                m_changed = true;
             }
         }
 
         public ListData(int pId, List<T> pDefaultValues = null, string pAlias = null) : base(pId, pAlias)
         {
-            mDefaultValues = pDefaultValues;
+            m_defaultValues = pDefaultValues;
         }
 
         public ListData(int pId, T[] pDefaultValues, string pAlias = null) : base(pId, pAlias)
         {
-            mDefaultValues = new List<T>();
-            mDefaultValues.AddRange(pDefaultValues);
+            m_defaultValues = new List<T>();
+            m_defaultValues.AddRange(pDefaultValues);
         }
 
         public override void Load(string pBaseKey, string pSaverIdString)
         {
             base.Load(pBaseKey, pSaverIdString);
-            mValues = GetSavedValues();
+            m_values = GetSavedValues();
         }
 
         public void Add(T value)
         {
-            mValues ??= new List<T>();
-            mValues.Add(value);
-            mChanged = true;
+            m_values ??= new List<T>();
+            m_values.Add(value);
+            m_changed = true;
         }
 
         public void AddRange(params T[] values)
         {
-            mValues ??= new List<T>();
-            mValues.AddRange(values);
-            mChanged = true;
+            m_values ??= new List<T>();
+            m_values.AddRange(values);
+            m_changed = true;
         }
 
         public void Remove(T value)
         {
-            mValues.Remove(value);
-            mChanged = true;
+            m_values.Remove(value);
+            m_changed = true;
         }
 
         public void Replace(T newValue, T oldValue)
         {
-            int index = mValues.IndexOf(oldValue);
-            mValues[index] = newValue;
-            mChanged = true;
+            int index = m_values.IndexOf(oldValue);
+            m_values[index] = newValue;
+            m_changed = true;
         }
 
         public void Insert(int pIndex, T value)
         {
-            mValues.Insert(pIndex, value);
-            mChanged = true;
+            m_values.Insert(pIndex, value);
+            m_changed = true;
         }
 
         public void RemoveAt(int pIndex)
         {
-            mValues.RemoveAt(pIndex);
-            mChanged = true;
+            m_values.RemoveAt(pIndex);
+            m_changed = true;
         }
 
         public bool Contain(T value)
         {
-            return mValues != null && mValues.Contains(value);
+            return m_values != null && m_values.Contains(value);
         }
 
         public override bool Stage()
         {
-            if (mChanged)
+            if (m_changed)
             {
-                SetStringValue(JsonHelper.ToJson(mValues));
-                mChanged = false;
+                SetStringValue(JsonHelper.ToJson(m_values));
+                m_changed = false;
                 return true;
             }
             return false;
@@ -122,39 +122,39 @@ namespace RCore.Framework.Data
         {
             string val = GetStringValue();
             if (string.IsNullOrEmpty(val))
-                return mDefaultValues;
+                return m_defaultValues;
 
             try
             {
-                mValues = JsonHelper.ToList<T>(val);
-                return mValues;
+                m_values = JsonHelper.ToList<T>(val);
+                return m_values;
             }
             catch (Exception ex)
             {
                 Debug.LogError(ex.ToString());
 
-                mValues = mDefaultValues != null ? new List<T>(mDefaultValues) : null;
-                return mValues;
+                m_values = m_defaultValues != null ? new List<T>(m_defaultValues) : null;
+                return m_values;
             }
         }
 
         public override void Reload()
         {
             base.Reload();
-            mValues = GetSavedValues();
-            mChanged = false;
+            m_values = GetSavedValues();
+            m_changed = false;
         }
 
         public override void Reset()
 		{
-			mValues = mDefaultValues != null ? new List<T>(mDefaultValues) : null;
-			mChanged = true;
+			m_values = m_defaultValues != null ? new List<T>(m_defaultValues) : null;
+			m_changed = true;
 		}
 
         public void Clear()
         {
-            mValues = new List<T>();
-            mChanged = true;
+            m_values = new List<T>();
+            m_changed = true;
         }
 
         public override bool Cleanable()
@@ -164,26 +164,26 @@ namespace RCore.Framework.Data
 
         public void Sort()
         {
-            mValues.Sort();
-            mChanged = true;
+            m_values.Sort();
+            m_changed = true;
         }
 
         public void Reverse()
         {
-            mValues.Reverse();
-            mChanged = true;
+            m_values.Reverse();
+            m_changed = true;
         }
 
         public void MarkChange()
         {
-            mChanged = true;
+            m_changed = true;
         }
 
         [Obsolete("NOTE: Because It is hard to track the change if we directly add/insert/update internal data of list. Therefore" +
         "If you are planing to change directly data inside list. You must set mChanged manually by MarkChange method")]
         public List<T> GetValues()
         {
-            return mValues;
+            return m_values;
         }
     }
 }

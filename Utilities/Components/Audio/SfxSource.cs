@@ -20,7 +20,13 @@ namespace RCore.Components
         [SerializeField] private bool mIsLoop;
         [SerializeField, Range(0.5f, 2f)] private float m_PitchRandomMultiplier = 1f;
         [SerializeField] private int m_Limit;
+        /// <summary>
+        /// Standalone audio source
+        /// </summary>
         [SerializeField] private AudioSource m_AudioSource;
+        /// <summary>
+        /// Standalone audio volume
+        /// </summary>
         [SerializeField, Range(0, 1f)] private float m_Vol = 1f;
 
         private bool m_initialized;
