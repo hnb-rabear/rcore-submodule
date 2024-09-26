@@ -373,29 +373,41 @@ namespace RCore.Service
 
 		public static void DoReportScore(long score, string leaderboardId, Action<bool> callback)
 		{
-			if (!IsInitialized())
-			{
-				Debug.Log($"Failed to report score to leaderboard {leaderboardId}: user is not logged in.");
-				callback?.Invoke(false);
-				return;
-			}
-
-			Social.ReportScore(score, leaderboardId, callback);
-		}
+            try
+            {
+                if (!IsInitialized())
+                {
+                    Debug.Log($"Failed to report score to leaderboard {leaderboardId}: user is not logged in.");
+                    callback?.Invoke(false);
+                    return;
+                }
+                Social.ReportScore(score, leaderboardId, callback);
+            }
+            catch
+            {
+                callback?.Invoke(false);
+            }
+        }
 
 		// Progress of 0.0% means reveal the achievement.
 		// Progress of 100.0% means unlock the achievement.
 		public static void DoReportAchievementProgress(string achievementId, double progress, Action<bool> callback)
 		{
-			if (!IsInitialized())
-			{
-				Debug.Log($"Failed to report progress for achievement {achievementId}: user is not logged in.");
-				callback?.Invoke(false);
-				return;
-			}
-
-			Social.ReportProgress(achievementId, progress, callback);
-		}
+            try
+            {
+                if (!IsInitialized())
+                {
+                    Debug.Log($"Failed to report progress for achievement {achievementId}: user is not logged in.");
+                    callback?.Invoke(false);
+                    return;
+                }
+                Social.ReportProgress(achievementId, progress, callback);
+            }
+            catch
+            {
+                callback?.Invoke(false);
+            }
+        }
 
 		private static void DoNextLoadScoreRequest()
 		{

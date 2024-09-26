@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -282,7 +283,7 @@ namespace RCore.Common
 			m_values = pDefaultValues;
 
 			if (PlayerPrefs.HasKey(key))
-				m_values = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<TKey, TVal>>(PlayerPrefs.GetString(key));
+				m_values = JsonConvert.DeserializeObject<Dictionary<TKey, TVal>>(PlayerPrefs.GetString(key));
 
 			m_values ??= new Dictionary<TKey, TVal>();
 		}
@@ -318,7 +319,7 @@ namespace RCore.Common
 			}
 			if (!changed)
 				return;
-			PlayerPrefs.SetString(key, Newtonsoft.Json.JsonConvert.SerializeObject(m_values));
+			PlayerPrefs.SetString(key, JsonConvert.SerializeObject(m_values));
 			changed = false;
 		}
 
@@ -344,7 +345,8 @@ namespace RCore.Common
 				var val = PlayerPrefs.GetString(key);
                 try
                 {
-                    value = JsonUtility.FromJson<T>(pEncrypt ? Encryption.Singleton.Decrypt(val) : val);
+                    string content = pEncrypt ? Encryption.Singleton.Decrypt(val) : val;
+                    value = JsonConvert.DeserializeObject<T>(content);
                 }
                 catch
                 {
@@ -354,10 +356,14 @@ namespace RCore.Common
 		}
 		public override void SaveChange()
 		{
-            var val = JsonUtility.ToJson(value);
+            var json = JsonConvert.SerializeObject(value, new JsonSerializerSettings()
+            {
+                NullValueHandling = NullValueHandling.Ignore,
+                DefaultValueHandling = DefaultValueHandling.Ignore,
+            });
             if (m_encrypt)
-                val = Encryption.Singleton.Encrypt(val);
-            PlayerPrefs.SetString(key, val);
+                json = Encryption.Singleton.Encrypt(json);
+            PlayerPrefs.SetString(key, json);
 		}
 	}
 }
