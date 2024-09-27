@@ -73,7 +73,7 @@ namespace RCore.Common
             return true;
         }
 
-        public static bool InsideCamera(this Vector3 pPosition, Camera pCamera, float pExtXRatio = 0, float pExtYRatio = 0)
+        public static bool InsideCamera(this Camera pCamera, Vector3 pPosition, float pExtXRatio = 0, float pExtYRatio = 0)
         {
             var screenPoint = pCamera.WorldToViewportPoint(pPosition);
             bool onScreen = screenPoint.z > 0
