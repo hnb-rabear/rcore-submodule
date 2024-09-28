@@ -14,9 +14,17 @@ namespace RCore.Common
 				m_RPlayerPrefs[i].Delete();
 		}
 		public static void Register(RPlayerPref pChange)
-		{
-			m_RPlayerPrefs.Add(pChange);
-		}
+        {
+            for (int i = 0; i < m_RPlayerPrefs.Count; i++)
+            {
+                if (m_RPlayerPrefs[i].key == pChange.key)
+                {
+                    m_RPlayerPrefs[i] = pChange;
+                    return;
+                }
+            }
+            m_RPlayerPrefs.Add(pChange);
+        }
 		public static void SaveChanges()
 		{
 			for (int i = 0; i < m_RPlayerPrefs.Count; i++)
@@ -257,7 +265,7 @@ namespace RCore.Common
 		}
 		public override void SaveChange()
 		{
-			if (m_values.Count == 0)
+			if (m_values == null || m_values.Count == 0)
 			{
 				PlayerPrefs.DeleteKey(key);
 				return;
