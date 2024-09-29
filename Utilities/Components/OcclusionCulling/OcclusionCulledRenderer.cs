@@ -10,15 +10,15 @@ namespace RCore.Components
     [System.Obsolete]
     public class OcclusionCulledRenderer : MonoBehaviour
     {
-        #region Members
+#region Members
 
         public Renderer[] renderers;
 
-        #endregion
+#endregion
 
         //=====================================
 
-        #region MonoBehaviour
+#region MonoBehaviour
 
         private void OnEnable()
         {
@@ -45,11 +45,11 @@ namespace RCore.Components
         }
 #endif
 
-        #endregion
+#endregion
 
         //=====================================
 
-        #region Public
+#region Public
 
         /// <summary>
         /// Enables all the renderer containers
@@ -103,23 +103,17 @@ namespace RCore.Components
             return insideCamera;
         }
 
-        #endregion
+#endregion
 
         //=====================================
 
-        #region Private
+#region Private
 
         private void CacheRenderers()
         {
-            var _renderers = gameObject.FindComponentsInChildren<Renderer>();
-            if (_renderers.Count > 0)
-            {
-                renderers = new Renderer[_renderers.Count];
-                for (int i = 0; i < _renderers.Count; i++)
-                    renderers[i] = _renderers[i];
-            }
+            renderers = gameObject.GetComponentsInChildren<Renderer>(true);
         }
 
-        #endregion
+#endregion
     }
 }
