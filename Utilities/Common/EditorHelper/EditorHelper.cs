@@ -1122,6 +1122,8 @@ namespace RCore.Common.Editor
                 defaultPath = FormatPathToUnityPath(defaultPath).Replace("Assets", "");
             string saveKey = label + pSavingKey + Application.productName;
             string savedPath = EditorPrefs.GetString(saveKey, defaultPath);
+            if (string.IsNullOrEmpty(savedPath))
+                savedPath = defaultPath;
             var text = new EditorText()
             {
                 label = label,
@@ -1145,11 +1147,10 @@ namespace RCore.Common.Editor
                 }
             };
 
-            BoxHorizontal(() =>
-            {
-                text.Draw();
-                button.Draw();
-            });
+            EditorGUILayout.BeginHorizontal();
+            text.Draw();
+            button.Draw();
+            EditorGUILayout.EndHorizontal();
             return savedPath;
         }
 
