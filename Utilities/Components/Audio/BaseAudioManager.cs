@@ -102,18 +102,14 @@ namespace RCore.Components
                     });
 #else
 				StartCoroutine(IELerp(pFadeDuration,
-					(lerp) =>
+					lerp =>
 					{
-						m_MasterVolume = Mathf.Lerp(fromVal, pValue, lerp);
-						mMusicSource.volume = m_MasterVolume * m_MusicVolume;
-						mSFXSourceUnlimited.volume = m_MasterVolume * m_SFXVolume;
-						foreach (var source in mSFXSources)
-							source.volume = m_MasterVolume * m_SFXVolume;
-					}, () =>
-					{
-						pOnComplete?.Invoke();
-					}));
-
+						m_masterVolume = Mathf.Lerp(fromVal, pValue, lerp);
+						m_musicSource.volume = m_masterVolume * m_musicVolume;
+						m_sfxSourceUnlimited.volume = m_masterVolume * m_sfxVolume;
+						foreach (var source in m_sfxSources)
+							source.volume = m_masterVolume * m_sfxVolume;
+					}, () => pOnComplete?.Invoke()));
 #endif
             }
         }
@@ -214,10 +210,10 @@ namespace RCore.Components
                         pOnComplete?.Invoke();
                     });
 #else
-				StartCoroutine(IELerp(pFadeDuration, (lerp) =>
+				StartCoroutine(IELerp(pFadeDuration, lerp =>
 				{
-					m_MusicVolume = Mathf.Lerp(fromVal, pValue, lerp);
-					mMusicSource.volume = m_MasterVolume * m_MusicVolume;
+					m_musicVolume = Mathf.Lerp(fromVal, pValue, lerp);
+					m_musicSource.volume = m_masterVolume * m_musicVolume;
 				}, () =>
 				{
 					pOnComplete?.Invoke();
@@ -403,16 +399,13 @@ namespace RCore.Components
                         pOnComplete?.Invoke();
                     });
 #else
-				StartCoroutine(IELerp(pFadeDuration, (lerp) =>
+				StartCoroutine(IELerp(pFadeDuration, lerp =>
 				{
-					m_SFXVolume = Mathf.Lerp(fromVal, pValue, lerp);
-					mSFXSourceUnlimited.volume = m_MasterVolume * m_SFXVolume;
-					foreach (var sound in mSFXSources)
-						sound.volume = m_MasterVolume * m_SFXVolume;
-				}, () =>
-				{
-					pOnComplete?.Invoke();
-				}));
+					m_sfxVolume = Mathf.Lerp(fromVal, pValue, lerp);
+					m_sfxSourceUnlimited.volume = m_masterVolume * m_sfxVolume;
+					foreach (var sound in m_sfxSources)
+						sound.volume = m_masterVolume * m_sfxVolume;
+				}, () => pOnComplete?.Invoke()));
 #endif
             }
         }

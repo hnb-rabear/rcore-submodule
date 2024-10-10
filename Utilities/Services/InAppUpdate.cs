@@ -1,5 +1,7 @@
 using Cysharp.Threading.Tasks;
+#if UNITY_ANDROID && GOOGLE_UPDATE
 using Google.Play.AppUpdate;
+#endif
 using RCore.Common;
 using System;
 using UnityEngine;
