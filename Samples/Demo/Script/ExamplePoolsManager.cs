@@ -33,10 +33,6 @@ namespace RCore.Demo
         /// Container which contain all pools of Image Objects
         /// </summary>
         private PoolsContainer<Image> mImagePools;
-        /// <summary>
-        /// Simple FPS Counter
-        /// </summary>
-        private FPSCounter mFPSCounter = new FPSCounter();
 
         public Transform redCubePrefab;
         public Transform blueCubePrefab;
@@ -51,8 +47,8 @@ namespace RCore.Demo
 
         private void Start()
         {
-            // Simple Benmark, It basically is FPS Counter
-            Benchmark.Instance.StartBenchmark(15, (fPS, minFPS, maxFPS) => Debug.Log($"Benchmark Finished: FPS:{fPS} MinFPS:{minFPS} MaxFPS:{maxFPS}"));
+            // Simple Benchmark, It basically is FPS Counter
+            TimerEventsInScene.Instance.StartBenchmark(300, (fPS, minFPS, maxFPS) => Debug.Log($"Benchmark Finished: FPS:{fPS} MinFPS:{minFPS} MaxFPS:{maxFPS}"));
 
             //Simple Wait For Work
             int a = 0;
@@ -65,13 +61,6 @@ namespace RCore.Demo
                 a = 9;
             });
             TimerEventsInScene.Instance.WaitForCondition(() => a == 9, () => Debug.Log("Wait till a = 9"));
-        }
-
-        private void Update()
-        {
-            mFPSCounter.Update(Time.deltaTime);
-            if (mFPSCounter.updated)
-                Debug.Log("FPS: " + mFPSCounter.fps);
         }
 
         public void Init()

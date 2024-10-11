@@ -202,7 +202,7 @@ namespace RCore.Framework.Data
                 return;
 
             var listData = GetDescendant();
-            CoroutineUtil.StartCoroutine(IEStageAsync(listData, pOnCompleted));
+            TimerEventsGlobal.Instance.StartCoroutine(IEStageAsync(listData, pOnCompleted));
         }
 
         //------------------------------------------

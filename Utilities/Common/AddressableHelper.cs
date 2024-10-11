@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 #if UNITY_EDITOR
 using UnityEditor;
-using UnityEditor.AddressableAssets;
 #endif
 using UnityEngine;
 using System.Collections;
@@ -675,49 +674,6 @@ namespace RCore.Common
 		}
 
 #endregion
-
-#if UNITY_EDITOR
-		public static bool IncludedInBuild(Object obj)
-		{
-			if (obj == null)
-				return false;
-			string guid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(obj));
-			var assetEntry = AddressableAssetSettingsDefaultObject.Settings.FindAssetEntry(guid, true);
-			if (assetEntry == null)
-				return false;
-			var excludedGroup = AddressableAssetSettingsDefaultObject.Settings.FindGroup("Excluded Content");
-			if (excludedGroup != null && excludedGroup.GetAssetEntry(guid, true) != null)
-				return false;
-			return true;
-		}
-
-		public static bool IncludedInBuild(string guid)
-		{
-			if (string.IsNullOrEmpty(guid))
-				return false;
-			var assetEntry = AddressableAssetSettingsDefaultObject.Settings.FindAssetEntry(guid, true);
-			if (assetEntry == null)
-				return false;
-			var excludedGroup = AddressableAssetSettingsDefaultObject.Settings.FindGroup("Excluded Content");
-			if (excludedGroup != null && excludedGroup.GetAssetEntry(guid, true) != null)
-				return false;
-			return true;
-		}
-
-		public static void RemoveEmptyAssetBundles<M>(List<AssetBundleWithIntKey<M>> list) where M : UnityEngine.Object
-		{
-			for (int i = 0; i < list.Count; i++)
-			{
-				var assetBundle = list[i];
-				string guiId = assetBundle.reference.AssetGUID;
-				if (string.IsNullOrEmpty(guiId))
-				{
-					list.RemoveAt(i);
-					i--;
-				}
-			}
-		}
-#endif
 	}
 
 	[Serializable]

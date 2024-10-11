@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace RCore.Common
@@ -19,7 +16,7 @@ namespace RCore.Common
             }
         }
 
-        public static void CreatInstance()
+        private static void CreatInstance()
         {
             var obj = new GameObject("TimerEventsInScene");
             m_Instance = obj.AddComponent<TimerEventsInScene>();

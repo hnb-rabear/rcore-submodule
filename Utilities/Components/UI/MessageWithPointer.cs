@@ -104,7 +104,7 @@ namespace RCore.Components
 			enabled = true;
 
 			if (pPostValidate)
-				CoroutineUtil.StartCoroutine(IEPostValidatingPointer(pTarget, pAlignment, pOffset));
+				TimerEventsInScene.Instance.StartCoroutine(IEPostValidatingPointer(pTarget, pAlignment, pOffset));
 		}
 
 		public void MessageToTarget(RectTransform pTarget, string pMessage, PointerAlignment pAlignment, Vector2 pSize, float pOffset = 30, bool pPostValidate = true)
@@ -165,7 +165,7 @@ namespace RCore.Components
 			enabled = true;
 
 			if (pPostValidate)
-				CoroutineUtil.StartCoroutine(IEPostValidatingMessage(pTarget, pMessage, pAlignment, pSize, pOffset));
+                TimerEventsInScene.Instance.StartCoroutine(IEPostValidatingMessage(pTarget, pMessage, pAlignment, pSize, pOffset));
 		}
 
 		private IEnumerator IEPostValidatingPointer(RectTransform pTarget, PointerAlignment pAlignment, float pOffset = 0)

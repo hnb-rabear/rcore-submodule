@@ -23,7 +23,7 @@ namespace RCore.Common
 
             var sceneOperator = SceneManager.LoadSceneAsync(pScene, pIsAdditive ? LoadSceneMode.Additive : LoadSceneMode.Single);
             sceneOperator.allowSceneActivation = false;
-            CoroutineUtil.StartCoroutine(IEProcessOperation(sceneOperator, pAutoActive, pOnProgress, pOnCompleted, pFixedLoadTime));
+            TimerEventsGlobal.Instance.StartCoroutine(IEProcessOperation(sceneOperator, pAutoActive, pOnProgress, pOnCompleted, pFixedLoadTime));
             return sceneOperator;
         }
 
@@ -32,7 +32,6 @@ namespace RCore.Common
             var scene = SceneManager.GetSceneByName(pScene);
             if (scene.isLoaded && !pReload)
                 return;
-
             SceneManager.LoadScene(pScene, pIsAdditive ? LoadSceneMode.Additive : LoadSceneMode.Single);
         }
 
@@ -80,7 +79,7 @@ namespace RCore.Common
                 sceneOperator.allowSceneActivation = true;
         }
 
-        public static AsyncOperation UnloadSceneAsync(string pScene, Action<float> pOnProgress, Action pOnComplted)
+        public static AsyncOperation UnloadSceneAsync(string pScene, Action<float> pOnProgress, Action pOnCompleted)
         {
             var scene = SceneManager.GetSceneByName(pScene);
             if (!scene.isLoaded)
@@ -90,11 +89,11 @@ namespace RCore.Common
             }
 
             var sceneOperator = SceneManager.UnloadSceneAsync(pScene);
-            CoroutineUtil.StartCoroutine(IEProcessOperation(sceneOperator, false, pOnProgress, pOnComplted));
+            TimerEventsGlobal.Instance.StartCoroutine(IEProcessOperation(sceneOperator, false, pOnProgress, pOnCompleted));
             return sceneOperator;
         }
 
-        public static AsyncOperation UnloadScene(Scene pScene, Action<float> pOnProgress, Action pOnComplted)
+        public static AsyncOperation UnloadScene(Scene pScene, Action<float> pOnProgress, Action pOnCompleted)
         {
             if (!pScene.isLoaded)
             {
@@ -103,7 +102,7 @@ namespace RCore.Common
             }
 
             var sceneOperator = SceneManager.UnloadSceneAsync(pScene);
-            CoroutineUtil.StartCoroutine(IEProcessOperation(sceneOperator, false, pOnProgress, pOnComplted));
+            TimerEventsGlobal.Instance.StartCoroutine(IEProcessOperation(sceneOperator, false, pOnProgress, pOnCompleted));
             return sceneOperator;
         }
     }

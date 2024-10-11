@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace RCore.Inspector
+namespace RCore.Common
 {
     [Serializable]
     public class StringStringDictionary : SerializableDictionary<string, string> { }

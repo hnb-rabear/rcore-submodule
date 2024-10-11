@@ -9,6 +9,19 @@ namespace RCore.Common.Editor
 {
 	public static class AddressableEditorHelper
 	{
+        public static void RemoveEmptyAssetBundles<M>(List<AssetBundleWithIntKey<M>> list) where M : UnityEngine.Object
+        {
+            for (int i = 0; i < list.Count; i++)
+            {
+                var assetBundle = list[i];
+                string guiId = assetBundle.reference.AssetGUID;
+                if (string.IsNullOrEmpty(guiId))
+                {
+                    list.RemoveAt(i);
+                    i--;
+                }
+            }
+        }
 		public static AddressableAssetEntry CreateAssetEntry<T>(T source, string groupName, string label) where T : Object
 		{
 			var entry = CreateAssetEntry(source, groupName, false);
@@ -110,7 +123,33 @@ namespace RCore.Common.Editor
 			}
 			return false;
 		}
-	}
+        
+        public static bool IncludedInBuild(Object obj)
+        {
+            if (obj == null)
+                return false;
+            string guid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(obj));
+            var assetEntry = AddressableAssetSettingsDefaultObject.Settings.FindAssetEntry(guid, true);
+            if (assetEntry == null)
+                return false;
+            var excludedGroup = AddressableAssetSettingsDefaultObject.Settings.FindGroup("Excluded Content");
+            if (excludedGroup != null && excludedGroup.GetAssetEntry(guid, true) != null)
+                return false;
+            return true;
+        }
+        public static bool IncludedInBuild(string guid)
+        {
+            if (string.IsNullOrEmpty(guid))
+                return false;
+            var assetEntry = AddressableAssetSettingsDefaultObject.Settings.FindAssetEntry(guid, true);
+            if (assetEntry == null)
+                return false;
+            var excludedGroup = AddressableAssetSettingsDefaultObject.Settings.FindGroup("Excluded Content");
+            if (excludedGroup != null && excludedGroup.GetAssetEntry(guid, true) != null)
+                return false;
+            return true;
+        }
+    }
 
 	public static class AddressableEditorExtension
 	{

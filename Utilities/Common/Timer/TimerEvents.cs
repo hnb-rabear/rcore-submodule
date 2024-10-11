@@ -8,6 +8,7 @@ namespace RCore.Common
 {
     public interface IUpdate
     {
+        public bool stop { get; set; }
         void Update(float pDeltaTime);
     }
 
@@ -17,16 +18,22 @@ namespace RCore.Common
         private ConditionEventsManager m_ConditionEventsManager = new ConditionEventsManager();
         private List<DelayableEvent> m_DelayableEvents = new List<DelayableEvent>();
         private List<IUpdate> m_UpdateActions = new List<IUpdate>();
+        public Benchmark benchmark;
+        private void Update()
+        {
+            for (int i = m_UpdateActions.Count - 1; i >= 0; i--)
+            {
+                var d = m_UpdateActions[i];
+                d.Update(Time.deltaTime);
+                if (d.stop)
+                    m_UpdateActions.RemoveAt(i);
+            }
+        }
         private void LateUpdate()
         {
             m_CountdownEventsManager.LateUpdate();
             m_ConditionEventsManager.LateUpdate();
 
-            for (int i = m_UpdateActions.Count - 1; i >= 0; i--)
-            {
-                var d = m_UpdateActions[i];
-                d.Update(Time.unscaledDeltaTime);
-            }
             if (m_DelayableEvents.Count > 0)
             {
                 for (int i = m_DelayableEvents.Count - 1; i >= 0; i--)
@@ -173,6 +180,12 @@ namespace RCore.Common
             m_DelayableEvents = new List<DelayableEvent>();
             m_UpdateActions = new List<IUpdate>();
             enabled = false;
+        }
+
+        public void StartBenchmark(float duration, Action<int, int, int> onFinishedBenchmark)
+        {
+            benchmark = new Benchmark(duration, onFinishedBenchmark);
+            AddUpdate(benchmark);
         }
     }
 }

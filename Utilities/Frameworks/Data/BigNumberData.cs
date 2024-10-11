@@ -9,7 +9,7 @@ namespace RCore.Framework.Data
         private FloatData mReadable;
         private IntegerData mPow;
 
-        public Common.BigNumberAlpha Value
+        public Common.BigNumberF Value
         {
             get => new(mReadable.Value, mPow.Value);
             set
@@ -19,7 +19,7 @@ namespace RCore.Framework.Data
             }
         }
 
-        public BigNumberData(int pId, Common.BigNumberAlpha pDefaultNumber = null) : base(pId)
+        public BigNumberData(int pId, Common.BigNumberF pDefaultNumber = null) : base(pId)
         {
             mReadable = AddData(new FloatData(0, pDefaultNumber == null ? 0 : pDefaultNumber.readableValue));
             mPow = AddData(new IntegerData(1, pDefaultNumber == null ? 0 : pDefaultNumber.pow));

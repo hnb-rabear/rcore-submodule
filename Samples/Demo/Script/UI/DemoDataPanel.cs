@@ -1,14 +1,12 @@
 ﻿using UnityEngine;
 using RCore.Framework.UI;
 using RCore.Components;
-using RCore.Common;
 using TMPro;
 
 namespace RCore.Demo
 {
     public class DemoDataPanel : PanelController
     {
-        [SerializeField] private TextMeshProUGUI mTxtFPS;
         [SerializeField] private CustomToggleSlider mTogSlider;
         [SerializeField] private CustomToggleTab mTab1;
         [SerializeField] private CustomToggleTab mTab2;
@@ -18,8 +16,7 @@ namespace RCore.Demo
         [SerializeField] private SimpleTMPButton mBtnLoad;
         [SerializeField] private ProgressBar mProgressBar;
         [SerializeField] private TMP_InputField mInputFiled;
-
-        private FPSCounter mFPSCounter = new FPSCounter();
+        
         private float mTime;
 
         private ExampleGameData GameData => ExampleGameData.Instance;
@@ -42,10 +39,6 @@ namespace RCore.Demo
             mProgressBar.Value = mTime % 30f;
             //Or
             //mProgressBar.FillAmount = (mTime % 30f) / 30f;
-
-            mFPSCounter.Update(Time.deltaTime);
-            if (mFPSCounter.updated)
-                mTxtFPS.text = mFPSCounter.fps.ToString();
         }
 
         [InspectorButton]

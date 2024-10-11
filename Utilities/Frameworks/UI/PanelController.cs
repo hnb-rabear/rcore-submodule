@@ -113,7 +113,7 @@ namespace RCore.Framework.UI
 			if (!m_showed || m_isHiding)
 				return;
 			
-			CoroutineUtil.StartCoroutine(IE_Hide(pOnDidHide));
+			TimerEventsInScene.Instance.StartCoroutine(IE_Hide(pOnDidHide));
 		}
 
 		protected IEnumerator IE_Hide(UnityAction pOnDidHide)
@@ -172,7 +172,7 @@ namespace RCore.Framework.UI
 			if (transform.parent != parentPanel.transform)
 				transform.SetParent(parentPanel.transform);
 
-			CoroutineUtil.StartCoroutine(IE_Show(pOnDidShow));
+			TimerEventsInScene.Instance.StartCoroutine(IE_Show(pOnDidShow));
 		}
 
 		protected IEnumerator IE_Show(UnityAction pOnDidShow)

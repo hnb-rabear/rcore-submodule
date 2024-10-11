@@ -8,25 +8,28 @@ using UnityEngine;
 
 namespace RCore.Common
 {
-    public class BigNumberAlpha : IComparable<BigNumberAlpha>
+    public class BigNumberF : IComparable<BigNumberF>
     {
-        private static readonly int MAX_READ_LENGTH = 12; //Max length of float is 38 but we dont care any number after this position
-        private static readonly float MAX_READ_VALUE = float.Parse("999999999999"); //increase length of this nuber will increse the acurration
+        //Values of float range from approximately 1.5 × 10⁻⁴⁵ to 3.4 × 10³⁸, but only the first 6-9 digits are considered reliable.
+        //A float can store a number like 123456.789, which has 9 digits total (6 before and 3 after the decimal).
+        //If the number has more than 9 significant digits (e.g., 123456789.123), precision will be lost.
+        private static readonly int MAX_READ_LENGTH = 12; 
+        private static readonly float MAX_READ_VALUE = float.Parse("999999999999"); //increase length of this number will increase the precision
 
-        internal static BigNumberAlpha Zero => new(0);
-        internal static BigNumberAlpha One => new(1);
-        internal static BigNumberAlpha Two => new(2);
-        internal static BigNumberAlpha Ten => new(10);
-        internal static BigNumberAlpha OneHundred => new(100);
+        internal static BigNumberF Zero => new(0);
+        internal static BigNumberF One => new(1);
+        internal static BigNumberF Two => new(2);
+        internal static BigNumberF Ten => new(10);
+        internal static BigNumberF OneHundred => new(100);
 
         public float readableValue;
         public int pow;
         public int valueLength;
 
-        private StringBuilder m_NumberBuilder = new StringBuilder();
-        private StringBuilder m_PowBuilder = new StringBuilder();
+        private StringBuilder m_numberBuilder = new StringBuilder();
+        private StringBuilder m_powBuilder = new StringBuilder();
 
-        public BigNumberAlpha()
+        public BigNumberF()
         {
             readableValue = 0;
             pow = 0;
@@ -40,7 +43,7 @@ namespace RCore.Common
             valueLength = 1;
         }
 
-        public BigNumberAlpha(BigNumberAlpha pNumber)
+        public BigNumberF(BigNumberF pNumber)
         {
             readableValue = pNumber.readableValue;
             pow = pNumber.pow;
@@ -49,7 +52,7 @@ namespace RCore.Common
 
         //12345600000000000000000000000000000000000000000000000000000000.......
         //123E+13
-        public BigNumberAlpha(string pValue)
+        public BigNumberF(string pValue)
         {
             if (string.IsNullOrEmpty(pValue))
             {
@@ -96,7 +99,7 @@ namespace RCore.Common
             //Debug.Log(pValue + "\n" + GetString(false) + "\n" + GetNotationString());
         }
 
-        public BigNumberAlpha(int pValue)
+        public BigNumberF(int pValue)
         {
             readableValue = pValue;
             pow = 0;
@@ -106,7 +109,7 @@ namespace RCore.Common
             //Debug.Log(pValue + "\n" + GetString(false));
         }
 
-        public BigNumberAlpha(long pValue)
+        public BigNumberF(long pValue)
         {
             readableValue = pValue;
             pow = 0;
@@ -116,7 +119,7 @@ namespace RCore.Common
             //Debug.Log(pValue + "\n" + GetString(false) + "\n" + GetNotationString());
         }
 
-        public BigNumberAlpha(float pValue)
+        public BigNumberF(float pValue)
         {
             readableValue = pValue;
             pow = 0;
@@ -126,7 +129,7 @@ namespace RCore.Common
             //Debug.Log(pValue + "\n" + GetString(false) + "\n" + GetNotationString());
         }
 
-        public BigNumberAlpha(double pValue)
+        public BigNumberF(double pValue)
         {
             int len = GetLength(pValue);
             if (len <= MAX_READ_LENGTH)
@@ -145,7 +148,7 @@ namespace RCore.Common
             //Debug.Log(pValue + "\n" + GetString(false) + "\n" + GetNotationString());
         }
 
-        public BigNumberAlpha(decimal pValue)
+        public BigNumberF(decimal pValue)
         {
             readableValue = (float)pValue;
             pow = 0;
@@ -155,7 +158,7 @@ namespace RCore.Common
             //Debug.Log(pValue + "\n" + GetString(false) + "\n" + GetNotationString());
         }
 
-        public BigNumberAlpha(float pValue, int pPow)
+        public BigNumberF(float pValue, int pPow)
         {
             readableValue = pValue;
             pow = pPow;
@@ -164,14 +167,14 @@ namespace RCore.Common
             //Debug.Log(pValue + "\n" + GetString(false) + "\n" + GetNotationString());
         }
 
-        public BigNumberAlpha(float pValue, string pKKKUnit)
+        public BigNumberF(float pValue, string pKKKUnit)
         {
             readableValue = pValue;
             pow = GetPowFromUnit(pKKKUnit.ToUpper());
             ConvertMaximum();
         }
 
-        public BigNumberAlpha Add(BigNumberAlpha pNumber)
+        public BigNumberF Add(BigNumberF pNumber)
         {
             //Debug.Log(GetNotationString() + "+" + pNumber.GetNotationString());
 
@@ -209,19 +212,19 @@ namespace RCore.Common
             return this;
         }
 
-        public BigNumberAlpha Add(float pValue)
+        public BigNumberF Add(float pValue)
         {
-            var temp = new BigNumberAlpha(pValue);
+            var temp = new BigNumberF(pValue);
             return Add(temp);
         }
 
-        public BigNumberAlpha Add(int pValue)
+        public BigNumberF Add(int pValue)
         {
-            var temp = new BigNumberAlpha(pValue);
+            var temp = new BigNumberF(pValue);
             return Add(temp);
         }
 
-        public BigNumberAlpha Subtract(BigNumberAlpha pNumber)
+        public BigNumberF Subtract(BigNumberF pNumber)
         {
             //Debug.Log(GetNotationString() + "-" + pNumber.GetNotationString());
 
@@ -259,19 +262,19 @@ namespace RCore.Common
             return this;
         }
 
-        public BigNumberAlpha Subtract(float pValue)
+        public BigNumberF Subtract(float pValue)
         {
-            var temp = new BigNumberAlpha(pValue);
+            var temp = new BigNumberF(pValue);
             return Subtract(temp);
         }
 
-        public BigNumberAlpha Subtract(int pValue)
+        public BigNumberF Subtract(int pValue)
         {
-            var temp = new BigNumberAlpha(pValue);
+            var temp = new BigNumberF(pValue);
             return Subtract(temp);
         }
 
-        public BigNumberAlpha Divide(BigNumberAlpha pNumber)
+        public BigNumberF Divide(BigNumberF pNumber)
         {
             //Debug.Log(GetNotationString() + "/" + pNumber.GetNotationString());
 
@@ -307,19 +310,19 @@ namespace RCore.Common
             return this;
         }
 
-        public BigNumberAlpha Divide(float pValue)
+        public BigNumberF Divide(float pValue)
         {
-            var temp = new BigNumberAlpha(pValue);
+            var temp = new BigNumberF(pValue);
             return Divide(temp);
         }
 
-        public BigNumberAlpha Divide(int pValue)
+        public BigNumberF Divide(int pValue)
         {
-            var temp = new BigNumberAlpha(pValue);
+            var temp = new BigNumberF(pValue);
             return Divide(temp);
         }
 
-        public BigNumberAlpha Multiply(BigNumberAlpha pNumber)
+        public BigNumberF Multiply(BigNumberF pNumber)
         {
             //Debug.Log(GetNotationString() + "*" + pNumber.GetNotationString());
 
@@ -362,19 +365,19 @@ namespace RCore.Common
             return this;
         }
 
-        public BigNumberAlpha Multiply(float pValue)
+        public BigNumberF Multiply(float pValue)
         {
-            var temp = new BigNumberAlpha(pValue);
+            var temp = new BigNumberF(pValue);
             return Multiply(temp);
         }
 
-        public BigNumberAlpha Multiply(int pValue)
+        public BigNumberF Multiply(int pValue)
         {
-            var temp = new BigNumberAlpha(pValue);
+            var temp = new BigNumberF(pValue);
             return Multiply(temp);
         }
 
-        public BigNumberAlpha Pow(float pHat)
+        public BigNumberF Pow(float pHat)
         {
             //Debug.Log(GetString() + "^" + pHat);
 
@@ -447,16 +450,16 @@ namespace RCore.Common
             return this;
         }
 
-        public BigNumberAlpha Mod(BigNumberAlpha pNumber)
+        public BigNumberF Mod(BigNumberF pNumber)
         {
             //Debug.Log(GetString() + "%" + pNumber.GetString());
 
             if (CompareTo(pNumber) < 0)
-                return new BigNumberAlpha(this);
+                return new BigNumberF(this);
 
             var div = this / pNumber;
             float divDecimal = div.readableValue - (float)Math.Truncate(div.readableValue);
-            var mod = new BigNumberAlpha(divDecimal) * pNumber;
+            var mod = new BigNumberF(divDecimal) * pNumber;
             return mod;
         }
 
@@ -583,31 +586,31 @@ namespace RCore.Common
                     int p2Len = parts[1].Length;
                     if (p2Len > pow)
                     {
-                        m_PowBuilder.Clear().Append(parts[1].Substring(0, pow));
+                        m_powBuilder.Clear().Append(parts[1].Substring(0, pow));
                     }
                     else if (p2Len == pow)
                     {
-                        m_PowBuilder.Clear().Append(parts[1]);
+                        m_powBuilder.Clear().Append(parts[1]);
                     }
                     else if (p2Len < pow)
                     {
-                        m_PowBuilder.Clear().Append(parts[1]);
+                        m_powBuilder.Clear().Append(parts[1]);
                         int a = pow - p2Len;
                         while (a > 0)
                         {
-                            m_PowBuilder.Append("0");
+                            m_powBuilder.Append("0");
                             a--;
                         }
                     }
-                    return m_NumberBuilder.Clear().Append(parts[0]).Append(m_PowBuilder).ToString();
+                    return m_numberBuilder.Clear().Append(parts[0]).Append(m_powBuilder).ToString();
                 }
                 else if (parts.Length == 1)
                 {
-                    m_PowBuilder.Clear();
+                    m_powBuilder.Clear();
                     for (int i = 0; i < pow; i++)
-                        m_PowBuilder.Append("0");
+                        m_powBuilder.Append("0");
 
-                    return m_NumberBuilder.Clear().Append(parts[0]).Append(m_PowBuilder).ToString();
+                    return m_numberBuilder.Clear().Append(parts[0]).Append(m_powBuilder).ToString();
                 }
                 else
                 {
@@ -625,7 +628,7 @@ namespace RCore.Common
 
                 float num = readableValue / Mathf.Pow(10, len - 1);
                 num = (float)Math.Round(num, 2);
-                m_NumberBuilder.Clear()
+                m_numberBuilder.Clear()
                     .Append(num)
                     .Append("E+")
                     .Append(pow + len - 1);
@@ -637,11 +640,11 @@ namespace RCore.Common
                 {
                     float num = readableValue / Mathf.Pow(10, len - 3);
                     num = (float)Math.Round(num, 2);
-                    m_NumberBuilder.Clear();
-                    m_NumberBuilder.Append(num);
+                    m_numberBuilder.Clear();
+                    m_numberBuilder.Append(num);
                     if (pow + len - 3 >= 1)
                     {
-                        m_NumberBuilder.Append("E+").Append(pow + len - 3);
+                        m_numberBuilder.Append("E+").Append(pow + len - 3);
                     }
                 }
                 else
@@ -650,7 +653,7 @@ namespace RCore.Common
                 }
             }
 
-            return m_NumberBuilder.ToString();
+            return m_numberBuilder.ToString();
         }
 
         public string GetKKKString()
@@ -677,7 +680,7 @@ namespace RCore.Common
             else
                 displayPart = truncate;
 
-            m_NumberBuilder.Clear().Append(displayPart);
+            m_numberBuilder.Clear().Append(displayPart);
 
             if (len > 15)
             {
@@ -685,18 +688,18 @@ namespace RCore.Common
                 int unitTypeInt = (len - 16) / 3 % 26;
                 char unitChar = (char)(65 + unitTypeInt);
                 for (int i = 0; i < unitSize; i++)
-                    m_NumberBuilder.Append(unitChar);
+                    m_numberBuilder.Append(unitChar);
             }
             else if (len > 12)
-                m_NumberBuilder.Append("T");
+                m_numberBuilder.Append("T");
             else if (len > 9)
-                m_NumberBuilder.Append("B");
+                m_numberBuilder.Append("B");
             else if (len > 6)
-                m_NumberBuilder.Append("M");
+                m_numberBuilder.Append("M");
             else if (len > 3)
-                m_NumberBuilder.Append("K");
+                m_numberBuilder.Append("K");
 
-            return m_NumberBuilder.ToString();
+            return m_numberBuilder.ToString();
         }
 
         public string GetKKKUnit()
@@ -707,7 +710,7 @@ namespace RCore.Common
                 return "";
             }
 
-            m_NumberBuilder.Clear();
+            m_numberBuilder.Clear();
 
             if (len > 15)
             {
@@ -715,18 +718,18 @@ namespace RCore.Common
                 int unitTypeInt = (len - 16) / 3 % 26;
                 char unitChar = (char)(65 + unitTypeInt);
                 for (int i = 0; i < unitSize; i++)
-                    m_NumberBuilder.Append(unitChar);
+                    m_numberBuilder.Append(unitChar);
             }
             else if (len > 12)
-                m_NumberBuilder.Append("T");
+                m_numberBuilder.Append("T");
             else if (len > 9)
-                m_NumberBuilder.Append("B");
+                m_numberBuilder.Append("B");
             else if (len > 6)
-                m_NumberBuilder.Append("M");
+                m_numberBuilder.Append("M");
             else if (len > 3)
-                m_NumberBuilder.Append("K");
+                m_numberBuilder.Append("K");
 
-            return m_NumberBuilder.ToString();
+            return m_numberBuilder.ToString();
         }
 
         /// <summary>
@@ -763,7 +766,7 @@ namespace RCore.Common
             return pow;
         }
 
-        public bool GreaterThan(BigNumberAlpha pNumber)
+        public bool GreaterThan(BigNumberF pNumber)
         {
             if (pow == pNumber.pow)
                 return readableValue > pNumber.readableValue;
@@ -771,7 +774,7 @@ namespace RCore.Common
                 return pow > pNumber.pow;
         }
 
-        public int CompareTo(BigNumberAlpha pNumber)
+        public int CompareTo(BigNumberF pNumber)
         {
             if (pow == pNumber.pow)
             {
@@ -796,7 +799,7 @@ namespace RCore.Common
             if (readableValue > pNumber)
                 return 1;
             else
-                return CompareTo(new BigNumberAlpha(pNumber));
+                return CompareTo(new BigNumberF(pNumber));
         }
 
         public void ConvertMaximum()
@@ -843,7 +846,7 @@ namespace RCore.Common
             UpdateValueLength();
         }
 
-        private void ConvertMaximum(BigNumberAlpha pAlpha)
+        private void ConvertMaximum(BigNumberF pAlpha)
         {
             float tempReadableVal = pAlpha.readableValue;
             if (pAlpha.readableValue < 0)
@@ -888,7 +891,7 @@ namespace RCore.Common
             return GetString();
         }
 
-        public BigNumberAlpha Sqrt()
+        public BigNumberF Sqrt()
         {
             readableValue = Mathf.Sqrt(readableValue);
             pow /= 2;
@@ -901,133 +904,133 @@ namespace RCore.Common
 
         #region Static
 
-        public static BigNumberAlpha Create(int pValue)
+        public static BigNumberF Create(int pValue)
         {
-            return new BigNumberAlpha(pValue);
+            return new BigNumberF(pValue);
         }
 
-        public static BigNumberAlpha Create(float pValue)
+        public static BigNumberF Create(float pValue)
         {
-            return new BigNumberAlpha(pValue);
+            return new BigNumberF(pValue);
         }
 
-        public static BigNumberAlpha Create(long pValue)
+        public static BigNumberF Create(long pValue)
         {
-            return new BigNumberAlpha(pValue);
+            return new BigNumberF(pValue);
         }
 
-        public static BigNumberAlpha Create(string pValue)
+        public static BigNumberF Create(string pValue)
         {
-            return new BigNumberAlpha(pValue);
+            return new BigNumberF(pValue);
         }
 
-        public static BigNumberAlpha operator +(BigNumberAlpha pLeft, BigNumberAlpha pRight)
+        public static BigNumberF operator +(BigNumberF pLeft, BigNumberF pRight)
         {
-            return new BigNumberAlpha(pLeft).Add(pRight);
+            return new BigNumberF(pLeft).Add(pRight);
         }
 
-        public static BigNumberAlpha operator +(BigNumberAlpha pLeft, float pRight)
+        public static BigNumberF operator +(BigNumberF pLeft, float pRight)
         {
-            return new BigNumberAlpha(pLeft).Add(pRight);
+            return new BigNumberF(pLeft).Add(pRight);
         }
 
-        public static BigNumberAlpha operator +(float pLeft, BigNumberAlpha pRight)
+        public static BigNumberF operator +(float pLeft, BigNumberF pRight)
         {
-            return new BigNumberAlpha(pRight).Add(pLeft);
+            return new BigNumberF(pRight).Add(pLeft);
         }
 
-        public static BigNumberAlpha operator -(BigNumberAlpha pLeft, BigNumberAlpha pRight)
+        public static BigNumberF operator -(BigNumberF pLeft, BigNumberF pRight)
         {
-            return new BigNumberAlpha(pLeft).Subtract(pRight);
+            return new BigNumberF(pLeft).Subtract(pRight);
         }
 
-        public static BigNumberAlpha operator -(BigNumberAlpha pLeft, float pRight)
+        public static BigNumberF operator -(BigNumberF pLeft, float pRight)
         {
-            return new BigNumberAlpha(pLeft).Subtract(pRight);
+            return new BigNumberF(pLeft).Subtract(pRight);
         }
 
-        public static BigNumberAlpha operator -(float pLeft, BigNumberAlpha pRight)
+        public static BigNumberF operator -(float pLeft, BigNumberF pRight)
         {
-            return new BigNumberAlpha(pLeft).Subtract(pRight);
+            return new BigNumberF(pLeft).Subtract(pRight);
         }
 
-        public static BigNumberAlpha operator *(BigNumberAlpha pLeft, BigNumberAlpha pRight)
+        public static BigNumberF operator *(BigNumberF pLeft, BigNumberF pRight)
         {
-            return new BigNumberAlpha(pLeft).Multiply(pRight);
+            return new BigNumberF(pLeft).Multiply(pRight);
         }
 
-        public static BigNumberAlpha operator *(BigNumberAlpha pLeft, float pRight)
+        public static BigNumberF operator *(BigNumberF pLeft, float pRight)
         {
-            return new BigNumberAlpha(pLeft).Multiply(pRight);
+            return new BigNumberF(pLeft).Multiply(pRight);
         }
 
-        public static BigNumberAlpha operator *(float pLeft, BigNumberAlpha pRight)
+        public static BigNumberF operator *(float pLeft, BigNumberF pRight)
         {
-            return new BigNumberAlpha(pRight).Multiply(pLeft);
+            return new BigNumberF(pRight).Multiply(pLeft);
         }
 
-        public static BigNumberAlpha operator /(BigNumberAlpha pLeft, BigNumberAlpha pRight)
+        public static BigNumberF operator /(BigNumberF pLeft, BigNumberF pRight)
         {
-            return new BigNumberAlpha(pLeft).Divide(pRight);
+            return new BigNumberF(pLeft).Divide(pRight);
         }
 
-        public static BigNumberAlpha operator /(BigNumberAlpha pLeft, float pRight)
+        public static BigNumberF operator /(BigNumberF pLeft, float pRight)
         {
-            return new BigNumberAlpha(pLeft).Divide(pRight);
+            return new BigNumberF(pLeft).Divide(pRight);
         }
 
-        public static BigNumberAlpha operator /(float pLeft, BigNumberAlpha pRight)
+        public static BigNumberF operator /(float pLeft, BigNumberF pRight)
         {
-            return new BigNumberAlpha(pLeft).Divide(pRight);
+            return new BigNumberF(pLeft).Divide(pRight);
         }
 
-        public static BigNumberAlpha operator %(BigNumberAlpha pLeft, BigNumberAlpha pRight)
+        public static BigNumberF operator %(BigNumberF pLeft, BigNumberF pRight)
         {
-            return new BigNumberAlpha(pLeft).Mod(pRight);
+            return new BigNumberF(pLeft).Mod(pRight);
         }
 
-        public static BigNumberAlpha operator %(BigNumberAlpha pLeft, float pRight)
+        public static BigNumberF operator %(BigNumberF pLeft, float pRight)
         {
-            return new BigNumberAlpha(pLeft).Mod(new BigNumberAlpha(pRight));
+            return new BigNumberF(pLeft).Mod(new BigNumberF(pRight));
         }
 
-        public static BigNumberAlpha Lg(BigNumberAlpha pLeft, float pRight)
+        public static BigNumberF Lg(BigNumberF pLeft, float pRight)
         {
             if (pRight == 1)
             {
                 Debug.LogError("Infinity");
-                return new BigNumberAlpha();
+                return new BigNumberF();
             }
 
             if (pLeft.pow > 0)
             {
                 double a = Math.Log(pLeft.readableValue, pRight);
                 double b = Math.Log(Math.Pow(10, pLeft.pow), pRight);
-                return new BigNumberAlpha(a + b);
+                return new BigNumberF(a + b);
             }
             else
             {
                 double a = Math.Log(pLeft.readableValue, pRight);
-                return new BigNumberAlpha(a);
+                return new BigNumberF(a);
             }
         }
 
-        public static BigNumberAlpha Pow(BigNumberAlpha pLeft, float pRight)
+        public static BigNumberF Pow(BigNumberF pLeft, float pRight)
         {
-            return new BigNumberAlpha(pLeft).Pow(pRight);
+            return new BigNumberF(pLeft).Pow(pRight);
         }
 
-        public static BigNumberAlpha Pow(float pLeft, float pRight)
+        public static BigNumberF Pow(float pLeft, float pRight)
         {
-            return new BigNumberAlpha(pLeft).Pow(pRight);
+            return new BigNumberF(pLeft).Pow(pRight);
         }
 
-        public static BigNumberAlpha Max(BigNumberAlpha p1, BigNumberAlpha p2)
+        public static BigNumberF Max(BigNumberF p1, BigNumberF p2)
         {
             return p1.CompareTo(p2) > 0 ? p1 : p2;
         }
 
-        public static BigNumberAlpha Random(BigNumberAlpha p1, BigNumberAlpha p2)
+        public static BigNumberF Random(BigNumberF p1, BigNumberF p2)
         {
             if (p1.CompareTo(p2) > 0)
             {
@@ -1043,12 +1046,12 @@ namespace RCore.Common
             }
         }
 
-        public static BigNumberAlpha Sqrt(BigNumberAlpha pNumber)
+        public static BigNumberF Sqrt(BigNumberF pNumber)
         {
-            return new BigNumberAlpha(pNumber).Sqrt();
+            return new BigNumberF(pNumber).Sqrt();
         }
 
-        public static BigNumberAlpha AA(int pBase)
+        public static BigNumberF AA(int pBase)
         {
             return Ten.Pow(10).Multiply(pBase);
         }
@@ -1056,7 +1059,7 @@ namespace RCore.Common
         /// <summary>
         /// Convert 13.4AA to 1340000000000000...
         /// </summary>
-        public static BigNumberAlpha ToBigNumber(string pKKKNumber)
+        public static BigNumberF ToBigNumber(string pKKKNumber)
         {
             int dotIndex = pKKKNumber.IndexOf(".");
             var numberPart = new StringBuilder();
@@ -1112,7 +1115,7 @@ namespace RCore.Common
                     numberPart.Append(0);
                 }
             }
-            return new BigNumberAlpha(numberPart.ToString());
+            return new BigNumberF(numberPart.ToString());
         }
 
         #endregion
@@ -1120,9 +1123,9 @@ namespace RCore.Common
 
     public static class BigNumberAlphaExtension
     {
-        public static BigNumberAlpha ToBigNumber(this float pNumber)
+        public static BigNumberF ToBigNumber(this float pNumber)
         {
-            return new BigNumberAlpha(pNumber);
+            return new BigNumberF(pNumber);
         }
     }
 }
