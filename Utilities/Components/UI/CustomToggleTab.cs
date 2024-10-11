@@ -30,6 +30,7 @@ namespace RCore.Components
         [FormerlySerializedAs("contentsInDeactive")] public List<RectTransform> contentsInactive;
         public List<TextMeshProUGUI> additionalLabels;
         public string sfxClip = "button";
+        public string sfxClipOff = "button";
 
         public bool enableBgSpriteSwitch;
         public Sprite sptActiveBackground;
@@ -307,8 +308,11 @@ namespace RCore.Components
 
         private void OnValueChanged(bool pIsOn)
         {
-            if (pIsOn && AudioManager.Instance)
-                AudioManager.Instance.PlaySFX(sfxClip, 0);
+            if (pIsOn && !string.IsNullOrEmpty(sfxClip))
+                EventDispatcher.Raise(new SFXTriggeredEvent(sfxClip));
+            else if (!pIsOn && !string.IsNullOrEmpty(sfxClipOff))
+                EventDispatcher.Raise(new SFXTriggeredEvent(sfxClipOff));
+            
 #if USE_DOTWEEN
 			if (Application.isPlaying && tweenTime > 0 && transition != Transition.Animation)
             {

@@ -1,4 +1,7 @@
-﻿namespace RCore.Components
+﻿using RCore.Common;
+using System;
+
+namespace RCore.Components
 {
     public class AudioManager : BaseAudioManager
     {
@@ -11,6 +14,21 @@
                 m_Instance = this;
             else if (m_Instance != this)
                 Destroy(gameObject);
+        }
+
+        private void Start()
+        {
+            EventDispatcher.AddListener<SFXTriggeredEvent>(OnToggleChanged);
+        }
+
+        private void OnDestroy()
+        {
+            EventDispatcher.AddListener<SFXTriggeredEvent>(OnToggleChanged);
+        }
+
+        private void OnToggleChanged(SFXTriggeredEvent e)
+        {
+            PlaySFX(e.sfx, 0);
         }
     }
 }

@@ -9,12 +9,6 @@ using System;
 using RCore.Common;
 using UnityEngine.Serialization;
 
-#if UNITY_EDITOR
-using RCore.Common.Editor;
-using UnityEditor;
-using UnityEditor.UI;
-#endif
-
 namespace RCore.Components
 {
     [AddComponentMenu("RCore/UI/JustButton")]
@@ -185,8 +179,8 @@ namespace RCore.Components
             if (m_active)
             {
                 base.OnPointerDown(eventData);
-                if (!string.IsNullOrEmpty(m_SfxClip) && AudioManager.Instance)
-                    AudioManager.Instance.PlaySFX(m_SfxClip, 0);
+                if (!string.IsNullOrEmpty(m_SfxClip))
+                    EventDispatcher.Raise(new SFXTriggeredEvent(m_SfxClip));
             }
 
             if (mEnabledFX)
@@ -326,59 +320,4 @@ namespace RCore.Components
             }
         }
     }
-
-#if UNITY_EDITOR
-    [CanEditMultipleObjects]
-    [CustomEditor(typeof(JustButton), true)]
-    internal class JustButtonEditor : ButtonEditor
-    {
-        public override void OnInspectorGUI()
-        {
-            base.OnInspectorGUI();
-
-            EditorGUILayout.BeginVertical("box");
-            {
-                EditorHelper.SerializeField(serializedObject, "mImg");
-                EditorHelper.SerializeField(serializedObject, "mPivotForFX");
-                EditorHelper.SerializeField(serializedObject, "mEnabledFX");
-                EditorHelper.SerializeField(serializedObject, "mGreyMatEnabled");
-                EditorHelper.SerializeField(serializedObject, "m_SfxClip");
-                EditorHelper.SerializeField(serializedObject, "m_PerfectRatio");
-                var imgSwapEnabled = EditorHelper.SerializeField(serializedObject, "mImgSwapEnabled");
-                if (imgSwapEnabled.boolValue)
-                {
-                    EditorGUI.indentLevel++;
-                    EditorGUILayout.BeginVertical("box");
-                    EditorHelper.SerializeField(serializedObject, "mImgActive");
-                    EditorHelper.SerializeField(serializedObject, "mImgInactive");
-                    EditorGUILayout.EndVertical();
-                    EditorGUI.indentLevel--;
-                }
-            }
-            EditorGUILayout.EndVertical();
-            EditorGUILayout.Space();
-            serializedObject.ApplyModifiedProperties();
-        }
-
-        [MenuItem("RCore/UI/Replace Button By JustButton")]
-        private static void ReplaceButton()
-        {
-            var gameObjects = Selection.gameObjects;
-            for (int i = 0; i < gameObjects.Length; i++)
-            {
-                var buttons = gameObjects[i].FindComponentsInChildren<Button>();
-                for (int j = 0; j < buttons.Count; j++)
-                {
-                    var btn = buttons[j];
-                    if (btn is not JustButton)
-                    {
-                        var obj = btn.gameObject;
-                        DestroyImmediate(btn);
-                        obj.AddComponent<JustButton>();
-                    }
-                }
-            }
-        }
-    }
-#endif
 }

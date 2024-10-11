@@ -2,15 +2,29 @@
  * Author RadBear - nbhung71711 @gmail.com - 2019
  **/
 
+using RCore.Common;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.Serialization;
 #if UNITY_EDITOR
 using RCore.Common.Editor;
 #endif
 
 namespace RCore.Components
 {
+    /// <summary>
+    /// Used to trigger sfx
+    /// </summary>
+    public struct SFXTriggeredEvent : BaseEvent
+    {
+        public string sfx;
+        public SFXTriggeredEvent(string val)
+        {
+            sfx = val;
+        }
+    }
+    
     [AddComponentMenu("RCore/UI/CustomToggleSlider")]
     public class CustomToggleSlider : Toggle
     {
@@ -33,6 +47,7 @@ namespace RCore.Components
         public Color onColor;
         public Color offColor;
         public string sfxClip = "button";
+        public string sfxClipOff = "button";
 
         protected override void OnEnable()
         {
@@ -49,8 +64,10 @@ namespace RCore.Components
 
         private void OnValueChanged(bool pIsOn)
         {
-            if (pIsOn && AudioManager.Instance)
-                AudioManager.Instance.PlaySFX(sfxClip, 0);
+            if (pIsOn && !string.IsNullOrEmpty(sfxClip))
+                EventDispatcher.Raise(new SFXTriggeredEvent(sfxClip));
+            else if (!pIsOn && !string.IsNullOrEmpty(sfxClipOff))
+                EventDispatcher.Raise(new SFXTriggeredEvent(sfxClipOff));
 
             Refresh();
         }
