@@ -1,7 +1,5 @@
 ﻿// Author - RadBear - nbhung71711@gmail.com - 2020
 
-//#define USE_DOTWEEN
-
 using System.Collections.Generic;
 using UnityEngine;
 using RCore.Common;
@@ -10,7 +8,7 @@ using UnityEngine.UI;
 using RCore.Inspector;
 using Debug = UnityEngine.Debug;
 using UnityEngine.EventSystems;
-#if USE_DOTWEEN
+#if DOTWEEN
 using DG.Tweening;
 #endif
 #if UNITY_EDITOR
@@ -171,7 +169,7 @@ namespace RCore.Components
 		{
 			if (!m_ScrollView.horizontal)
 				return;
-#if USE_DOTWEEN
+#if DOTWEEN
 			DOTween.Kill(GetInstanceID());
 #endif
 			m_IsDraging = true;
@@ -323,7 +321,7 @@ namespace RCore.Components
 			{
 				m_IsSnapping = false;
 
-#if USE_DOTWEEN
+#if DOTWEEN
 				if (m_Distance == 0)
 					m_Distance = Vector2.Distance(m_PointToCheckDistanceToCenter.position, m_Items[m_FocusedItemIndex].RectTransform.position);
 				float time = m_Distance / (pSpeed / Time.deltaTime);

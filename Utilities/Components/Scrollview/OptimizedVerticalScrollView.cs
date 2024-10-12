@@ -2,7 +2,7 @@
  * Author RadBear - nbhung71711@gmail.com - 2017
  **/
 
-#if USE_DOTWEEN
+#if DOTWEEN
 using DG.Tweening;
 #endif
 using System.Collections.Generic;
@@ -242,7 +242,7 @@ namespace RCore.Components
                     time = 0.4f;
 
                 content.anchoredPosition = new Vector2(0, fromY);
-#if USE_DOTWEEN
+#if DOTWEEN
                 float val = fromY;
                 DOTween.To(() => val, x => val = x, toY, time)
                     .OnUpdate(() =>

@@ -1,7 +1,5 @@
 ﻿// Author - RadBear - nbhung71711@gmail.com - 2020
 
-//#define USE_DOTWEEN
-
 using System.Collections.Generic;
 using UnityEngine;
 using RCore.Common;
@@ -11,7 +9,7 @@ using UnityEditor;
 #endif
 using Debug = UnityEngine.Debug;
 using RCore.Inspector;
-#if USE_DOTWEEN
+#if DOTWEEN
 using DG.Tweening;
 #endif
 
@@ -141,7 +139,7 @@ namespace RCore.Components
             }
             else
             {
-#if USE_DOTWEEN
+#if DOTWEEN
                 var fromPos = m_Content.anchoredPosition;
 
                 float time = Vector2.Distance(targetAnchoredPos, fromPos) / (m_TransitionSpeed / Time.deltaTime);

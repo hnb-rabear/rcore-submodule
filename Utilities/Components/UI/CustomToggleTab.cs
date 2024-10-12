@@ -15,7 +15,7 @@ using UnityEngine.Serialization;
 using RCore.Common.Editor;
 using UnityEditor;
 #endif
-#if USE_DOTWEEN
+#if DOTWEEN
 using DG.Tweening;
 #endif
 
@@ -203,7 +203,7 @@ namespace RCore.Components
 
         private void RefreshByTween()
         {
-#if USE_DOTWEEN
+#if DOTWEEN
             if (m_isOn2 == isOn)
                 return;
 
@@ -309,11 +309,11 @@ namespace RCore.Components
         private void OnValueChanged(bool pIsOn)
         {
             if (pIsOn && !string.IsNullOrEmpty(sfxClip))
-                EventDispatcher.Raise(new SFXTriggeredEvent(sfxClip));
+                EventDispatcher.Raise(new Audio.SFXTriggeredEvent(sfxClip));
             else if (!pIsOn && !string.IsNullOrEmpty(sfxClipOff))
-                EventDispatcher.Raise(new SFXTriggeredEvent(sfxClipOff));
+                EventDispatcher.Raise(new Audio.SFXTriggeredEvent(sfxClipOff));
             
-#if USE_DOTWEEN
+#if DOTWEEN
 			if (Application.isPlaying && tweenTime > 0 && transition != Transition.Animation)
             {
                 RefreshByTween();

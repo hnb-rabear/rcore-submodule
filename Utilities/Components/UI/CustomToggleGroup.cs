@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-#if USE_DOTWEEN
+#if DOTWEEN
 using DG.Tweening;
 #endif
 
@@ -25,7 +25,7 @@ namespace RCore.Components
                 return;
             }
 
-#if USE_DOTWEEN
+#if DOTWEEN
             float lerp = 0;
             DOTween.Kill(GetInstanceID());
             DOTween.To(() => lerp, x => lerp = x, 1f, pTweenDuration)

@@ -1,6 +1,5 @@
 ﻿// Author - RadBear - nbhung71711@gmail.com - 2020
 
-//#define USE_DOTWEEN
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,7 +8,7 @@ using UnityEngine.UI;
 using RCore.Common;
 using RCore.Inspector;
 using Debug = UnityEngine.Debug;
-#if USE_DOTWEEN
+#if DOTWEEN
 using DG.Tweening;
 #endif
 #if UNITY_EDITOR
@@ -148,7 +147,7 @@ namespace RCore.Components
 
         public void OnBeginDrag(PointerEventData eventData)
         {
-#if USE_DOTWEEN
+#if DOTWEEN
             DOTween.Kill(GetInstanceID());
 #endif
             m_IsDraging = true;
@@ -292,7 +291,7 @@ namespace RCore.Components
             else
             {
                 m_IsSnapping = false;
-#if USE_DOTWEEN
+#if DOTWEEN
                 if (m_Distance == 0)
                     m_Distance = Vector2.Distance(m_PointToCheckDistanceToCenter.position, m_Items[m_FocusedItemIndex].position);
                 float time = m_Distance / (pSpeed / Time.deltaTime);

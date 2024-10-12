@@ -2,7 +2,7 @@
  * Author RadBear - nbhung71711@gmail.com - 2017
  **/
 
-#if USE_DOTWEEN
+#if DOTWEEN
 using DG.Tweening;
 #endif
 using System.Collections.Generic;
@@ -31,7 +31,7 @@ namespace RCore.Framework.UI
 			var moveFrom = -(screenWidth / 2f + panelRect.rect.width * (1 - panelRect.pivot.x));
 			var moveTo = mDefaultAnchoredPosition.x;
 			panelRect.SetX(moveFrom);
-#if USE_DOTWEEN
+#if DOTWEEN
 			panelRect.DOLocalMoveX(moveTo, pTime);
 #else
             panelRect.SetX(moveTo);
@@ -46,7 +46,7 @@ namespace RCore.Framework.UI
 			var moveFrom = mDefaultAnchoredPosition.x;
 			var moveTo = screenWidth / 2f + panelRect.rect.width * (1 - panelRect.pivot.x);
 			panelRect.SetX(moveFrom);
-#if USE_DOTWEEN
+#if DOTWEEN
 			panelRect.DOLocalMoveX(moveTo, pTime);
 #else
             panelRect.SetX(moveTo);
@@ -55,7 +55,7 @@ namespace RCore.Framework.UI
 
 		public void Fade(float pFrom, float pTo, float pTime)
 		{
-#if USE_DOTWEEN
+#if DOTWEEN
 			panel.CanvasGroup.alpha = pFrom;
 			panel.CanvasGroup.DOFade(pTo, pTime);
 #else

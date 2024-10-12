@@ -6,7 +6,7 @@ using System;
 using UnityEngine;
 using RCore.Common;
 
-namespace RCore.Components
+namespace RCore.FX
 {
     public abstract class CFX_Component : MonoBehaviour
     {

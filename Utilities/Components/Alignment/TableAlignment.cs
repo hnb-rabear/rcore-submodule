@@ -7,7 +7,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using RCore.Inspector;
-#if USE_DOTWEEN
+#if DOTWEEN
 using DG.Tweening;
 #endif
 
@@ -272,7 +272,7 @@ namespace RCore.Components
                             break;
                     }
 
-#if USE_DOTWEEN
+#if DOTWEEN
                     bool waiting = true;
                     float lerp = 0;
                     DOTween.Kill(GetInstanceID() + a.Key);
@@ -351,7 +351,7 @@ namespace RCore.Components
                             break;
                     }
 
-#if USE_DOTWEEN
+#if DOTWEEN
                     bool waiting = true;
                     float lerp = 0;
                     DOTween.Kill(GetInstanceID() + a.Key);

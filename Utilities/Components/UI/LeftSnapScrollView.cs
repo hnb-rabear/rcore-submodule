@@ -7,7 +7,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using RCore.Common;
 using RCore.Inspector;
-#if USE_DOTWEEN
+#if DOTWEEN
 using DG.Tweening;
 #endif
 
@@ -118,7 +118,7 @@ namespace RCore.Components
                     mScrollView.content.SetX(mContentAnchoredXMax);
                 });
             }
-#if USE_DOTWEEN
+#if DOTWEEN
             DOTween.Kill(GetInstanceID());
 #endif
             mIsDraging = false;
@@ -182,7 +182,7 @@ namespace RCore.Components
                 if (time == 0)
                     return;
 
-#if USE_DOTWEEN
+#if DOTWEEN
                 DOTween.Kill(GetInstanceID());
                 mScrollView.content.DOAnchorPosX(targetAnchored, time)
                     .OnStart(() => { mIsSnapping = true; })
@@ -227,7 +227,7 @@ namespace RCore.Components
 
         public void OnBeginDrag(PointerEventData eventData)
         {
-#if USE_DOTWEEN
+#if DOTWEEN
             DOTween.Kill(GetInstanceID());
 #endif
             mIsDraging = true;

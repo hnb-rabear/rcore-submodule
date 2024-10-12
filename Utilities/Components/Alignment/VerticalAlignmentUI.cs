@@ -2,13 +2,11 @@
  * Author RadBear - nbhung71711 @gmail.com - 2017
  **/
 
-//#define USE_DOTWEEN
-
 using UnityEngine;
 using System.Collections;
 using System;
 using System.Collections.Generic;
-#if USE_DOTWEEN
+#if DOTWEEN
 using DG.Tweening;
 #endif
 
@@ -37,7 +35,7 @@ namespace RCore.Components
         private RectTransform[] mChildren;
         private Vector3[] mChildrenPrePosition;
         private Vector3[] mChildrenNewPosition;
-#if USE_DOTWEEN
+#if DOTWEEN
         private Tweener mTweener;
 #else
         private Coroutine mCoroutine;
@@ -142,7 +140,7 @@ namespace RCore.Components
             RefreshPositions();
             if (pCurve != null)
                 animCurve = pCurve;
-#if USE_DOTWEEN
+#if DOTWEEN
             bool waiting = true;
             lerp = 0;
             mTweener.Kill();

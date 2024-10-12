@@ -2,9 +2,8 @@
  * Author RadBear - nbhung71711 @gmail.com - 2017
  **/
 #pragma warning disable 0649
-//#define USE_DOTWEEN
 
-#if USE_DOTWEEN
+#if DOTWEEN
 using DG.Tweening;
 #endif
 using System;
@@ -39,7 +38,7 @@ namespace RCore.Components
 		private List<int> m_childrenId = new List<int>();
 		private Vector2[] m_childrenPrePosition;
 		private Vector2[] m_childrenNewPosition;
-#if USE_DOTWEEN
+#if DOTWEEN
 		private Tweener m_tweener;
 #else
         private Coroutine mCoroutine;
@@ -180,7 +179,7 @@ namespace RCore.Components
 			RefreshPositions();
 			if (pCurve != null)
 				animCurve = pCurve;
-#if USE_DOTWEEN
+#if DOTWEEN
 			bool waiting = true;
 			lerp = 0;
 			m_tweener.Kill();

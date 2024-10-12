@@ -5,8 +5,9 @@
 
 using UnityEngine;
 
-namespace RCore.Components
+namespace RCore.FX
 {
+	[System.Obsolete]
     public class CFX_AnimationComponent : CFX_Component
     {
         public Animator animator;

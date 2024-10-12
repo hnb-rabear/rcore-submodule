@@ -13,18 +13,6 @@ using RCore.Common.Editor;
 
 namespace RCore.Components
 {
-    /// <summary>
-    /// Used to trigger sfx
-    /// </summary>
-    public struct SFXTriggeredEvent : BaseEvent
-    {
-        public string sfx;
-        public SFXTriggeredEvent(string val)
-        {
-            sfx = val;
-        }
-    }
-    
     [AddComponentMenu("RCore/UI/CustomToggleSlider")]
     public class CustomToggleSlider : Toggle
     {
@@ -65,9 +53,9 @@ namespace RCore.Components
         private void OnValueChanged(bool pIsOn)
         {
             if (pIsOn && !string.IsNullOrEmpty(sfxClip))
-                EventDispatcher.Raise(new SFXTriggeredEvent(sfxClip));
+                EventDispatcher.Raise(new Audio.SFXTriggeredEvent(sfxClip));
             else if (!pIsOn && !string.IsNullOrEmpty(sfxClipOff))
-                EventDispatcher.Raise(new SFXTriggeredEvent(sfxClipOff));
+                EventDispatcher.Raise(new Audio.SFXTriggeredEvent(sfxClipOff));
 
             Refresh();
         }

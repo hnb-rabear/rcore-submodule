@@ -2,11 +2,9 @@
  * Author RadBear - nbhung71711 @gmail.com - 2019
  **/
 
-//#define USE_DOTWEEN
-
 #pragma warning disable 0649
 
-#if USE_DOTWEEN
+#if DOTWEEN
 using DG.Tweening;
 #endif
 using System;
@@ -21,16 +19,8 @@ using RCore.Common;
 using UnityEngine.Serialization;
 using Debug = UnityEngine.Debug;
 
-namespace RCore.Components
+namespace RCore.FX
 {
-#if ADDRESSABLES
-	[Serializable]
-	public class ComponentRef_CFX_ParticleComponent : ComponentRef<CFX_Component>
-	{
-		public ComponentRef_CFX_ParticleComponent(string guid) : base(guid) { }
-	}
-#endif
-
 	public class CFX_ParticleComponent : CFX_Component
 	{
 		public bool isLoop;
@@ -41,12 +31,11 @@ namespace RCore.Components
 		[SerializeField] private ParticleSystem mControllableParticle;
 		[FormerlySerializedAs("radius")] [SerializeField] private float m_radius;
 		[SerializeField] private bool m_Gizmos;
-        [FormerlySerializedAs("gizmosColor")] public Color m_gizmosColor;
+		[FormerlySerializedAs("gizmosColor")] public Color m_gizmosColor;
 
 		private ParticleSystem.Particle[] mParticles;
 		private Vector3[] mParticlesPos;
 
-#if UNITY_EDITOR
 		private void OnDrawGizmos()
 		{
 			if (!m_Gizmos)
@@ -54,7 +43,6 @@ namespace RCore.Components
 			Gizmos.color = m_gizmosColor.SetAlpha(0.15f);
 			Gizmos.DrawWireSphere(mMain.transform.position, m_radius);
 		}
-#endif
 
 		public override void Play(bool pAutoDeactivate, float pCustomLifeTime = 0)
 		{
@@ -186,7 +174,7 @@ namespace RCore.Components
 			}
 		}
 
-#if USE_DOTWEEN
+#if DOTWEEN
         public IEnumerator IE_MoveEmitsEase(Transform pDestination, float pDuration, float pDelay = 0)
         {
             if (pDelay > 0)
@@ -278,7 +266,7 @@ namespace RCore.Components
 			onFinishedMovement?.Invoke();
 		}
 
-#if USE_DOTWEEN
+#if DOTWEEN
         private void MoveEmit(Transform pDestination, float pDuration, int pIndex)
         {
             if (mParticles.Length > pIndex)

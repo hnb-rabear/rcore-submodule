@@ -2,8 +2,6 @@
  * Author RadBear - nbhung71711 @gmail.com - 2017
  **/
 
-//#define USE_DOTWEEN
-
 using System;
 using UnityEngine;
 using UnityEngine.UI;
@@ -13,7 +11,7 @@ using Random = UnityEngine.Random;
 using UnityEditor;
 #endif
 
-#if USE_DOTWEEN
+#if DOTWEEN
 using DG.Tweening;
 #endif
 
@@ -51,7 +49,7 @@ namespace RCore.Components
         {
             var defaultAlpha = Color.white.a;
             int id = 0;
-#if USE_DOTWEEN
+#if DOTWEEN
             float val = 0;
             DOTween.Kill(pTarget.GetInstanceID() + GetInstanceID());
             //var tween = DOTween.To(() => val, x => val = x, 1f, time)
@@ -76,7 +74,7 @@ namespace RCore.Components
         private int SimulateBubble(Component pTarget, Vector3 defaultScale, float pFrom, float pTo, AnimationCurve pAnim, float time, Action pOnFinished)
         {
             int id = 0;
-#if USE_DOTWEEN
+#if DOTWEEN
             float val = 0;
             DOTween.Kill(pTarget.GetInstanceID() + GetInstanceID());
             //var tween = DOTween.To(() => val, x => val = x, 1f, time)
@@ -101,7 +99,7 @@ namespace RCore.Components
 
         public void Shake(Transform pTarget, float pTime, float pIntensity, Action pOnFinished = null)
         {
-#if USE_DOTWEEN
+#if DOTWEEN
             var defaultPos = pTarget.position;
             var defaultScale = pTarget.localScale;
             var defaultRotaion = pTarget.rotation;
@@ -136,7 +134,7 @@ namespace RCore.Components
         public void FadeIn(Image pImage, float pTime, Action pOnFinished = null)
         {
             var color = pImage.color;
-#if USE_DOTWEEN
+#if DOTWEEN
             color.a = 0f;
             pImage.color = color;
             pImage.DOFade(1f, pTime)
@@ -151,7 +149,7 @@ namespace RCore.Components
         public void FadeOut(Image pImage, float pTime, Action pOnFinished = null)
         {
             var color = pImage.color;
-#if USE_DOTWEEN
+#if DOTWEEN
             color.a = 1f;
             pImage.color = color;
             pImage.DOFade(0f, pTime)

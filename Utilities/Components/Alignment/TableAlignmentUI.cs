@@ -7,7 +7,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using RCore.Common;
-#if USE_DOTWEEN
+#if DOTWEEN
 using DG.Tweening;
 #endif
 
@@ -440,7 +440,7 @@ namespace RCore.Components
                 }
             }
 
-#if USE_DOTWEEN
+#if DOTWEEN
             float lerp = 0;
             DOTween.Kill(GetInstanceID());
             DOTween.To(val => lerp = val, 0f, 1f, tweenTime)

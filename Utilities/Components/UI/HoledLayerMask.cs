@@ -2,7 +2,6 @@
  * Author RadBear - nbhung71711 @gmail.com - 2019
  **/
 #pragma warning disable 0649
-//#define USE_DOTWEEN
 
 using System;
 using System.Collections;
@@ -10,7 +9,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using RCore.Common;
 using Debug = UnityEngine.Debug;
-#if USE_DOTWEEN
+#if DOTWEEN
 using DG.Tweening;
 #endif
 
@@ -145,7 +144,7 @@ namespace RCore.Components
             var y = anchoredPosition.y - rect.height * targetPivot.y + rect.height / 2f;
             anchoredPosition = new Vector2(x, y);
             imgHole.rectTransform.anchoredPosition = anchoredPosition;
-#if USE_DOTWEEN
+#if DOTWEEN
             DOTween.Kill(imgHole.GetInstanceID());
             if (pTime > 0)
             {
