@@ -25,13 +25,6 @@ namespace RCore.Components
             Center,
         }
 
-        public enum PerfectRatio
-        {
-            None,
-            Width,
-            Height,
-        }
-
         private static Material m_GreyMat;
 
         [SerializeField] protected PivotForScale mPivotForFX = PivotForScale.Center;

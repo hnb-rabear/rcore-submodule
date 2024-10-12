@@ -9,43 +9,36 @@ using UnityEditor;
 
 namespace RCore.Demo
 {
-    [System.Serializable]
-    public class PrefabsList : AssetsList<GameObject>
-    {
-        public override bool showBox => false;
-        public override bool @readonly => false;
-    }
-
     [CreateAssetMenu(fileName = "ExampleAssetsCollection", menuName = "RCore/Assets Collection Example")]
     public class ExampleAssetsCollection : ScriptableObject
     {
-        public SpritesList icons;
+        public AssetsList<Sprite> icons;
         [FormerlySerializedAs("gameobjects")] public List<GameObject> gameObjects;
-        public PrefabsList prefabs;
+        public AssetsList<Sprite> prefabs;
 
 #if UNITY_EDITOR
         [CustomEditor(typeof(ExampleAssetsCollection))]
         public class ExampleAssetsCollectionEditor : UnityEditor.Editor
         {
-            private ExampleAssetsCollection mScript;
+            private ExampleAssetsCollection m_script;
 
             private void OnEnable()
             {
-                mScript = target as ExampleAssetsCollection;
+                m_script = target as ExampleAssetsCollection;
             }
 
             public override void OnInspectorGUI()
             {
-                var currentTab = EditorHelper.Tabs(mScript.name, "Default", "Custom");
+                var currentTab = EditorHelper.Tabs(m_script.name, "Default", "Custom");
                 switch (currentTab)
                 {
                     case "Default":
                         base.OnInspectorGUI();
                         break;
                     case "Custom":
-                        mScript.icons.DrawInEditor("Icons");
-                        EditorHelper.ListObjects("Prefabs 1", ref mScript.gameObjects, null, true);
-                        mScript.prefabs.DrawInEditor("Prefabs 2");
+                        EditorHelper.DrawAssetsList(m_script.icons, "Icons");
+                        EditorHelper.ListObjects("Prefabs 1", ref m_script.gameObjects, null);
+                        EditorHelper.DrawAssetsList(m_script.prefabs, "Prefabs 2");
                         break;
                 }
             }
