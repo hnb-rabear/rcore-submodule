@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using RCore.Common;
 
-namespace RCore.Components
+namespace RCore.UI
 {
     public abstract class MainMenuScrollItem : MonoBehaviour
     {

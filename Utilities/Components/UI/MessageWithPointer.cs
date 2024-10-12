@@ -10,7 +10,7 @@ using UnityEngine;
 using RCore.Common;
 using UnityEngine.Serialization;
 
-namespace RCore.Components
+namespace RCore.UI.Sample
 {
 	public enum PointerAlignment
 	{

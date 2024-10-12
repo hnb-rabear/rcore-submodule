@@ -13,7 +13,7 @@ using RCore.Inspector;
 using DG.Tweening;
 #endif
 
-namespace RCore.Components
+namespace RCore.UI
 {
     /// <summary>
     /// Used to replace CustomSizeFilter of Unity
@@ -172,7 +172,7 @@ namespace RCore.Components
 
 #if UNITY_EDITOR
         [CustomEditor(typeof(ContentRectSizeFilter))]
-        private class AutoSizeRectransformEditor : UnityEditor.Editor
+        private class AutoSizeRectTransformEditor : UnityEditor.Editor
         {
             private ContentRectSizeFilter m_Target;
 
