@@ -9,8 +9,6 @@ using UnityEngine;
 
 namespace RCore.Framework.Data
 {
-	#region To Parse Data from Json Data Source
-
 	[Serializable]
 	public class AttributesCollection<T> where T : AttributeParse
 	{
@@ -27,12 +25,12 @@ namespace RCore.Framework.Data
 		public float GetAttValue(int pId, float pDefault = 0)
 		{
 			var att = GetAtt(pId);
-			return att == null ? pDefault : att.value;
+			return att?.value ?? pDefault;
 		}
 		public float GetAttValue(int pId, int pLevel, float pDefault = 0)
 		{
 			var att = GetAtt(pId);
-			return att == null ? pDefault : att.GetValue(pLevel);
+			return att?.GetValue(pLevel) ?? pDefault;
 		}
 		public float[] GetAttValues(int pId, int pLevel)
 		{
@@ -347,6 +345,4 @@ namespace RCore.Framework.Data
 			return null;
 		}
 	}
-
-	#endregion
 }
