@@ -1,5 +1,4 @@
-﻿//#define USE_SPINE
-#if USE_SPINE
+﻿#if USE_SPINE
 
 using System.Collections;
 using UnityEngine;
