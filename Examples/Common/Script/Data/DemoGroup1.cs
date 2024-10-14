@@ -12,7 +12,7 @@ namespace RCore.Example
         public StringData stringData;
         public BoolData boolData;
         public DateTimeData dateTimeData;
-        public TimerTask timerTask;
+        public TimedTaskData timedTask;
         public DemoGroup2 subGroup;
 
         public DemoGroup1(int pId) : base(pId)
@@ -24,7 +24,7 @@ namespace RCore.Example
             boolData = AddData(new BoolData(4));
             dateTimeData = AddData(new DateTimeData(5));
             subGroup = AddData(new DemoGroup2(7));
-            timerTask = AddData(new TimerTask(8));
+            timedTask = AddData(new TimedTaskData(8));
         }
 
         public void RandomizeData()

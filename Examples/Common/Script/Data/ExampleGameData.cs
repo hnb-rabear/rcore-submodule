@@ -14,7 +14,7 @@ namespace RCore.Example
     {
         private const bool ENCRYPT_FILE = false;
         private const bool ENCRYPT_SAVER = false;
-        private static readonly Encryption FILE_ENRYPTION = new Encryption();
+        private static readonly Encryption FILE_ENCRYPTION = new Encryption();
 
         public static ExampleGameData mInstance;
         public static ExampleGameData Instance => mInstance;
@@ -40,7 +40,7 @@ namespace RCore.Example
 
             mInitialized = true;
 
-            mDataSaver = DataSaverContainer.CreateSaver("example", ENCRYPT_SAVER ? FILE_ENRYPTION : null);
+            mDataSaver = DataSaverContainer.CreateSaver("example", ENCRYPT_SAVER ? FILE_ENCRYPTION : null);
 
             exampleGroup = AddMainDataGroup(new DemoGroup1(0), mDataSaver);
             demoGroup = AddMainDataGroup(new DemoGroup3(1), mDataSaver);
@@ -56,6 +56,7 @@ namespace RCore.Example
             exampleGroup.stringData.Value = Random.Range(0, 100) + "asd";
             exampleGroup.boolData.Value = Random.Range(0, 100) > 50;
             exampleGroup.dateTimeData.Set(DateTime.Now);
+            exampleGroup.timedTask.Start(100);
             exampleGroup.RandomizeData();
         }
 
@@ -67,7 +68,7 @@ namespace RCore.Example
             Debug.Log("stringData: " + exampleGroup.stringData.Value);
             Debug.Log("boolData: " + exampleGroup.boolData.Value);
             Debug.Log("dateTimeData: " + exampleGroup.dateTimeData.Get());
-            Debug.Log("timerTask: " + exampleGroup.timerTask.RemainSeconds);
+            Debug.Log("timerTask: " + exampleGroup.timedTask.RemainSeconds);
         }
 
         private void LogAll()
@@ -81,7 +82,7 @@ namespace RCore.Example
         public static string LoadFile(string pPath, bool pEncrypt = ENCRYPT_FILE)
         {
             if (pEncrypt)
-                return DataManager.LoadFile(pPath, FILE_ENRYPTION);
+                return DataManager.LoadFile(pPath, FILE_ENCRYPTION);
             else
                 return DataManager.LoadFile(pPath, null);
         }
