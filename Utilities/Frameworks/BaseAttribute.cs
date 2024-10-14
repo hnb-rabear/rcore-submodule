@@ -215,7 +215,7 @@ namespace RCore.Framework.Data
 		public float[] values; //Sometime we have more than one value eg. value-0 for Gold value-1 for Gem
 		public float[] increases; //Sometime Increase is defined by multi values eg. increase-0 for level, increase-1 for rarity
 		public float[] unlocks; //Sometime Unlock is defined for many purposes eg. level to unlock or rarity to unlock
-		public float[] maxes; //Sometime max is defined for diffirent value eg. max value when rarity == 1 or max value when rarity == 2
+		public float[] maxes; //Sometime max is defined for different value eg. max value when rarity == 1 or max value when rarity == 2
 		public string valueString;
 
 		public virtual float GetValue(int pLevel = 1, int pIndex = -1)
