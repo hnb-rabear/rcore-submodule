@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using RCore.Components;
-using RCore.Framework.UI;
+using RCore.UI;
 using RCore.Inspector;
 using RCore.Common;
 using RCore.UI;

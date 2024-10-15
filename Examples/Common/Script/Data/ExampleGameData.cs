@@ -4,7 +4,7 @@ using UnityEditor;
 #endif
 using UnityEngine;
 using RCore.Common;
-using RCore.Framework.Data;
+using RCore.Data.KeyValue;
 using Debug = UnityEngine.Debug;
 using Random = UnityEngine.Random;
 
@@ -22,7 +22,7 @@ namespace RCore.Example
         public DemoGroup1 exampleGroup;
         public DemoGroup3 demoGroup;
 
-        private DataSaver mDataSaver;
+        private KeyValueCollection m_keyValueCollection;
         private bool mInitialized;
 
         private void Awake()
@@ -40,10 +40,10 @@ namespace RCore.Example
 
             mInitialized = true;
 
-            mDataSaver = DataSaverContainer.CreateSaver("example", ENCRYPT_SAVER ? FILE_ENCRYPTION : null);
+            m_keyValueCollection = KeyValueDB.CreateCollection("example", ENCRYPT_SAVER ? FILE_ENCRYPTION : null);
 
-            exampleGroup = AddMainDataGroup(new DemoGroup1(0), mDataSaver);
-            demoGroup = AddMainDataGroup(new DemoGroup3(1), mDataSaver);
+            exampleGroup = AddMainDataGroup(new DemoGroup1(0), m_keyValueCollection);
+            demoGroup = AddMainDataGroup(new DemoGroup3(1), m_keyValueCollection);
 
             base.Init();
         }
@@ -73,8 +73,8 @@ namespace RCore.Example
 
         private void LogAll()
         {
-            var savedData = mDataSaver.GetSavedData();
-            var currentData = mDataSaver.GetCurrentData();
+            var savedData = m_keyValueCollection.GetSavedData();
+            var currentData = m_keyValueCollection.GetCurrentData();
             Debug.Log("Saved Data: " + savedData);
             Debug.Log("Running Data: " + currentData);
         }

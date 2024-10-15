@@ -2,7 +2,7 @@ using RCore.Common;
 using System;
 using UnityEngine;
 
-namespace RCore.Framework.Data
+namespace RCore.RPGBase
 {
 	[Serializable]
 	public abstract class ModDisplayConfig

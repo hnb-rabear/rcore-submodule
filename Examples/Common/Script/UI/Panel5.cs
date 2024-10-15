@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 using UnityEngine;
-using RCore.Framework.UI;
+using RCore.UI;
 
 namespace RCore.Example
 {
