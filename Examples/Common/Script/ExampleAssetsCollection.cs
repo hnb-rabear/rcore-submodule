@@ -3,7 +3,7 @@ using UnityEngine;
 using RCore.Common;
 using UnityEngine.Serialization;
 #if UNITY_EDITOR
-using RCore.Common.Editor;
+using RCore.Editor;
 using UnityEditor;
 #endif
 
