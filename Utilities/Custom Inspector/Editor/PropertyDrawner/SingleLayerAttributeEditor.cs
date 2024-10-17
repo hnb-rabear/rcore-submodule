@@ -6,7 +6,7 @@ using UnityEngine;
 namespace RCore.Inspector
 {
     [CustomPropertyDrawer(typeof(SingleLayerAttribute))]
-    class LayerAttributeEditor : PropertyDrawer
+    public class SingleLayerPropertyDrawer : PropertyDrawer
     {
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)

@@ -11,7 +11,7 @@ namespace RCore.Components
     /// <summary>
     /// Drag an item from UI-Canvas to world
     /// </summary>
-    public class UIDragableWorldItem : UIDragableItem
+    public class UIDragableWorldItem : UIDraggableItem
     {
         public GameObject worldObjPrefab;
         protected GameObject mWorldObj;
