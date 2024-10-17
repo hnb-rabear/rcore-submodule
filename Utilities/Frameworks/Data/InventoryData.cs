@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace RCore.Framework.Data
+namespace RCore.Data.KeyValueDB
 {
     public interface IInventoryItem : IComparable<IInventoryItem>
     {

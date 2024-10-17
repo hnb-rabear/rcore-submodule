@@ -6,7 +6,7 @@ namespace RCore.Demo
     {
         void Start()
         {
-            ExampleGameData.Instance.Init();
+            ExampleGameKeyValueDB.Instance.Init();
             MainPanel.instance.Init();
             ExamplePoolsManager.Instance.Init();
         }

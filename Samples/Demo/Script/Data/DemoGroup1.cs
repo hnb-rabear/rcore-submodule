@@ -1,5 +1,5 @@
 ﻿using System;
-using RCore.Framework.Data;
+using RCore.Data.KeyValueDB;
 using Random = UnityEngine.Random;
 
 namespace RCore.Demo

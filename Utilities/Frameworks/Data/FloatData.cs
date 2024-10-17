@@ -4,7 +4,7 @@
 
 using UnityEngine;
 
-namespace RCore.Framework.Data
+namespace RCore.Data.KeyValueDB
 {
     public class FloatData : FunData
     {

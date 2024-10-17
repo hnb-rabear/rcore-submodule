@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace RCore.Framework.Data
+namespace RCore.Data.KeyValueDB
 {
 	#region To Parse Data from Json Data Source
 
