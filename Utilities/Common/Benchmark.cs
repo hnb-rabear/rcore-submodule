@@ -37,7 +37,7 @@ namespace RCore.Common
                 m_benchmarkDuration -= Time.deltaTime;
                 if (m_benchmarkDuration <= 0)
                 {
-                    m_onFinishedBenchmark(fps, minFps, maxFps);
+                    m_onFinishedBenchmark?.Invoke(fps, minFps, maxFps);
                     stop = true;
                 }
             }
@@ -53,6 +53,8 @@ namespace RCore.Common
                 m_elapsedTime = 0;
                 m_countFrame = 0;
             }
+            
+            UnityEngine.Debug.Log($"{fps}-{maxFps}-{minFps}");
         }
     }
 }

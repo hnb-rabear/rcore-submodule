@@ -17,15 +17,11 @@ namespace RCore.Components
         {
             m_CurrentOrientation = Screen.orientation;
             m_CurrentSafeArea = Screen.safeArea;
-            CheckSafeArea2();
+            CheckSafeArea();
         }
-
-        /// <summary>
-        /// This method work well in simulator or device but in editor it is little buggy if Simulator is not currently active
-        /// So this method for only infomation purpose. The method 2 is much better
-        /// </summary>
+        
         [InspectorButton]
-        public void CheckSafeArea()
+        public void Log()
         {
             var safeArea = Screen.safeArea;
             var sWidth = Screen.currentResolution.width;
@@ -38,25 +34,10 @@ namespace RCore.Components
                 $"\nSafe area: {safeArea}" +
                 $"\nOffset Top: (width:{oWidthTop}, height:{oHeightTop})" +
                 $"\nOffset Bottom: (width:{oWidthBot}, height:{oHeightBot})");
-
-            var offsetTop = new Vector2(oWidthTop, oHeightTop);
-            var offsetBottom = new Vector2(oWidthBot, oHeightBot);
-
-            foreach (var rect in safeRects)
-            {
-                if (!fixedTop)
-                    rect.offsetMax = new Vector2(0, -offsetTop.y);
-                else
-                    rect.offsetMax = Vector2.zero;
-                if (!fixedBottom)
-                    rect.offsetMin = new Vector2(0, -offsetBottom.y);
-                else
-                    rect.offsetMin = Vector2.zero;
-            }
         }
 
         [InspectorButton]
-        public void CheckSafeArea2()
+        public void CheckSafeArea()
         {
             var safeArea = Screen.safeArea;
             safeArea.height -= topOffset;
@@ -115,7 +96,7 @@ namespace RCore.Components
             float time = 0.5f;
             while (time > 0)
             {
-                CheckSafeArea2();
+                CheckSafeArea();
                 time -= Time.deltaTime;
                 yield return null;
             }
@@ -131,7 +112,7 @@ namespace RCore.Components
         private void Update()
         {
             if (m_CurrentOrientation != Screen.orientation || m_CurrentSafeArea != Screen.safeArea)
-                CheckSafeArea2();
+                CheckSafeArea();
         }
 #endif
     }

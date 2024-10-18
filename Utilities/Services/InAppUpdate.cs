@@ -40,7 +40,7 @@ namespace RCore.Service
             var updateOption = AppUpdateOptions.ImmediateAppUpdateOptions();
 
             //Force Update if user hasn't updated for at-least [versionDifferent] versions
-            int comparedValue = RUtil.CompareVersion(Application.version, newestVersion);
+            int comparedValue = RUtil.CompareVersion(Application.version, newestVersion, 1);
             if (comparedValue <= versionDifferent)
             {
                 updateOption = AppUpdateOptions.ImmediateAppUpdateOptions();

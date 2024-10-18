@@ -11,7 +11,7 @@ namespace RCore.Common
 {
 	public static class RNative
 	{
-#if UNITY_ANDROID
+#if UNITY_ANDROID && !UNITY_EDITOR
 		static bool adr_initialized = false;
 		static IntPtr class_RNative = IntPtr.Zero;
 		static IntPtr method_isAppInstalled = IntPtr.Zero;
@@ -102,7 +102,7 @@ namespace RCore.Common
 			args[0].l = AndroidJNI.NewStringUTF(pMessage);
 			AndroidJNI.CallStaticVoidMethod(class_RNative, method_showToast, args);
 		}
-#elif UNITY_IOS
+#elif UNITY_IOS && !UNITY_EDITOR
 		[DllImport("__Internal")]
         private static extern long getSecondsSinceBoot();
 
