@@ -11,15 +11,15 @@ namespace RCore.Components
     public class UIDragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
     {
         internal Vector3 preLocalPosition;
-        internal UIDragableItem owner;
-        internal UIDragableItem clone;
+        internal UIDraggableItem owner;
+        internal UIDraggableItem clone;
         internal Camera renderCamera;
         internal bool initialzied;
         internal Transform preParent;
         internal UIDragController dragController;
         internal bool dontShowItem;
 
-        public void SetUp(UIDragableItem pOwner, Camera pCamera)
+        public void SetUp(UIDraggableItem pOwner, Camera pCamera)
         {
             renderCamera = pCamera;
             owner = pOwner;
@@ -64,7 +64,7 @@ namespace RCore.Components
                 item.SetActive(false);
         }
 
-        public UIDragableItem GetDragableItem()
+        public UIDraggableItem GetDragableItem()
         {
             if (owner.dragOriginal)
                 return owner;

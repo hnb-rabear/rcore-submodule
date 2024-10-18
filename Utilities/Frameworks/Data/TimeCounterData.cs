@@ -1,7 +1,7 @@
 ﻿using System;
 using RCore.Common;
 
-namespace RCore.Framework.Data
+namespace RCore.Data.KeyValueDB
 {
     /// <summary>
     /// Note: this can not not prevent time cheating

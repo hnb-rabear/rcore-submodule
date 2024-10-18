@@ -2,7 +2,7 @@
  * Author RadBear - nbhung71711@gmail.com - 2018
  **/
 
-namespace RCore.Framework.Data
+namespace RCore.Data.KeyValueDB
 {
     public class StringData : FunData
     {

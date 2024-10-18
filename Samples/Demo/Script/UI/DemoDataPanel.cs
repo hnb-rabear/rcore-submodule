@@ -19,7 +19,7 @@ namespace RCore.Demo
         
         private float mTime;
 
-        private ExampleGameData GameData => ExampleGameData.Instance;
+        private ExampleGameKeyValueDB GameKeyValueDB => ExampleGameKeyValueDB.Instance;
 
         private void Start()
         {
@@ -44,11 +44,11 @@ namespace RCore.Demo
         [InspectorButton]
         private void LoadData()
         {
-            mTogSlider.isOn = GameData.demoGroup.toggleIsOn.Value;
-            mInputFiled.text = GameData.demoGroup.inputFieldText.Value;
-            mProgressBar.Value = GameData.demoGroup.progressBarValue.Value;
+            mTogSlider.isOn = GameKeyValueDB.demoGroup.toggleIsOn.Value;
+            mInputFiled.text = GameKeyValueDB.demoGroup.inputFieldText.Value;
+            mProgressBar.Value = GameKeyValueDB.demoGroup.progressBarValue.Value;
             mTime = mProgressBar.Value;
-            switch (GameData.demoGroup.tabIndex.Value)
+            switch (GameKeyValueDB.demoGroup.tabIndex.Value)
             {
                 case 1: mTab1.isOn = true; break;
                 case 2: mTab2.isOn = true; break;
@@ -60,17 +60,17 @@ namespace RCore.Demo
         [InspectorButton]
         private void SaveData()
         {
-            GameData.demoGroup.toggleIsOn.Value = mTogSlider.isOn;
-            GameData.demoGroup.inputFieldText.Value = mInputFiled.text;
-            GameData.demoGroup.progressBarValue.Value = mProgressBar.Value;
+            GameKeyValueDB.demoGroup.toggleIsOn.Value = mTogSlider.isOn;
+            GameKeyValueDB.demoGroup.inputFieldText.Value = mInputFiled.text;
+            GameKeyValueDB.demoGroup.progressBarValue.Value = mProgressBar.Value;
             if (mTab1.isOn)
-                GameData.demoGroup.tabIndex.Value = 1;
+                GameKeyValueDB.demoGroup.tabIndex.Value = 1;
             else if (mTab2.isOn)
-                GameData.demoGroup.tabIndex.Value = 2;
+                GameKeyValueDB.demoGroup.tabIndex.Value = 2;
             else if (mTab3.isOn)
-                GameData.demoGroup.tabIndex.Value = 3;
+                GameKeyValueDB.demoGroup.tabIndex.Value = 3;
             else if (mTab4.isOn)
-                GameData.demoGroup.tabIndex.Value = 4;
+                GameKeyValueDB.demoGroup.tabIndex.Value = 4;
         }
     }
 }

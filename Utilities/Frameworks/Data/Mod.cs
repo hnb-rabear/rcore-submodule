@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace RCore.Framework.Data
+namespace RCore.Data.KeyValueDB
 {
 	[Serializable]
 	public class Mod : IComparable<Mod>

@@ -4,7 +4,7 @@ using System.IO;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
-namespace RCore.Framework.Data
+namespace RCore.Data.KeyValueDB
 {
     /// <summary>
     /// NOTE: this class used string mostly to load data because It should be friendly with Unity Editor

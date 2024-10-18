@@ -9,7 +9,7 @@ using UnityEditor;
 using UnityEngine;
 using EditorPrefs = UnityEditor.EditorPrefs;
 
-namespace RCore.Framework.Data.Editor
+namespace RCore.Data.KeyValueDB.Editor
 {
     public class DataWindow : EditorWindow
     {

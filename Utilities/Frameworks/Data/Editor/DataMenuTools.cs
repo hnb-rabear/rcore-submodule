@@ -6,7 +6,7 @@ using UnityEditor;
 using UnityEngine;
 using RCore.Common.Editor;
 
-namespace RCore.Framework.Data.Editor
+namespace RCore.Data.KeyValueDB.Editor
 {
     public static class DataMenuTools
     {

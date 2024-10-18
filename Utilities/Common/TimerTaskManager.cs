@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using RCore.Common;
 using UnityEngine;
 
-namespace RCore.Framework.Data
+namespace RCore.Data.KeyValueDB
 {
 	public class TimerTaskManager : MonoBehaviour
 	{
